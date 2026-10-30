@@ -9,7 +9,9 @@ export function svgDataUrl(svg: string): string {
 }
 
 export function escapeXml(text: string): string {
-	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+	return text
+		.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+		.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 export function outlinedText(
@@ -25,10 +27,22 @@ export function outlinedText(
 	)
 }
 
-// shortcut: width is a flat 0.6 em per character (no font metrics in Node); upgrade if cut-offs look wrong on a real key
+// Hangul, CJK and full-width characters are about 1 em wide, the rest 0.6 em
+const WIDE = /[\u1100-\u11ff\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\uff00-\uffef]|[\u{20000}-\u{3ffff}]/u
+const charWidth = (c: string, size: number) => (WIDE.test(c) ? 1 : 0.6) * size
+
+// shortcut: per-class width estimate (no font metrics in Node); upgrade if cut-offs look wrong on a real key
 export function fitText(text: string, size: number, maxWidth = KEY - 8): string {
-	const max = Math.floor(maxWidth / (size * 0.6))
-	return text.length <= max ? text : text.slice(0, Math.max(1, max - 1)) + '…'
+	const chars = Array.from(text)
+	if (chars.reduce((w, c) => w + charWidth(c, size), 0) <= maxWidth) return text
+	let out = ''
+	let w = charWidth('…', size)
+	for (const c of chars) {
+		w += charWidth(c, size)
+		if (w > maxWidth) break
+		out += c
+	}
+	return out + '…'
 }
 
 export function frame(width: number, height: number, body: string, overlay: Overlay): string {
@@ -43,7 +57,10 @@ export function frame(width: number, height: number, body: string, overlay: Over
 			content = `<g opacity="0.25">${body}</g>` + outlinedText(cx, cy + 12, 'N/A', { size: 34, fill: 'rgb(150,150,150)' })
 			break
 		case 'setup':
-			content = `<g opacity="0.35">${body}</g>` + outlinedText(cx, cy + 8, 'SET CHANNEL', { size: 20, fill: '#fff' })
+			content =
+				`<g opacity="0.35">${body}</g>` +
+				outlinedText(cx, cy - 6, 'SET', { size: 26, fill: '#fff' }) +
+				outlinedText(cx, cy + 24, 'CHANNEL', { size: 26, fill: '#fff' })
 			break
 		default:
 			content = body
