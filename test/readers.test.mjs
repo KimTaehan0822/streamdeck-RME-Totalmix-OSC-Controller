@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { TotalMixConnection } from '../dist/connection.js'
 import * as r from '../dist/readers.js'
+import { dbToNormalized } from '../dist/protocol/fader-curve.js'
 
 const settings = { host: '127.0.0.1', targetPort: 7001, feedbackPort: 9001, syncTimeoutMs: 50 }
 const tick = () => new Promise((resolve) => setImmediate(resolve))
@@ -28,10 +29,12 @@ test('levelNormalized right side reads the next channel of a stereo pair', () =>
 	const { conn, msg } = setup()
 	msg('/level/in/1', -20)
 	msg('/level/in/2', -6)
+	msg('/level/in/3', -40)
 	const left = r.levelNormalized(conn, input1, 'left')
 	assert.equal(r.levelNormalized(conn, input1, 'right'), left) // mono: right mirrors left
 	msg('/input/1/stereo', 1)
-	assert.ok(r.levelNormalized(conn, input1, 'right') > left)
+	assert.equal(r.levelNormalized(conn, input1, 'right'), dbToNormalized(-6))
+	assert.equal(left, dbToNormalized(-20))
 	assert.equal(r.levelNormalized(conn, { row: 'input', source: 9, destination: 1 }, 'left'), 0)
 	conn.stop()
 })
@@ -75,14 +78,32 @@ test('panText maps 0..1 to L / C / R / number', () => {
 	conn.stop()
 })
 
-test('hasCapability uses discovery for unknown devices and the profile for known ones', () => {
+test('hasCapability is optimistic for an unknown device before discovery data', () => {
+	const { conn } = setup()
+	for (const kind of ['gain', 'phantom', 'duRec', 'globalFx', 'roomEq', 'channelFx']) {
+		assert.equal(r.hasCapability(conn, kind, 2), true, kind)
+	}
+	conn.stop()
+})
+
+test('hasCapability uses discovery after data, but roomEq and channelFx stay true', () => {
 	const { conn, msg } = setup()
-	assert.equal(r.hasCapability(conn, 'duRec'), false)
 	msg('/input/2/48v', 0)
 	assert.equal(r.hasCapability(conn, 'phantom', 2), true)
 	assert.equal(r.hasCapability(conn, 'phantom', 3), false)
+	assert.equal(r.hasCapability(conn, 'duRec'), false)
+	assert.equal(r.hasCapability(conn, 'roomEq'), true)
+	assert.equal(r.hasCapability(conn, 'channelFx'), true)
+	conn.stop()
+})
+
+test('hasCapability treats a known device profile as authoritative', () => {
+	const { conn, msg } = setup()
 	msg('/status/device', 'Fireface UFX II')
-	assert.equal(typeof r.hasCapability(conn, 'gain', 0), 'boolean')
+	msg('/input/2/48v', 0) // discovery must not override the profile
+	assert.equal(r.hasCapability(conn, 'phantom', 9), true)
+	assert.equal(r.hasCapability(conn, 'phantom', 2), false)
+	assert.equal(r.hasCapability(conn, 'pad', 9), false)
 	conn.stop()
 })
 

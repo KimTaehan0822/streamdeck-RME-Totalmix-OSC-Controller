@@ -165,6 +165,8 @@ export function roomEqParameter<T extends number | boolean | string>(
 export function hasCapability(c: TotalMixConnection, kind: CapabilityKind, input?: number): boolean {
 	const state = c.controller.state
 	const profile = state.detectedDevice ? detectDeviceProfile(state.detectedDevice) : undefined
+	// Unknown device: stay optimistic until discovery has data; roomEq/channelFx are only discovered once a reader registers them.
+	if (!profile && (!state.hasGlobalDiscoveryData || kind === 'roomEq' || kind === 'channelFx')) return true
 	const capabilities = profile?.capabilities ?? state.getDiscoveredCapabilities()
 	switch (kind) {
 		case 'gain':
