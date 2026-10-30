@@ -29,3 +29,15 @@ export const babyfaceProFs: DeviceProfile = {
 		roomEq: true,
 	},
 }
+
+// The Babyface Pro (non-FS) has the same channels and switches, but TotalMix runs its mic gain 0..65 dB
+// (measured on the device), not the FS's -11..65.
+export const babyfacePro: DeviceProfile = {
+	...babyfaceProFs,
+	id: 'babyface-pro',
+	label: 'Babyface Pro',
+	capabilities: {
+		...babyfaceProFs.capabilities,
+		inputGainRanges: { ...babyfaceProFs.capabilities.inputGainRanges, ...inputGainRanges([0, 1], 0, 65) },
+	},
+}

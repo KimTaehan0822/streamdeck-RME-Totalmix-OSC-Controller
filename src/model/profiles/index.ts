@@ -1,6 +1,6 @@
 import type { DeviceProfile } from '../device-profile.js'
 import { babyface } from './babyface.js'
-import { babyfaceProFs } from './babyface-pro-fs.js'
+import { babyfacePro, babyfaceProFs } from './babyface-pro-fs.js'
 import { digifaceAes } from './digiface-aes.js'
 import { digifaceDante } from './digiface-dante.js'
 import { digifaceRavenna, digifaceRavennaMadi } from './digiface-ravenna.js'
@@ -51,8 +51,8 @@ export function detectDeviceProfile(name: string): DeviceProfile | undefined {
 	if (/\bfireface ucx ii\b/.test(normalized)) return firefaceUcxII
 	if (/\bfireface ucx\b/.test(normalized)) return firefaceUcx
 	if (/\bfireface 802 fs\b/.test(normalized)) return fireface802Fs
-	// The Babyface Pro (non-FS) has the same TotalMix channels and controls as the Pro FS.
-	if (/\bbabyface pro\b/.test(normalized)) return babyfaceProFs
+	if (/\bbabyface pro fs\b/.test(normalized)) return babyfaceProFs
+	if (/\bbabyface pro\b/.test(normalized)) return babyfacePro
 	if (/\bbabyface\b/.test(normalized)) return babyface
 	if (/\bfireface uc\b/.test(normalized)) return firefaceUc
 	if (/\bdigiface aes\b/.test(normalized)) return digifaceAes
