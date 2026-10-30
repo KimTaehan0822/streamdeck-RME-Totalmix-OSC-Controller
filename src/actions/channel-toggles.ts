@@ -157,7 +157,7 @@ export class ChannelOptionAction extends ToggleAction {
 		// The PI has no default row here (the valid rows depend on the option), so an unset row is not guessed.
 		const t = s.row === undefined ? undefined : channelOf(s, rows)
 		if (!t) return undefined
-		const spec = this.option(t, option, label, BLUE)
+		const spec = this.option(t, option, label, BLUE, option === 'gainRight' ? () => hasCapability(this.connection, 'gain', t.index) : undefined)
 		if (!VALUE_OPTIONS.has(option)) return spec
 		const value = num(s.value)
 		if (!Number.isFinite(value)) return undefined

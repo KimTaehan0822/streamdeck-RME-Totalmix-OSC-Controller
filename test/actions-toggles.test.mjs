@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { TotalMixConnection } from '../dist/connection.js'
-import { GroupAction, InputOptionAction, MuteAction } from '../dist/actions/channel-toggles.js'
+import { GroupAction, InputOptionAction, MuteAction, SoloAction } from '../dist/actions/channel-toggles.js'
 
 const settings = { host: '127.0.0.1', targetPort: 7001, feedbackPort: 9001, syncTimeoutMs: 50 }
 const tick = () => new Promise((resolve) => setTimeout(resolve, 20))
@@ -40,16 +40,53 @@ test('missing target renders the setup hint', async () => {
 	conn.stop()
 })
 
-test('mute press toggles via setMute', async () => {
-	const { conn, sent } = setup()
-	const action = new MuteAction(conn)
-	const key = fakeKey({ row: 'input', channel: '2' }) // select values arrive as strings, 0-based
+async function press(action, settings) {
+	const key = fakeKey(settings)
 	await action.onWillAppear(key.appear)
+	await tick()
 	await action.onKeyDown(key.press)
-	assert.deepEqual(sent.at(-1), { address: '/sendchan/input/2', args: [1] })
+	const image = key.images.at(-1)
 	await action.onWillDisappear(key.appear)
+	return image
+}
+
+test('mute press toggles via setMute', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/input/2/mute', 0)
+	// select values arrive as strings, 0-based
+	await press(new MuteAction(conn), { row: 'input', channel: '2' })
+	assert.deepEqual(sent.at(-1), { address: '/input/2/mute', args: [1] })
 	conn.stop()
 })
+
+test('output mute goes through setChannelOption', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/output/3/mute', 0)
+	await press(new MuteAction(conn), { row: 'output', channel: 3 })
+	assert.deepEqual(sent.at(-1), { address: '/output/3/mute', args: [1] })
+	conn.stop()
+})
+
+test('operation off does not toggle a muted channel back on', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/input/2/mute', 1)
+	await press(new MuteAction(conn), { row: 'input', channel: 2, operation: 'off' })
+	assert.deepEqual(sent.at(-1), { address: '/input/2/mute', args: [0] })
+	conn.stop()
+})
+
+for (const [name, Action, settings] of [
+	['non-numeric channel', MuteAction, { row: 'input', channel: 'abc' }],
+	['solo on the output row', SoloAction, { row: 'output', channel: 1 }],
+]) {
+	test(`${name} renders setup and sends nothing`, async () => {
+		const { conn, sent } = setup()
+		const before = sent.length
+		assert.match(await press(new Action(conn), settings), /CHANNEL/)
+		assert.equal(sent.length, before)
+		conn.stop()
+	})
+}
 
 test('48V on an input without phantom renders N/A and does not send', async () => {
 	const { conn, sent, msg } = setup()

@@ -20,6 +20,7 @@
 			stereo: 'Stereo mode', cue: 'Cue (output)', talkbackSel: 'Talkback (output)', gainRight: 'Right-channel gain (input, value)',
 			refLevel: 'Reference level (value 0-3)', width: 'Stereo width (value)',
 		}
+		const VALUE_OPTIONS = ['gainRight', 'refLevel', 'width']
 		const GROUP_TYPES = { mute: 'Mute group', pfl: 'PFL group', fader: 'Fader group' }
 		const GROUPS = { 1: 'Group 1', 2: 'Group 2', 3: 'Group 3', 4: 'Group 4' }
 
@@ -50,6 +51,7 @@
 			const saved = (await client.getSettings()).settings ?? {}
 			const rowItems = kind.rows && Object.fromEntries(kind.rows.map((r) => [r, ROWS[r]]))
 			const fields = document.getElementById('fields')
+			let option = saved.option
 			let row = saved.row ?? (kind.noDefaultRow ? undefined : kind.rows?.[0])
 
 			const draw = () => {
@@ -61,9 +63,15 @@
 					if (bus) html += channel(bus)
 				}
 				if (kind.option) html += select('option', 'Option', kind.option, 'placeholder="Select"')
-				if (kind.value) html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="gain/width/ref level only"></sdpi-textfield></sdpi-item>`
+				if (kind.value && VALUE_OPTIONS.includes(option)) html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="gain/width/ref level only"></sdpi-textfield></sdpi-item>`
 				html += select('operation', 'Operation', OPERATION, 'default="toggle"')
 				fields.innerHTML = html
+				fields.querySelector('[setting="option"]')?.addEventListener('change', (e) => {
+					if (kind.value && e.target.value !== option) {
+						option = e.target.value
+						draw()
+					}
+				})
 				// A new row needs a new channel list; the saved channel belongs to the old row.
 				fields.querySelector('[setting="row"]')?.addEventListener('change', async (e) => {
 					if (e.target.value === row) return
