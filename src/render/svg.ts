@@ -1,6 +1,6 @@
 export const KEY = 144
 
-export type Overlay = 'none' | 'offline' | 'unsupported' | 'setup'
+export type Overlay = 'none' | 'offline' | 'unsupported' | 'setup' | 'config'
 
 const FONT = 'Arial, Helvetica, sans-serif'
 
@@ -61,6 +61,9 @@ export function frame(width: number, height: number, body: string, overlay: Over
 				`<g opacity="0.35">${body}</g>` +
 				outlinedText(cx, cy - 6, 'SET', { size: 26, fill: '#fff' }) +
 				outlinedText(cx, cy + 24, 'CHANNEL', { size: 26, fill: '#fff' })
+			break
+		case 'config':
+			content = `<g opacity="0.35">${body}</g>` + outlinedText(cx, cy + 8, 'SETUP', { size: 26, fill: '#fff' })
 			break
 		default:
 			content = body

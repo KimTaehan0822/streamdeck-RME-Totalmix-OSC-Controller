@@ -28,6 +28,8 @@ export const BLUE = 'rgb(0,100,200)'
 const operation = (v: unknown): BinaryOperation => (v === 'on' || v === 'off' ? v : 'toggle')
 export abstract class ToggleAction extends TotalMixAction<JsonObject> {
 	protected abstract spec(s: JsonObject): Spec | undefined
+	/** 'config' for keys without a channel. */
+	protected readonly setupOverlay: 'setup' | 'config' = 'setup'
 
 	/** Boolean channel parameter shown as a key; the press goes through setChannelOption. */
 	protected option(t: MixerChannelTarget, parameter: string, label: string, color: string, supported?: () => boolean): Spec {
@@ -44,7 +46,7 @@ export abstract class ToggleAction extends TotalMixAction<JsonObject> {
 
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const spec = this.spec(s)
-		if (!spec) return renderToggleKey({ title: '', on: false, onColor: '#000', overlay: 'setup' })
+		if (!spec) return renderToggleKey({ title: '', on: false, onColor: '#000', overlay: this.setupOverlay })
 		const overlay = spec.supported && !spec.supported() ? 'unsupported' : ctx.overlay
 		return renderToggleKey({ title: spec.title(), label: spec.label, on: spec.read(), onColor: spec.color, overlay })
 	}

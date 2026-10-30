@@ -1,13 +1,14 @@
 import {
 	SingletonAction,
 	type DidReceiveSettingsEvent,
+	type KeyUpEvent,
 	type WillAppearEvent,
 	type WillDisappearEvent,
 } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import { svgDataUrl, type Overlay } from '../render/svg.js'
-import type { HoldRepeater } from './hold.js'
+import { HoldRepeater } from './hold.js'
 import { Redrawer } from './redraw.js'
 
 export interface RenderContext {
@@ -72,6 +73,18 @@ export abstract class TotalMixAction<S extends JsonObject> extends SingletonActi
 		this.holds.get(ev.action.id)?.stop()
 		this.holds.delete(ev.action.id)
 		if (this.instances.size === 0) this.stop()
+	}
+
+	/** Steps once now and keeps repeating until key-up or the action disappears. */
+	protected hold(id: string, step: () => void): void {
+		this.holds.get(id)?.stop()
+		const repeater = new HoldRepeater(step)
+		this.holds.set(id, repeater)
+		repeater.start()
+	}
+
+	override onKeyUp(ev: KeyUpEvent<S>): void {
+		this.holds.get(ev.action.id)?.stop()
 	}
 
 	/** Registrations expire after 10 s and start() clears them, so every visible instance re-registers on each tick. */

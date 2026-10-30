@@ -1,16 +1,17 @@
-import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent, type KeyUpEvent } from '@elgato/streamdeck'
+import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import { channelName, channelParameter, gainNormalized, gainText, globalParameter, globalParameterText, hasCapability } from '../readers.js'
 import { renderValueKey, renderValueStrip } from '../render/keys.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
-import { HoldRepeater } from '../runtime/hold.js'
 import { BLUE, ToggleAction, type Spec } from './channel-toggles.js'
 import { ALL, BUS_NAME, channelOf, int, num, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
 const MODES = { set: 1, step: 1 }
 const SETUP_KEY = renderValueKey({ title: '', value: '', overlay: 'setup' })
+const CONFIG_KEY = renderValueKey({ title: '', value: '', overlay: 'config' })
+const CONFIG_STRIP = renderValueStrip({ title: '', value: '', overlay: 'config' })
 const SETUP_STRIP = renderValueStrip({ title: '', value: '', overlay: 'setup' })
 
 // Global OSC value range of the Companion set_global_fx_parameter action; it has no per-parameter ranges.
@@ -74,24 +75,10 @@ const stepOf = (v: unknown, fallback: number): number => {
 	return Number.isFinite(n) ? n : fallback
 }
 
-abstract class KeyAction extends TotalMixAction<JsonObject> {
-	/** Steps once now and keeps repeating until key-up or the action disappears. */
-	protected hold(id: string, step: () => void): void {
-		this.holds.get(id)?.stop()
-		const repeater = new HoldRepeater(step)
-		this.holds.set(id, repeater)
-		repeater.start()
-	}
-
-	override onKeyUp(ev: KeyUpEvent<JsonObject>): void {
-		this.holds.get(ev.action.id)?.stop()
-	}
-}
-
 const inputName = (c: TotalMixConnection, input: number) => channelName(c, { bus: 'input', index: input }) || `${BUS_NAME.input} ${input + 1}`
 
 @action({ UUID: ID + 'gain' })
-export class GainAction extends KeyAction {
+export class GainAction extends TotalMixAction<JsonObject> {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const input = int(s.channel, 0)
 		if (input === undefined) return SETUP_KEY
@@ -155,6 +142,7 @@ export class GainDialAction extends TotalMixAction<JsonObject> {
 const EFFECTS = { reverbEnable: 'REVERB', echoEnable: 'ECHO' }
 @action({ UUID: ID + 'global-fx' })
 export class GlobalFxAction extends ToggleAction {
+	protected override readonly setupOverlay = 'config'
 	protected spec(s: JsonObject): Spec | undefined {
 		const effect = pick(s.effect, EFFECTS)
 		if (!effect) return undefined
@@ -170,7 +158,7 @@ export class GlobalFxAction extends ToggleAction {
 }
 
 @action({ UUID: ID + 'fx-param' })
-export class FxParamAction extends KeyAction {
+export class FxParamAction extends TotalMixAction<JsonObject> {
 	private valid(s: JsonObject) {
 		const parameter = pick(s.parameter, FX_PARAMS)
 		const mode = pick(s.mode, MODES)
@@ -180,7 +168,7 @@ export class FxParamAction extends KeyAction {
 
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const v = this.valid(s)
-		if (!v) return SETUP_KEY
+		if (!v) return CONFIG_KEY
 		const overlay = hasCapability(this.connection, 'globalFx') ? ctx.overlay : 'unsupported'
 		return renderValueKey({ title: FX_PARAMS[v.parameter], value: globalParameterText(this.connection, v.parameter), overlay })
 	}
@@ -212,7 +200,7 @@ export class FxParamAction extends KeyAction {
 export class FxParamDialAction extends TotalMixAction<JsonObject> {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const parameter = pick(s.parameter, FX_PARAMS)
-		if (!parameter) return SETUP_STRIP
+		if (!parameter) return CONFIG_STRIP
 		const overlay = hasCapability(this.connection, 'globalFx') ? ctx.overlay : 'unsupported'
 		return renderValueStrip({ title: FX_PARAMS[parameter], value: globalParameterText(this.connection, parameter), overlay })
 	}

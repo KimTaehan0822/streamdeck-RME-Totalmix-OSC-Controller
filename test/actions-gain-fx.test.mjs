@@ -169,16 +169,16 @@ test('processing-param sets the channel parameter', async () => {
 	conn.stop()
 })
 
-for (const [name, Action, s] of [
-	['gain', GainAction, {}],
-	['global-fx', GlobalFxAction, {}],
-	['fx-param', FxParamAction, { parameter: 'reverbVolume' }],
-	['processing-param', ProcessingParamAction, { row: 'input', channel: 0, parameter: 'nope', value: 1 }],
+for (const [name, Action, s, hint] of [
+	['gain', GainAction, {}, /CHANNEL/],
+	['global-fx', GlobalFxAction, {}, /SETUP/],
+	['fx-param', FxParamAction, { parameter: 'reverbVolume' }, /SETUP/],
+	['processing-param', ProcessingParamAction, { row: 'input', channel: 0, parameter: 'nope', value: 1 }, /CHANNEL/],
 ]) {
 	test(`${name} with invalid settings renders setup and sends nothing`, async () => {
 		const { conn, sent } = setup()
 		const before = sent.length
-		assert.match(await pressKey(Action, conn, s), /CHANNEL/)
+		assert.match(await pressKey(Action, conn, s), hint)
 		assert.equal(sent.length, before)
 		conn.stop()
 	})

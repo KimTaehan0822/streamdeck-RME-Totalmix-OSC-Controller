@@ -1,4 +1,4 @@
-import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent, type KeyUpEvent, type TouchTapEvent, type WillDisappearEvent } from '@elgato/streamdeck'
+import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent, type TouchTapEvent, type WillDisappearEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import type { FaderUnit, TotalMixController } from '../protocol/controller.js'
@@ -8,7 +8,6 @@ import { renderValueKey } from '../render/keys.js'
 import { renderButtonFader, renderVuStrip, type FaderRole, type MeterView } from '../render/meter.js'
 import { fitText, frame, outlinedText } from '../render/svg.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
-import { HoldRepeater } from '../runtime/hold.js'
 import { FADER_PEEK_MS, faderAdjustedRecently, markFaderAdjusted } from '../state/fader-peek.js'
 import { ALL, BUS_NAME, channelOf as settingsChannel, num, pick } from './common.js'
 
@@ -87,17 +86,6 @@ abstract class FaderFamilyAction extends TotalMixAction<JsonObject> {
 		this.peekTimers.set(id, timer)
 	}
 
-	/** Steps once now and keeps repeating until key-up or the action disappears. */
-	protected hold(id: string, step: () => void): void {
-		this.holds.get(id)?.stop()
-		const repeater = new HoldRepeater(step)
-		this.holds.set(id, repeater)
-		repeater.start()
-	}
-
-	override onKeyUp(ev: KeyUpEvent<JsonObject>): void {
-		this.holds.get(ev.action.id)?.stop()
-	}
 }
 
 abstract class DialAction extends FaderFamilyAction {
