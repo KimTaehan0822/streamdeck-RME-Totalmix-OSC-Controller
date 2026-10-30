@@ -25,6 +25,7 @@ export interface ConnectionDeps {
 
 const OFFLINE_AFTER_MS = 10_000
 const TARGET_TTL_MS = 10_000
+const ERROR_RETRY_MS = 5000
 
 export class TotalMixConnection {
 	private _controller: TotalMixController
@@ -37,6 +38,8 @@ export class TotalMixConnection {
 	private lastMessageAt = 0
 	private lastStatusRequestAt = 0
 	private syncTimeoutMs = 1000
+	private current?: ConnectionSettings
+	private errorSince?: number
 	private readonly now: () => number
 	private readonly createTransport: NonNullable<ConnectionDeps['createTransport']>
 	private readonly setIntervalFn: NonNullable<ConnectionDeps['setInterval']>
@@ -79,6 +82,8 @@ export class TotalMixConnection {
 
 	start(settings: ConnectionSettings): void {
 		this.stop()
+		this.current = settings
+		this.errorSince = undefined
 		this.syncTimeoutMs = settings.syncTimeoutMs
 		this._status = 'connecting'
 		const controller = (this._controller = this.createController())
@@ -205,6 +210,11 @@ export class TotalMixConnection {
 
 	private monitorConnection(): void {
 		const now = this.now()
+		// A bind error (e.g. the port is still held by another app) never recovers by itself; retry with the same settings.
+		if (this._status === 'error') {
+			this.errorSince ??= now
+			if (this.current && now - this.errorSince >= ERROR_RETRY_MS) return this.start(this.current)
+		} else this.errorSince = undefined
 		const age = this.lastMessageAt ? now - this.lastMessageAt : Number.POSITIVE_INFINITY
 		if (age > 2000 && now - this.lastStatusRequestAt > 2000) {
 			this.lastStatusRequestAt = now

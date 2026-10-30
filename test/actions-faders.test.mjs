@@ -19,12 +19,13 @@ function setup() {
 }
 
 /** Fake key or dial; images collects what was drawn. */
-function fake(id, dial, s) {
+function fake(id, dial, s, multi = false) {
 	const images = []
 	const action = {
 		id,
 		isDial: () => dial,
 		isKey: () => !dial,
+		isInMultiAction: () => multi,
 		setImage: async (image) => void images.push(decodeURIComponent(image)),
 		setFeedback: async ({ canvas }) => void images.push(decodeURIComponent(canvas)),
 		setFeedbackLayout: async () => {},
@@ -101,20 +102,52 @@ test('button-fader key-up stops repeating; bottom lowers, top raises', async () 
 	conn.stop()
 })
 
+test('button-fader inside a multi-action steps once and does not repeat', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/output/3/faderlin', 0.5)
+	const count = () => sent.filter((m) => m.address === '/output/3/faderlin').length
+	const key = new ButtonFaderAction(conn)
+	const k = fake('k1', false, { row: 'output', channel: 3, role: 'bottom' }, true)
+	await key.onWillAppear(k.appear)
+	const before = count()
+	key.onKeyDown(k.ev())
+	await wait(600)
+	assert.equal(count(), before + 1)
+	await key.onWillDisappear(k.appear)
+	conn.stop()
+})
+
+test('valid channel with a missing role or destination shows SETUP, a missing channel shows CHANNEL', async () => {
+	const { conn } = setup()
+	for (const [Action, dial, s, hint] of [
+		[ButtonFaderAction, false, { row: 'output', channel: 1, role: 'middle' }, 'SETUP'],
+		[VuDialAction, true, { row: 'input', channel: 1 }, 'SETUP'],
+		[ButtonFaderAction, false, { row: 'output', role: 'top' }, 'CHANNEL'],
+	]) {
+		const f = fake('x', dial, s)
+		const action = new Action(conn)
+		await action.onWillAppear(f.appear)
+		await wait()
+		assert.match(f.images.at(-1), new RegExp(`>${hint}<`))
+		await action.onWillDisappear(f.appear)
+	}
+	conn.stop()
+})
+
 test('incomplete or invalid settings render setup and send nothing', async () => {
 	const { conn, sent } = setup()
-	for (const [Action, dial, s] of [
-		[VuDialAction, true, {}],
-		[ButtonFaderAction, false, { row: 'output', channel: 1, role: 'middle' }],
-		[FaderAction, false, { row: 'output', channel: 1, mode: 'set', value: 'abc' }],
-		[FaderAction, false, { row: 'input', channel: 1, mode: 'set', value: 0 }], // no destination
-		[PanDialAction, true, { row: 'output' }],
+	for (const [Action, dial, s, hint] of [
+		[VuDialAction, true, {}, 'CHANNEL'],
+		[ButtonFaderAction, false, { row: 'output', channel: 1, role: 'middle' }, 'SETUP'],
+		[FaderAction, false, { row: 'output', channel: 1, mode: 'set', value: 'abc' }, 'CHANNEL'],
+		[FaderAction, false, { row: 'input', channel: 1, mode: 'set', value: 0 }, 'CHANNEL'], // no destination
+		[PanDialAction, true, { row: 'output' }, 'CHANNEL'],
 	]) {
 		const action = new Action(conn)
 		const f = fake('x', dial, s)
 		await action.onWillAppear(f.appear)
 		await wait()
-		assert.match(f.images.at(-1), /CHANNEL/)
+		assert.match(f.images.at(-1), new RegExp(`${hint}`))
 		action.onKeyDown?.(f.ev())
 		action.onDialRotate?.(f.ev({ ticks: 1 }))
 		await action.onDialDown?.(f.ev())

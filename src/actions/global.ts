@@ -170,7 +170,7 @@ export class RoomEqAction extends ToggleAction {
 	protected override setupHint = channelHint(['output'])
 	protected spec(s: JsonObject): Spec | undefined {
 		const t = channelOf(s, ['output'])
-		const side = pick(s.side, SIDES)
+		const side = pick(s.side ?? 'left', SIDES)
 		if (!t || !side) return undefined
 		const c = this.connection
 		return {
@@ -202,7 +202,7 @@ export class RoomEqParamAction extends ToggleAction {
 	protected override setupHint = channelHint(['output'])
 	protected spec(s: JsonObject): Spec | undefined {
 		const t = channelOf(s, ['output'])
-		const side = pick(s.side, SIDES)
+		const side = pick(s.side ?? 'left', SIDES)
 		const parameter = pick(s.parameter, ROOM_EQ_PARAMS)
 		const value = num(s.value)
 		if (!t || !side || !parameter || !Number.isFinite(value)) return undefined

@@ -91,14 +91,14 @@
 					else if (f === 'name') html += text('name', 'New name', 'Name to set on press')
 				}
 				root.innerHTML = html
-				root.querySelector('[setting="mode"]')?.addEventListener('change', (e) => {
+				root.querySelector('[setting="mode"]')?.addEventListener('valuechange', (e) => {
 					if (e.target.value !== mode) {
 						mode = e.target.value
 						draw()
 					}
 				})
 				// A new row needs a new channel list; the saved channel belongs to the old row.
-				root.querySelector('[setting="row"]')?.addEventListener('change', async (e) => {
+				root.querySelector('[setting="row"]')?.addEventListener('valuechange', async (e) => {
 					if (e.target.value === row) return
 					row = e.target.value
 					const current = (await client.getSettings()).settings ?? {}

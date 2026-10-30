@@ -1,6 +1,7 @@
 import {
 	SingletonAction,
 	type DidReceiveSettingsEvent,
+	type KeyDownEvent,
 	type KeyUpEvent,
 	type WillAppearEvent,
 	type WillDisappearEvent,
@@ -47,6 +48,7 @@ export abstract class TotalMixAction<S extends JsonObject> extends SingletonActi
 				else if (action.isKey()) await action.setImage(image)
 			} catch (error) {
 				console.error(error instanceof Error ? error.message : String(error))
+				throw error // Redrawer forgets the image and retries
 			}
 		})
 		this.instances.set(action.id, { action, settings: ev.payload.settings, redrawer })
@@ -75,8 +77,10 @@ export abstract class TotalMixAction<S extends JsonObject> extends SingletonActi
 		if (this.instances.size === 0) this.stop()
 	}
 
-	/** Steps once now and keeps repeating until key-up or the action disappears. */
-	protected hold(id: string, step: () => void): void {
+	/** Steps once now and keeps repeating until key-up or the action disappears. A multi-action never gets willDisappear or a reliable key-up, so it steps once. */
+	protected hold(action: KeyDownEvent<S>['action'], step: () => void): void {
+		if (action.isInMultiAction()) return step()
+		const id = action.id
 		this.holds.get(id)?.stop()
 		const repeater = new HoldRepeater(step)
 		this.holds.set(id, repeater)

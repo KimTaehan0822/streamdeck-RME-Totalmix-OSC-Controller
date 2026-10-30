@@ -27,6 +27,7 @@ async function pressKey(Action, conn, s) {
 		id: 'a1',
 		isDial: () => false,
 		isKey: () => true,
+		isInMultiAction: () => false,
 		setImage: async (image) => void images.push(decodeURIComponent(image)),
 	}
 	const ev = { action, payload: { settings: s } }
@@ -139,6 +140,16 @@ test('durec-channel, room-eq and room-eq-param are lit when armed, on or equal',
 	await pressKey(RoomEqParamAction, f.conn, { channel: '2', side: 'left', parameter: 'reqGain3', value: '150' })
 	assert.doesNotMatch(firstImage, BLUE)
 	f.conn.stop()
+})
+
+test('room-eq keys without a saved side default to left', async () => {
+	const { conn, sent } = setup()
+	const image = await pressKey(RoomEqAction, conn, { channel: '2', operation: 'on' })
+	assert.doesNotMatch(image, />SETUP</)
+	assert.deepEqual(sent.filter((m) => m.address.includes('roomeq')), [{ address: '/output/2/roomeq/enable', args: [1] }])
+	await pressKey(RoomEqParamAction, conn, { channel: '2', parameter: 'reqGain3', value: '150' })
+	assert.deepEqual(sent.at(-1), { address: '/output/2/roomeq/band3gain', args: [150] })
+	conn.stop()
 })
 
 test('room-eq side right targets output+1 and both sends to two outputs', async () => {

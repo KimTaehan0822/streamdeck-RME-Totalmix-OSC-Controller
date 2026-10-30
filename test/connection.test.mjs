@@ -52,6 +52,24 @@ test('start sends the Global OSC initial state request on listening', async () =
 	conn.stop()
 })
 
+test('a bind error is retried with the same settings after 5 s', async () => {
+	const { conn, events, transports, advance, monitor } = setup()
+	conn.start(settings)
+	transports[0].onError(new Error('EADDRINUSE'))
+	assert.equal(conn.status, 'error')
+	advance(1000)
+	monitor() // first sighting of the error
+	advance(3000)
+	monitor()
+	assert.equal(transports.length, 1)
+	advance(2000)
+	monitor()
+	assert.equal(transports.length, 2)
+	assert.equal(conn.status, 'connecting')
+	assert.deepEqual(events.slice(-2), ['close#1', 'start#2'])
+	conn.stop()
+})
+
 test('becomes connected on the first message', async () => {
 	const { conn, transports } = setup()
 	let changes = 0

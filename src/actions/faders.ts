@@ -17,6 +17,8 @@ const MODES = { set: 1, step: 1 }
 // The PI offers "linear"; the controller calls the same thing "normalized".
 const UNITS: Record<string, FaderUnit> = { db: 'db', linear: 'normalized' }
 const EMPTY: MeterView = { name: '', left: 0, right: 0, faderDb: '', levelDb: '', muted: false, peek: false, overlay: 'setup' }
+/** SET CHANNEL only when the channel itself is missing; any other missing field is a SETUP hint. */
+const emptyFor = (s: JsonObject): MeterView => (settingsChannel(s, ALL) ? { ...EMPTY, overlay: 'config' } : EMPTY)
 
 /** Input/playback rows are a source plus the destination output; the output row is the output itself. Undefined = incomplete settings. */
 function targetOf(s: JsonObject): MixTarget | undefined {
@@ -107,7 +109,7 @@ abstract class DialAction extends FaderFamilyAction {
 export class VuDialAction extends DialAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
-		return renderVuStrip(t ? this.meter(t, ctx.overlay) : EMPTY)
+		return renderVuStrip(t ? this.meter(t, ctx.overlay) : emptyFor(s))
 	}
 
 	protected rotate(id: string, t: MixTarget, ev: DialRotateEvent<JsonObject>): void {
@@ -132,7 +134,7 @@ export class ButtonFaderAction extends FaderFamilyAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
 		const role = pick(s.role, ROLES)
-		return t && role ? renderButtonFader(this.meter(t, ctx.overlay), role) : renderButtonFader(EMPTY, 'top')
+		return t && role ? renderButtonFader(this.meter(t, ctx.overlay), role) : renderButtonFader(emptyFor(s), 'top')
 	}
 
 	override onKeyDown(ev: KeyDownEvent<JsonObject>): void {
@@ -141,7 +143,7 @@ export class ButtonFaderAction extends FaderFamilyAction {
 		const role = pick(s.role, ROLES)
 		if (!t || !role) return
 		const amount = role === 'top' || role === 'right' ? 1 : -1
-		this.hold(ev.action.id, () => this.apply(ev.action.id, t, true, (c) => adjustFader(c, t, amount, 'db')))
+		this.hold(ev.action, () => this.apply(ev.action.id, t, true, (c) => adjustFader(c, t, amount, 'db')))
 	}
 }
 
@@ -166,7 +168,7 @@ abstract class ValueKeyAction extends FaderFamilyAction {
 		if (!t || !this.valid(s)) return
 		const value = num(s.value)
 		if (s.mode === 'set') this.send(ev.action.id, t, true, value, s)
-		else this.hold(ev.action.id, () => this.send(ev.action.id, t, false, value, s))
+		else this.hold(ev.action, () => this.send(ev.action.id, t, false, value, s))
 	}
 }
 

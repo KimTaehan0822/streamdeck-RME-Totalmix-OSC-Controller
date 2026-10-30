@@ -41,7 +41,7 @@
 				if (kind.step) html += `<sdpi-item label="Step per tick"><sdpi-textfield setting="step" default="5" placeholder="5"></sdpi-textfield></sdpi-item>`
 				fields.innerHTML = html
 				// A new row needs a new channel list; the saved channel belongs to the old row.
-				fields.querySelector('[setting="row"]').addEventListener('change', async (e) => {
+				fields.querySelector('[setting="row"]').addEventListener('valuechange', async (e) => {
 					if (e.target.value === row) return
 					row = e.target.value
 					const current = (await client.getSettings()).settings ?? {}

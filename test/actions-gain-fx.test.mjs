@@ -18,12 +18,13 @@ function setup() {
 }
 
 /** Fake key or dial; images collects what was drawn. */
-function fake(dial, s) {
+function fake(dial, s, multi = false) {
 	const images = []
 	const action = {
 		id: 'a1',
 		isDial: () => dial,
 		isKey: () => !dial,
+		isInMultiAction: () => multi,
 		setImage: async (image) => void images.push(decodeURIComponent(image)),
 		setFeedback: async ({ canvas }) => void images.push(decodeURIComponent(canvas)),
 		setFeedbackLayout: async () => {},
@@ -50,6 +51,19 @@ test('gain key steps the gain by the configured dB', async () => {
 	msg('/input/2/gain', 10)
 	await pressKey(GainAction, conn, { channel: '2', step: '-2' })
 	assert.deepEqual(sent.at(-1), { address: '/input/2/gain', args: [8] })
+	conn.stop()
+})
+
+test('gain key inside a multi-action steps once and does not repeat', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/input/2/gain', 10)
+	const action = new GainAction(conn)
+	const key = fake(false, { channel: '2', step: '-2' }, true)
+	await action.onWillAppear(key.appear)
+	await action.onKeyDown(key.ev())
+	await wait(600)
+	assert.equal(sent.filter((m) => m.address === '/input/2/gain').length, 1)
+	await action.onWillDisappear(key.appear)
 	conn.stop()
 })
 

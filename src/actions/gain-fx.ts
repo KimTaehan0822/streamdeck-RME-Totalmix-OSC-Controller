@@ -98,7 +98,7 @@ export class GainAction extends TotalMixAction<JsonObject> {
 		const input = int(s.channel, 0)
 		if (input === undefined || !hasCapability(this.connection, 'gain', input)) return
 		const step = stepOf(s.step, 1)
-		this.hold(ev.action.id, () => void this.connection.run((c) => c.adjustInputGain(input, step)))
+		this.hold(ev.action, () => void this.connection.run((c) => c.adjustInputGain(input, step)))
 	}
 }
 
@@ -192,7 +192,7 @@ export class FxParamAction extends TotalMixAction<JsonObject> {
 			void this.connection.run((c) => c.setGlobalFxParameter(v.parameter, clampFx(target)))
 		}
 		if (v.mode === 'set') send()
-		else this.hold(ev.action.id, send)
+		else this.hold(ev.action, send)
 	}
 }
 

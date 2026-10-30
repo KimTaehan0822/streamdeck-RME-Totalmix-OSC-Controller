@@ -59,16 +59,19 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 - Group: 그룹 설정/토글
 - Channel name: 채널 이름 설정
 
-**페이더 / 값 조절 키** (누르고 있으면 반복됩니다)
-- Button Fader: 두 키로 페이더 올리기/내리기 프리셋
-- Fader: 페이더를 정한 값으로 설정
-- Pan: 팬 설정
-- Input gain: 입력 게인 올리기/내리기
-- Global FX (Reverb / Echo), FX parameter: 글로벌 FX 켜기/끄기와 파라미터
+**페이더 / 값 조절 키**
+- Button Fader: 두 키로 페이더 올리기/내리기 프리셋 (누르고 있으면 반복)
+- Fader: 페이더를 정한 값으로 설정(Set) 하거나 정한 값만큼 올리기/내리기(Step, 누르고 있으면 반복)
+- Pan: 팬 설정 또는 Step으로 조절 (Step은 누르고 있으면 반복)
+- Input gain: 입력 게인 올리기/내리기 (누르고 있으면 반복)
+- Global FX (Reverb / Echo): 글로벌 FX 켜기/끄기
+- FX parameter: FX 파라미터 설정 또는 Step으로 조절 (Step은 누르고 있으면 반복)
 - Channel processing parameter: 채널 프로세싱 파라미터 설정
 
+반복이 멈추지 않으면 그 키를 한 번 더 누르면 멈춥니다. Multi Action 안에서는 반복하지 않고 한 번만 동작합니다.
+
 **다이얼 (Stream Deck +)**
-- VU Dial: 돌리면 페이더 ±1 dB, 누르면 뮤트, 레벨 미터 표시. **Touch to mute** 옵션(기본 켜짐)을 끄면 화면 터치로는 뮤트되지 않습니다.
+- VU Dial: 돌리면 페이더 ±1 dB, 누르면 뮤트, 레벨 미터 표시. **Touch tap mutes** 옵션(기본 켜짐)을 끄면 화면 터치로는 뮤트되지 않습니다.
 - Pan Dial: 돌리면 팬, 누르면 가운데
 - Gain Dial: 돌리면 게인, 누르면 AutoSet
 - FX Parameter Dial: 돌리면 FX 파라미터, 누르면 초기값

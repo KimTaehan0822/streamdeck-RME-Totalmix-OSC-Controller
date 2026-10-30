@@ -20,7 +20,7 @@ function setup() {
 /** Minimal ev.action: a key that records the images it was given. */
 function fakeKey(settings) {
 	const images = []
-	const action = { id: 'k1', isDial: () => false, isKey: () => true, setImage: async (image) => void images.push(decodeURIComponent(image)) }
+	const action = { id: 'k1', isDial: () => false, isKey: () => true, isInMultiAction: () => false, setImage: async (image) => void images.push(decodeURIComponent(image)) }
 	return {
 		images,
 		appear: { action, payload: { settings } },
