@@ -1,0 +1,50 @@
+import { KEY, fitText, frame, outlinedText, type Overlay } from './svg.js'
+
+const WHITE = '#fff'
+
+export interface ToggleKeyView {
+	title: string
+	label?: string
+	on: boolean
+	onColor: string
+	overlay: Overlay
+}
+
+export function renderToggleKey(v: ToggleKeyView): string {
+	let body = `<rect width="${KEY}" height="${KEY}" fill="${v.on ? v.onColor : '#000'}"/>`
+	body += outlinedText(72, v.label ? 62 : 82, fitText(v.title, 26), { size: 26, fill: WHITE })
+	if (v.label) body += outlinedText(72, 104, fitText(v.label, 26), { size: 26, fill: WHITE })
+	return frame(KEY, KEY, body, v.overlay)
+}
+
+export interface ValueKeyView {
+	title: string
+	value: string
+	bar?: number
+	overlay: Overlay
+}
+
+export function renderValueKey(v: ValueKeyView): string {
+	let body = outlinedText(72, 40, fitText(v.title, 26), { size: 26, fill: WHITE })
+	body += outlinedText(72, 90, fitText(v.value, 34), { size: 34, fill: WHITE })
+	if (v.bar !== undefined) {
+		const w = Math.round(Math.min(1, Math.max(0, v.bar)) * 124)
+		body += `<rect x="10" y="108" width="124" height="14" fill="#333"/><rect x="10" y="108" width="${w}" height="14" fill="rgb(40,140,255)"/>`
+	}
+	return frame(KEY, KEY, body, v.overlay)
+}
+
+export interface SnapshotKeyView {
+	number: number | undefined
+	active: boolean
+	mode: 'recall' | 'show'
+	overlay: Overlay
+}
+
+export function renderSnapshotKey(v: SnapshotKeyView): string {
+	const n = v.number === undefined ? '?' : String(v.number)
+	let body = `<rect width="${KEY}" height="${KEY}" fill="${v.active ? 'rgb(0,65,72)' : '#000'}"/>`
+	body += outlinedText(72, 40, v.mode === 'show' ? 'SNAPSHOT' : 'RECALL', { size: 22, fill: WHITE })
+	body += outlinedText(72, 104, n, { size: 56, fill: v.active ? 'rgb(0,205,215)' : WHITE })
+	return frame(KEY, KEY, body, v.overlay)
+}
