@@ -1,5 +1,5 @@
 import { dbToBar } from '../protocol/fader-curve.js'
-import { KEY, fitText, frame, plainText, type Overlay } from './svg.js'
+import { KEY, fitSize, fitText, frame, plainText, type Overlay } from './svg.js'
 
 // Ported from the Companion module's "Fader + VU meter" dial and two-key button fader presets (src/presets.ts).
 // Companion lays elements out in 0–100 units of the canvas; Scale.sx/sy convert those units to SVG pixels.
@@ -153,16 +153,17 @@ export function renderButtonFader(v: MeterView, role: FaderRole): string {
 
 	// Text rows per role (centre y in units): name, fader dB, level dB; name stays when muted, the dB values hide
 	const size = 20 * u
-	const text = (t: string, cy: number, fill = WHITE, maxWidth = KEY) => plainText(KEY / 2, base(cy * u, size), fitText(t, size, maxWidth), { size, fill })
+	const text = (t: string, cy: number, fill = WHITE, maxWidth = KEY, s = size) => plainText(KEY / 2, base(cy * u, s), fitText(t, s, maxWidth), { size: s, fill })
 	const rows: [string, number][] = vertical
 		? high
 			? [['name', 11], ['value', 33]]
 			: [['level', 83]]
 		: high
-			? [['value', 12]]
+			? [['value', 83]]
 			: [['name', 12], ['level', 83]]
 	for (const [kind, cy] of rows) {
-		if (kind === 'name') body += text(v.name, cy, WHITE, KEY - 8)
+		// Long names shrink (down to 10 units) to fit the key rather than being cut.
+		if (kind === 'name') body += text(v.name, cy, WHITE, KEY - 8, fitSize(v.name, size, KEY - 8, 10 * u))
 		else if (!v.muted) body += text(kind === 'value' ? v.faderDb : v.levelDb, cy)
 	}
 	// MUTED (or briefly the fader dB) sits in the bottom row of the bottom / right key

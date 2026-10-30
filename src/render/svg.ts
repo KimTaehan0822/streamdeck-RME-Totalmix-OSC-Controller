@@ -47,6 +47,12 @@ export function fitText(text: string, size: number, maxWidth = KEY - 8): string 
 	return out + '…'
 }
 
+/** Font size at which text fits maxWidth, never above size nor below min (fitText still cuts what min cannot fit). */
+export function fitSize(text: string, size: number, maxWidth: number, min: number): number {
+	const width = Array.from(text).reduce((w, c) => w + charWidth(c, size), 0)
+	return width <= maxWidth ? size : Math.max(min, Math.floor((size * maxWidth) / width))
+}
+
 export function frame(width: number, height: number, body: string, overlay: Overlay): string {
 	const cx = width / 2
 	const cy = height / 2

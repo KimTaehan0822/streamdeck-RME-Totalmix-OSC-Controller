@@ -81,3 +81,18 @@ test('strip bar geometry and horizontal roles', () => {
 	assert.equal(fills(renderButtonFader(view({ left: 0.75 }), 'left'))[0][2], 135.36)
 	assert.equal(fills(renderButtonFader(view({ left: 0.75 }), 'right'))[0][2], 67.68)
 })
+
+test('right key shows the fader value in its bottom row, level row of the left key', () => {
+	const svg = renderButtonFader(view({ faderDb: '-6.0 dB' }), 'right')
+	const y = Number(/<text x="[\d.]+" y="([\d.]+)"[^>]*>-6\.0 dB</.exec(svg)?.[1])
+	assert.ok(y > 100, `value baseline ${y} should sit in the bottom row`)
+})
+
+test('long names shrink to fit the key instead of being cut', () => {
+	for (const role of ['left', 'top']) {
+		const svg = save(`long-${role}`, renderButtonFader(view({ name: 'Analog 1/2 Mic' }), role))
+		assert.ok(svg.includes('>Analog 1/2 Mic<'), role)
+		const size = Number(/font-size="([\d.]+)"[^>]*>Analog 1\/2 Mic</.exec(svg)?.[1])
+		assert.ok(size < 28.8, `${role} name size ${size}`)
+	}
+})
