@@ -234,3 +234,27 @@ test('Repeated Global OSC metadata does not trigger another definition revision'
 	controller.handleMessage({ address: '/input/0/name', args: ['Vocal'] })
 	assert.equal(controller.state.discoveryRevision, revision + 1)
 })
+
+test('Global OSC solo toggle without a reported PFL state assumes off and then flips', async () => {
+	// TotalMix's /sendchan dump carries no pfl, so waiting for it never ends.
+	const sent = []
+	const controller = createController(async (address, ...args) => sent.push({ address, args }))
+	await controller.setSolo({ bus: 'input', index: 0 }, 'toggle')
+	await controller.setSolo({ bus: 'input', index: 0 }, 'toggle')
+	assert.deepEqual(sent, [
+		{ address: '/input/0/pfl', args: [1] },
+		{ address: '/input/0/pfl', args: [0] },
+	])
+})
+
+test('Global OSC option toggle that TotalMix never reports assumes off and then flips', async () => {
+	// Instrument and AutoSet (and 48V on some inputs) are missing from TotalMix's channel dump.
+	const sent = []
+	const controller = createController(async (address, ...args) => sent.push({ address, args }))
+	await controller.setChannelOption({ bus: 'input', index: 4 }, 'instrument', 'toggle')
+	await controller.setChannelOption({ bus: 'input', index: 4 }, 'instrument', 'toggle')
+	assert.deepEqual(sent.filter((m) => !m.address.startsWith('/sendchan')), [
+		{ address: '/input/4/instrument', args: [1] },
+		{ address: '/input/4/instrument', args: [0] },
+	])
+})

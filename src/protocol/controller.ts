@@ -887,10 +887,14 @@ export class TotalMixController {
 	async setChannelOption(target: MixerChannelTarget, parameter: string, operation: BinaryOperation): Promise<void> {
 		return this.queue.run(async () => {
 			let current = this.state.getChannelParameter<boolean>(target, parameter)
+			// Global OSC dumps leave some switches out (instrument, autoset, …); an unreported one is off.
+			const assumeOff = this.isGlobalOsc && page2ToggleParameters.has(parameter)
 			if (!this.isUsable(current)) {
-				await this.syncChannelParameterInternal(target, parameter)
+				const sync = this.syncChannelParameterInternal(target, parameter)
+				await (assumeOff ? sync.catch(() => undefined) : sync)
 				current = this.state.getChannelParameter<boolean>(target, parameter)
 			}
+			if (current.value === undefined && assumeOff) current = { ...current, value: false }
 			if (current.value === undefined) throw new Error(`No ${parameter} state received from TotalMix`)
 			const desired = operation === 'on' || (operation === 'toggle' && !current.value)
 			if (current.value === desired) return
@@ -1078,6 +1082,9 @@ export class TotalMixController {
 	private async setBinary(target: SourceTarget, operation: BinaryOperation, kind: 'mute' | 'solo'): Promise<void> {
 		return this.queue.run(async () => {
 			let current = this.state.getChannel(target)[kind]
+			// Global OSC channel dumps carry no pfl, so an unreported solo is off rather than unknown.
+			if (operation === 'toggle' && kind === 'solo' && this.isGlobalOsc && !this.isUsable(current))
+				current = { ...current, value: current.value ?? false, quality: 'optimistic' }
 			if (operation === 'toggle' && !this.isUsable(current)) {
 				if (this.isGlobalOsc) await this.sendOsc(`/sendchan/${target.bus}/${target.index}`, 1)
 				else {
