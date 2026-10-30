@@ -1,12 +1,13 @@
 import { action, type KeyDownEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
+import type { MixerBus } from '../model/device-profile.js'
 import type { RoomEqSide } from '../protocol/controller.js'
 import { activeSnapshot, channelName, globalParameter, globalParameterText, hasCapability, roomEqParameter } from '../readers.js'
 import { renderSnapshotKey, renderValueKey } from '../render/keys.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
 import { BLUE, RED, ToggleAction, type Spec } from './channel-toggles.js'
-import { ALL, channelOf, int, num, pick } from './common.js'
+import { ALL, BUS_NAME, channelOf, int, num, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
 const NEUTRAL = 'rgb(70,70,70)'
@@ -157,12 +158,16 @@ export class WindowAction extends CommandAction {
 	}
 }
 
+/** SET CHANNEL only when the channel itself is missing; any other missing field is a SETUP hint. */
+const channelHint = (rows: MixerBus[]) => (s: JsonObject): 'setup' | 'config' => (channelOf(s, rows) ? 'config' : 'setup')
+
 const SIDES: Record<RoomEqSide, string> = { left: 'L', right: 'R', both: 'L+R' }
 const roomEqSupported = (c: TotalMixConnection) => () => hasCapability(c, 'roomEq')
 const outputTitle = (c: TotalMixConnection, index: number) => () => channelName(c, { bus: 'output', index }) || `Output ${index + 1}`
 
 @action({ UUID: ID + 'room-eq' })
 export class RoomEqAction extends ToggleAction {
+	protected override setupHint = channelHint(['output'])
 	protected spec(s: JsonObject): Spec | undefined {
 		const t = channelOf(s, ['output'])
 		const side = pick(s.side, SIDES)
@@ -194,6 +199,7 @@ for (let band = 1; band <= 9; band++) {
 
 @action({ UUID: ID + 'room-eq-param' })
 export class RoomEqParamAction extends ToggleAction {
+	protected override setupHint = channelHint(['output'])
 	protected spec(s: JsonObject): Spec | undefined {
 		const t = channelOf(s, ['output'])
 		const side = pick(s.side, SIDES)
@@ -214,12 +220,13 @@ export class RoomEqParamAction extends ToggleAction {
 
 @action({ UUID: ID + 'channel-name' })
 export class ChannelNameAction extends ToggleAction {
+	protected override setupHint = channelHint(ALL)
 	protected spec(s: JsonObject): Spec | undefined {
 		const t = channelOf(s, ALL)
 		const name = typeof s.name === 'string' ? s.name.trim() : ''
 		if (!t || !name) return undefined
 		return {
-			title: () => channelName(this.connection, t) || `${t.bus} ${t.index + 1}`,
+			title: () => channelName(this.connection, t) || `${BUS_NAME[t.bus]} ${t.index + 1}`,
 			label: `> ${name}`,
 			color: NEUTRAL,
 			read: () => false,

@@ -30,6 +30,10 @@ export abstract class ToggleAction extends TotalMixAction<JsonObject> {
 	protected abstract spec(s: JsonObject): Spec | undefined
 	/** 'config' for keys without a channel. */
 	protected readonly setupOverlay: 'setup' | 'config' = 'setup'
+	/** Which hint an incomplete key shows; override when a key can be missing something other than its channel. */
+	protected setupHint(_s: JsonObject): 'setup' | 'config' {
+		return this.setupOverlay
+	}
 
 	/** Boolean channel parameter shown as a key; the press goes through setChannelOption. */
 	protected option(t: MixerChannelTarget, parameter: string, label: string, color: string, supported?: () => boolean): Spec {
@@ -46,7 +50,7 @@ export abstract class ToggleAction extends TotalMixAction<JsonObject> {
 
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const spec = this.spec(s)
-		if (!spec) return renderToggleKey({ title: '', on: false, onColor: '#000', overlay: this.setupOverlay })
+		if (!spec) return renderToggleKey({ title: '', on: false, onColor: '#000', overlay: this.setupHint(s) })
 		const overlay = spec.supported && !spec.supported() ? 'unsupported' : ctx.overlay
 		return renderToggleKey({ title: spec.title(), label: spec.label, on: spec.read(), onColor: spec.color, overlay })
 	}
