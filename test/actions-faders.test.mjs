@@ -150,9 +150,31 @@ test('pan-dial press centres the pan', async () => {
 	await dial.onWillAppear(d.appear)
 	await dial.onDialDown(d.ev())
 	assert.deepEqual(sent.at(-1), { address: '/output/3/balpan', args: [0] })
+	const before = sent.length
 	dial.onDialRotate(d.ev({ ticks: 2 }))
 	await wait()
-	assert.ok(Math.abs(sent.at(-1).args[0] - 0.02 * 1) < 0.05) // centre plus 2 steps of 1 on the -1..1 scale
+	assert.equal(sent.length, before + 1)
+	// centred by the press; two default steps of 5 are 10 pan units = +0.1 on the -1..1 wire scale
+	assert.ok(Math.abs(sent.at(-1).args[0] - 0.1) < 1e-6)
 	await dial.onWillDisappear(d.appear)
+	conn.stop()
+})
+
+test('two button faders with different channels and roles render independently', async () => {
+	const { conn, msg } = setup()
+	msg('/output/1/name', 'Alpha')
+	msg('/output/2/name', 'Bravo')
+	const key = new ButtonFaderAction(conn)
+	const a = fake('a', false, { row: 'output', channel: 1, role: 'top' })
+	const b = fake('b', false, { row: 'output', channel: 2, role: 'bottom' })
+	await key.onWillAppear(a.appear)
+	await key.onWillAppear(b.appear)
+	await wait()
+	assert.match(a.images.at(-1), /Alpha/)
+	assert.doesNotMatch(a.images.at(-1), /Bravo/)
+	assert.doesNotMatch(b.images.at(-1), /Alpha/)
+	assert.notEqual(a.images.at(-1), b.images.at(-1))
+	await key.onWillDisappear(a.appear)
+	await key.onWillDisappear(b.appear)
 	conn.stop()
 })

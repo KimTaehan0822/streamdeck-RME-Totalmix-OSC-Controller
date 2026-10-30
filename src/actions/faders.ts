@@ -1,4 +1,4 @@
-import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent, type KeyUpEvent, type TouchTapEvent } from '@elgato/streamdeck'
+import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent, type KeyUpEvent, type TouchTapEvent, type WillDisappearEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import type { FaderUnit, TotalMixController } from '../protocol/controller.js'
@@ -10,7 +10,7 @@ import { fitText, frame, outlinedText } from '../render/svg.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
 import { HoldRepeater } from '../runtime/hold.js'
 import { FADER_PEEK_MS, faderAdjustedRecently, markFaderAdjusted } from '../state/fader-peek.js'
-import { ALL, BUS_NAME, channelOf as settingsChannel, num, pick } from './channel-toggles.js'
+import { ALL, BUS_NAME, channelOf as settingsChannel, num, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
 const ROLES: Record<FaderRole, unknown> = { top: 1, bottom: 1, left: 1, right: 1 }
@@ -39,6 +39,15 @@ const adjustPan = (c: TotalMixController, t: MixTarget, v: number) =>
 	t.row === 'output' ? c.adjustOutputPan(t.output, v) : c.adjustSubmixPan(route(t), v)
 
 abstract class FaderFamilyAction extends TotalMixAction<JsonObject> {
+	/** One pending peek redraw per action id; each fader step restarts it. */
+	private readonly peekTimers = new Map<string, NodeJS.Timeout>()
+
+	override onWillDisappear(ev: WillDisappearEvent<JsonObject>): void {
+		clearTimeout(this.peekTimers.get(ev.action.id))
+		this.peekTimers.delete(ev.action.id)
+		super.onWillDisappear(ev)
+	}
+
 	protected displayName(t: MixTarget): string {
 		const ch = t.row === 'output' ? { bus: 'output' as const, index: t.output } : { bus: t.row, index: t.source }
 		return channelName(this.connection, ch) || `${BUS_NAME[ch.bus]} ${ch.index + 1}`
@@ -72,7 +81,10 @@ abstract class FaderFamilyAction extends TotalMixAction<JsonObject> {
 		void this.connection.run(op)
 		if (!fader) return
 		markFaderAdjusted(stringifyPresetTarget(t))
-		setTimeout(() => this.refresh(id), FADER_PEEK_MS + 20).unref()
+		clearTimeout(this.peekTimers.get(id))
+		const timer = setTimeout(() => this.refresh(id), FADER_PEEK_MS + 20)
+		timer.unref()
+		this.peekTimers.set(id, timer)
 	}
 
 	/** Steps once now and keeps repeating until key-up or the action disappears. */
@@ -218,7 +230,7 @@ export class PanDialAction extends DialAction {
 
 	protected rotate(id: string, t: MixTarget, ev: DialRotateEvent<JsonObject>): void {
 		const step = num(ev.payload.settings.step)
-		this.apply(id, t, false, (c) => adjustPan(c, t, ev.payload.ticks * (step > 0 ? step : 1)))
+		this.apply(id, t, false, (c) => adjustPan(c, t, ev.payload.ticks * (step > 0 ? step : 5)))
 	}
 
 	protected press(t: MixTarget): Promise<void> {
