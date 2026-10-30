@@ -62,12 +62,12 @@ export interface ValueStripView {
 
 /** Dial strip (200x100): title, bar growing from the left, value. */
 export function renderValueStrip(v: ValueStripView): string {
-	let body = plainText(100, 28, fitText(v.title, 22, 192), { size: 22, fill: WHITE })
+	let body = plainText(100, 28, fitText(v.title, 21, 192), { size: 21, fill: WHITE })
 	if (v.bar !== undefined) {
 		const w = Math.round(Math.min(1, Math.max(0, v.bar)) * 180)
 		body += `<rect x="10" y="50" width="180" height="14" fill="#333"/><rect x="10" y="50" width="${w}" height="14" fill="rgb(40,140,255)"/>`
 	}
-	body += plainText(100, 92, fitText(v.value, 20, 120), { size: 20, fill: WHITE })
-	if (v.note) body += plainText(192, 92, v.note, { size: 14, fill: 'rgb(150,150,150)', anchor: 'end' })
+	body += plainText(100, 92, fitText(v.value, 19, 120), { size: 19, fill: WHITE })
+	if (v.note) body += plainText(192, 92, v.note, { size: 13, fill: 'rgb(150,150,150)', anchor: 'end' })
 	return frame(200, 100, body, v.overlay)
 }

@@ -109,12 +109,12 @@ export function renderVuStrip(v: MeterView): string {
 	body += `<g${v.muted ? ' opacity="0.4"' : ''}>${bar(l, s, v.left)}${bar(r, s, v.right)}</g>`
 	if (v.muted) body += hatch([6, 16, 26, 36, 46, 56, 66, 76].map((x) => [x, 60, x + 14, 31]), s, 1)
 	body += marker(markerBox, s, v.fader, 1)
-	body += plainText(100, base(14, 25), fitText(v.name, 25, 192), { size: 25, fill: WHITE })
+	body += plainText(100, base(14, 24), fitText(v.name, 24, 192), { size: 24, fill: WHITE })
 	if (!v.muted) {
-		body += plainText(4, base(82, 20), fitText(v.levelDb, 20, 96), { size: 20, fill: WHITE, anchor: 'start' })
-		body += plainText(196, base(82, 20), fitText(v.faderDb, 20, 96), { size: 20, fill: WHITE, anchor: 'end' })
-	} else if (v.peek) body += plainText(100, base(82, 20), fitText(v.faderDb, 20, 192), { size: 20, fill: WHITE })
-	else body += plainText(100, base(82, 20), 'MUTED', { size: 20, fill: RED })
+		body += plainText(4, base(82, 19), fitText(v.levelDb, 19, 96), { size: 19, fill: WHITE, anchor: 'start' })
+		body += plainText(196, base(82, 19), fitText(v.faderDb, 19, 96), { size: 19, fill: WHITE, anchor: 'end' })
+	} else if (v.peek) body += plainText(100, base(82, 19), fitText(v.faderDb, 19, 192), { size: 19, fill: WHITE })
+	else body += plainText(100, base(82, 19), 'MUTED', { size: 19, fill: RED })
 	return frame(200, 100, body, v.overlay)
 }
 

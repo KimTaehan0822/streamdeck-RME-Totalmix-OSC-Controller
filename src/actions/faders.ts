@@ -212,9 +212,9 @@ export class PanDialAction extends DialAction {
 			`<rect x="${Math.min(x, 100)}" y="50" width="${Math.abs(x - 100)}" height="14" fill="rgb(40,140,255)"/>` +
 			`<rect x="99" y="44" width="2" height="26" fill="#fff"/>`
 		const body =
-			plainText(100, 28, fitText(this.displayName(t), 25, 192), { size: 25, fill: '#fff' }) +
+			plainText(100, 28, fitText(this.displayName(t), 24, 192), { size: 24, fill: '#fff' }) +
 			bar +
-			plainText(100, 92, String(panText(this.connection, t)), { size: 20, fill: '#fff' })
+			plainText(100, 92, String(panText(this.connection, t)), { size: 19, fill: '#fff' })
 		return frame(200, 100, body, ctx.overlay)
 	}
 
