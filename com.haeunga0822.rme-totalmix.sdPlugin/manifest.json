@@ -119,6 +119,91 @@
 					"Image": "imgs/placeholder"
 				}
 			]
+		},
+		{
+			"Name": "VU Dial",
+			"UUID": "com.haeunga0822.rme-totalmix.vu-dial",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Encoder"
+			],
+			"PropertyInspectorPath": "ui/vu-dial.html",
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"TriggerDescription": {
+					"Rotate": "Fader +/- 1 dB",
+					"Push": "Mute",
+					"Touch": "Mute"
+				}
+			},
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Button Fader",
+			"UUID": "com.haeunga0822.rme-totalmix.button-fader",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/fader.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Fader",
+			"UUID": "com.haeunga0822.rme-totalmix.fader",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/fader.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Pan Dial",
+			"UUID": "com.haeunga0822.rme-totalmix.pan-dial",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Encoder"
+			],
+			"PropertyInspectorPath": "ui/vu-dial.html",
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"TriggerDescription": {
+					"Rotate": "Pan",
+					"Push": "Centre pan"
+				}
+			},
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Pan",
+			"UUID": "com.haeunga0822.rme-totalmix.pan",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/fader.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
 		}
 	]
 }

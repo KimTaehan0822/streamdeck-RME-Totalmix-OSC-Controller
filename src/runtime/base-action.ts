@@ -75,7 +75,7 @@ export abstract class TotalMixAction<S extends JsonObject> extends SingletonActi
 	}
 
 	/** Registrations expire after 10 s and start() clears them, so every visible instance re-registers on each tick. */
-	private refresh(id?: string): void {
+	protected refresh(id?: string): void {
 		for (const [key, instance] of this.instances) {
 			if (id !== undefined && key !== id) continue
 			try {

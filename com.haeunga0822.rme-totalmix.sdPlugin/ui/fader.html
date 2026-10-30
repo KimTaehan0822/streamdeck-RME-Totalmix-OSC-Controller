@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<script src="sdpi-components.js"></script>
+</head>
+<body>
+	<div id="fields"></div>
+	<hr />
+	<div data-global></div>
+	<script src="common.js"></script>
+	<script>
+		// Keys of the fader family: button-fader, fader, pan. The action UUID picks the fields.
+		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
+		const ROLES = { top: 'Top key (+1 dB)', bottom: 'Bottom key (-1 dB)', left: 'Left key (-1 dB)', right: 'Right key (+1 dB)' }
+		const UNITS = { db: 'dB', linear: 'Linear (0-1)' }
+		const MODES = { set: 'Set to value', step: 'Step by value (hold repeats)' }
+		const KINDS = {
+			'button-fader': { role: true },
+			fader: { value: true, unit: true, hint: 'dB or 0-1 (a step may be negative)' },
+			pan: { value: true, hint: 'Pan -100 (left) to 100 (right); a step may be negative' },
+		}
+
+		const select = (setting, label, items, extra = '') =>
+			`<sdpi-item label="${label}"><sdpi-select setting="${setting}" ${extra}>${Object.entries(items)
+				.map(([value, text]) => `<option value="${value}">${text}</option>`)
+				.join('')}</sdpi-select></sdpi-item>`
+		const channel = (setting, label, bus) =>
+			`<sdpi-item label="${label}"><sdpi-select setting="${setting}" datasource="getChannels:${bus}" hot-reload placeholder="Select channel"></sdpi-select></sdpi-item>`
+
+		async function main() {
+			const client = SDPIComponents.streamDeckClient
+			const { actionInfo } = await client.getConnectionInfo()
+			const kind = KINDS[actionInfo.action.split('.').pop()]
+			if (!kind) return
+			const saved = (await client.getSettings()).settings ?? {}
+			const fields = document.getElementById('fields')
+			let row = saved.row ?? 'input'
+
+			const draw = () => {
+				let html = select('row', 'Row', ROWS, 'default="input"')
+				html += channel('channel', row === 'output' ? 'Output' : 'Source', row)
+				if (row !== 'output') html += channel('destination', 'Destination', 'output')
+				if (kind.role) html += select('role', 'Key role', ROLES, 'placeholder="Select"')
+				else {
+					html += select('mode', 'Mode', MODES, 'placeholder="Select"')
+					if (kind.unit) html += select('unit', 'Unit', UNITS, 'default="db"')
+					html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`
+				}
+				fields.innerHTML = html
+				// A new row needs a new channel list; the saved channel belongs to the old row.
+				fields.querySelector('[setting="row"]').addEventListener('change', async (e) => {
+					if (e.target.value === row) return
+					row = e.target.value
+					const current = (await client.getSettings()).settings ?? {}
+					await client.setSettings({ ...current, row, channel: undefined, destination: undefined })
+					draw()
+				})
+			}
+			draw()
+		}
+		main()
+	</script>
+</body>
+</html>
