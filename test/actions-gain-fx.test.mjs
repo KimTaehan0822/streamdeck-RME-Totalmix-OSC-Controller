@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { TotalMixConnection } from '../dist/connection.js'
-import { FxParamAction, FxParamDialAction, GainAction, GainDialAction, GlobalFxAction, ProcessingParamAction } from '../dist/actions/gain-fx.js'
+import { FxParamAction, FxParamDialAction, GainAction, GainDialAction, GlobalFxAction } from '../dist/actions/gain-fx.js'
 
 const settings = { host: '127.0.0.1', targetPort: 7001, feedbackPort: 9001, syncTimeoutMs: 50 }
 const wait = (ms = 20) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -176,18 +176,10 @@ test('fx-param-dial rotate steps and press resets', async () => {
 	conn.stop()
 })
 
-test('processing-param sets the channel parameter', async () => {
-	const { conn, sent } = setup()
-	await pressKey(ProcessingParamAction, conn, { row: 'input', channel: '3', parameter: 'eqGain1', value: '4.5' })
-	assert.deepEqual(sent.at(-1), { address: '/input/3/eq/band1gain', args: [4.5] })
-	conn.stop()
-})
-
 for (const [name, Action, s, hint] of [
 	['gain', GainAction, {}, /CHANNEL/],
 	['global-fx', GlobalFxAction, {}, /SETUP/],
 	['fx-param', FxParamAction, { parameter: 'reverbVolume' }, /SETUP/],
-	['processing-param', ProcessingParamAction, { row: 'input', channel: 0, parameter: 'nope', value: 1 }, /CHANNEL/],
 ]) {
 	test(`${name} with invalid settings renders setup and sends nothing`, async () => {
 		const { conn, sent } = setup()

@@ -1,13 +1,11 @@
 import { action, type KeyDownEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
-import type { MixerBus } from '../model/device-profile.js'
-import type { RoomEqSide } from '../protocol/controller.js'
-import { activeSnapshot, channelName, globalParameter, globalParameterText, hasCapability, roomEqParameter } from '../readers.js'
+import { activeSnapshot, globalParameter } from '../readers.js'
 import { renderSnapshotKey, renderValueKey } from '../render/keys.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
-import { BLUE, RED, ToggleAction, type Spec } from './channel-toggles.js'
-import { ALL, BUS_NAME, channelOf, int, num, pick } from './common.js'
+import { BLUE, ToggleAction, type Spec } from './channel-toggles.js'
+import { int, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
 const NEUTRAL = 'rgb(70,70,70)'
@@ -49,14 +47,6 @@ export class SnapshotAction extends TotalMixAction<JsonObject> {
 	}
 }
 
-@action({ UUID: ID + 'save-snapshot' })
-export class SaveSnapshotAction extends CommandAction {
-	protected spec(s: JsonObject): Spec | undefined {
-		const number = int(s.number, 1, 8)
-		return number === undefined ? undefined : this.command('SAVE', `SNAPSHOT ${number}`, (c) => c.saveSnapshot(number))
-	}
-}
-
 const CONTROL_ROOM = {
 	mainDim: 'DIM',
 	mainSpeakerB: 'SPEAKER B',
@@ -85,67 +75,11 @@ export class ControlRoomAction extends CommandAction {
 	}
 }
 
-type DuRecCommand = 'recordStop' | 'record' | 'playPause' | 'stop' | 'next' | 'previous'
-const DUREC: Record<DuRecCommand, string> = {
-	recordStop: 'REC/STOP',
-	record: 'RECORD',
-	playPause: 'PLAY/PAUSE',
-	stop: 'STOP',
-	next: 'NEXT',
-	previous: 'PREVIOUS',
-}
-@action({ UUID: ID + 'durec' })
-export class DuRecAction extends CommandAction {
-	protected spec(s: JsonObject): Spec | undefined {
-		const command = pick(s.command, DUREC)
-		if (!command) return undefined
-		const c = this.connection
-		const state = globalParameterText(c, 'recordState')
-		const time = globalParameterText(c, 'recordTime')
-		const recording = state === 'Record'
-		const playing = state === 'Play'
-		const lit = command === 'playPause' ? playing : command === 'record' || command === 'recordStop' ? recording : false
-		return {
-			title: () => DUREC[command],
-			label: recording || playing ? time : state,
-			color: recording ? RED : BLUE,
-			read: () => lit,
-			press: (ctl) => ctl.duRecTransport(command),
-			supported: () => hasCapability(c, 'duRec'),
-		}
-	}
-}
-
-@action({ UUID: ID + 'durec-channel' })
-export class DuRecChannelAction extends ToggleAction {
-	protected spec(s: JsonObject): Spec | undefined {
-		const t = channelOf(s, ['input', 'output'])
-		return t && this.option(t, 'recordEnable', 'REC', RED, () => hasCapability(this.connection, 'duRec'))
-	}
-}
-
-const UNDO_REDO = { undo: 'UNDO', redo: 'REDO' }
-@action({ UUID: ID + 'undo-redo' })
-export class UndoRedoAction extends CommandAction {
-	protected spec(s: JsonObject): Spec | undefined {
-		const command = pick(s.command, UNDO_REDO)
-		return command && this.command(UNDO_REDO[command], '', (c) => c.undoRedo(command))
-	}
-}
-
 @action({ UUID: ID + 'layout' })
 export class LayoutAction extends CommandAction {
 	protected spec(s: JsonObject): Spec | undefined {
 		const n = int(s.layout, 1, 6)
 		return n === undefined ? undefined : this.command('LAYOUT', String(n), (c) => c.loadLayoutPreset(n))
-	}
-}
-
-@action({ UUID: ID + 'quick-workspace' })
-export class QuickWorkspaceAction extends CommandAction {
-	protected spec(s: JsonObject): Spec | undefined {
-		const n = int(s.number, 1, 30)
-		return n === undefined ? undefined : this.command('WORKSPACE', String(n), (c) => c.loadQuickWorkspace(n))
 	}
 }
 
@@ -158,85 +92,5 @@ export class WindowAction extends CommandAction {
 	}
 }
 
-/** SET CHANNEL only when the channel itself is missing; any other missing field is a SETUP hint. */
-const channelHint = (rows: MixerBus[]) => (s: JsonObject): 'setup' | 'config' => (channelOf(s, rows) ? 'config' : 'setup')
-
-const SIDES: Record<RoomEqSide, string> = { left: 'L', right: 'R', both: 'L+R' }
-const roomEqSupported = (c: TotalMixConnection) => () => hasCapability(c, 'roomEq')
-const outputTitle = (c: TotalMixConnection, index: number) => () => channelName(c, { bus: 'output', index }) || `Output ${index + 1}`
-
-@action({ UUID: ID + 'room-eq' })
-export class RoomEqAction extends ToggleAction {
-	protected override setupHint = channelHint(['output'])
-	protected spec(s: JsonObject): Spec | undefined {
-		const t = channelOf(s, ['output'])
-		const side = pick(s.side ?? 'left', SIDES)
-		if (!t || !side) return undefined
-		const c = this.connection
-		return {
-			title: outputTitle(c, t.index),
-			label: `ROOM EQ ${SIDES[side]}`,
-			color: BLUE,
-			read: () => roomEqParameter<boolean>(c, t.index, side, 'reqEnable') === true,
-			press: (ctl, op) => ctl.setRoomEqOption(t.index, side, op),
-			supported: roomEqSupported(c),
-		}
-	}
-}
-
-const ROOM_EQ_PARAMS: Record<string, string> = {
-	reqDelay: 'Delay',
-	reqVolumeCorr: 'Volume corr.',
-	reqType1: 'Band 1 type',
-	reqType8: 'Band 8 type',
-	reqType9: 'Band 9 type',
-}
-for (let band = 1; band <= 9; band++) {
-	ROOM_EQ_PARAMS[`reqGain${band}`] = `Band ${band} gain`
-	ROOM_EQ_PARAMS[`reqFreq${band}`] = `Band ${band} freq`
-	ROOM_EQ_PARAMS[`reqQ${band}`] = `Band ${band} Q`
-}
-
-@action({ UUID: ID + 'room-eq-param' })
-export class RoomEqParamAction extends ToggleAction {
-	protected override setupHint = channelHint(['output'])
-	protected spec(s: JsonObject): Spec | undefined {
-		const t = channelOf(s, ['output'])
-		const side = pick(s.side ?? 'left', SIDES)
-		const parameter = pick(s.parameter, ROOM_EQ_PARAMS)
-		const value = num(s.value)
-		if (!t || !side || !parameter || !Number.isFinite(value)) return undefined
-		const c = this.connection
-		return {
-			title: outputTitle(c, t.index),
-			label: `${ROOM_EQ_PARAMS[parameter]} ${value}`,
-			color: BLUE,
-			read: () => roomEqParameter<number>(c, t.index, side, parameter) === value,
-			press: (ctl) => ctl.setRoomEqParameter(t.index, side, parameter, value),
-			supported: roomEqSupported(c),
-		}
-	}
-}
-
-@action({ UUID: ID + 'channel-name' })
-export class ChannelNameAction extends ToggleAction {
-	protected override setupHint = channelHint(ALL)
-	protected spec(s: JsonObject): Spec | undefined {
-		const t = channelOf(s, ALL)
-		const name = typeof s.name === 'string' ? s.name.trim() : ''
-		if (!t || !name) return undefined
-		return {
-			title: () => channelName(this.connection, t) || `${BUS_NAME[t.bus]} ${t.index + 1}`,
-			label: `> ${name}`,
-			color: NEUTRAL,
-			read: () => false,
-			press: (ctl) => ctl.setChannelName(t, name),
-		}
-	}
-}
-
 export const globalActions = (connection: TotalMixConnection) =>
-	[
-		SnapshotAction, SaveSnapshotAction, ControlRoomAction, DuRecAction, DuRecChannelAction, UndoRedoAction, LayoutAction,
-		QuickWorkspaceAction, WindowAction, RoomEqAction, RoomEqParamAction, ChannelNameAction,
-	].map((Action) => new Action(connection))
+	[SnapshotAction, ControlRoomAction, LayoutAction, WindowAction].map((Action) => new Action(connection))

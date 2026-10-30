@@ -14,13 +14,6 @@
 		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
 		const OPERATION = { toggle: 'Toggle', on: 'On', off: 'Off' }
 		const INPUT_OPTIONS = { phantom: '48V', instrument: 'Instrument', pad: 'Pad', autoset: 'AutoSet' }
-		const PROCESSING = { eqEnable: 'Parametric EQ', compexpEnable: 'Compressor / Expander', lowcutEnable: 'Low Cut', alevEnable: 'Auto Level' }
-		const CHANNEL_OPTIONS = {
-			mute: 'Mute (output)', phase: 'Phase invert (left/mono)', phaseRight: 'Phase invert (right)', msProc: 'MS processing (input)',
-			stereo: 'Stereo mode', cue: 'Cue (output)', talkbackSel: 'Talkback (output)', gainRight: 'Right-channel gain (input, value)',
-			refLevel: 'Reference level (value 0-3)', width: 'Stereo width (value)',
-		}
-		const VALUE_OPTIONS = ['gainRight', 'refLevel', 'width']
 		const GROUP_TYPES = { mute: 'Mute group', pfl: 'PFL group', fader: 'Fader group' }
 		const GROUPS = { 1: 'Group 1', 2: 'Group 2', 3: 'Group 3', 4: 'Group 4' }
 
@@ -29,8 +22,6 @@
 			mute: { rows: ['input', 'playback', 'output'] },
 			solo: { rows: ['input', 'playback'] },
 			'input-option': { bus: 'input', option: INPUT_OPTIONS },
-			processing: { rows: ['input', 'playback', 'output'], option: PROCESSING },
-			'channel-option': { rows: ['input', 'playback', 'output'], noDefaultRow: true, option: CHANNEL_OPTIONS, value: true },
 			loopback: { bus: 'output' },
 			group: { group: true },
 		}
@@ -51,28 +42,20 @@
 			const saved = (await client.getSettings()).settings ?? {}
 			const rowItems = kind.rows && Object.fromEntries(kind.rows.map((r) => [r, ROWS[r]]))
 			const fields = document.getElementById('fields')
-			let option = saved.option
-			let row = saved.row ?? (kind.noDefaultRow ? undefined : kind.rows?.[0])
+			let row = saved.row ?? kind.rows?.[0]
 
 			const draw = () => {
 				let html = ''
 				if (kind.group) html += select('type', 'Group type', GROUP_TYPES, 'placeholder="Select"') + select('group', 'Group', GROUPS, 'placeholder="Select"')
 				else {
-					if (rowItems) html += select('row', 'Row', rowItems, kind.noDefaultRow ? 'placeholder="Select"' : `default="${kind.rows[0]}"`)
+					if (rowItems) html += select('row', 'Row', rowItems, `default="${kind.rows[0]}"`)
 					const bus = kind.bus ?? row
 					if (bus) html += channel(bus)
 				}
 				if (kind.option) html += select('option', 'Option', kind.option, 'placeholder="Select"')
-				if (kind.value && VALUE_OPTIONS.includes(option)) html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="gain/width/ref level only"></sdpi-textfield></sdpi-item>`
 				html += select('operation', 'Operation', OPERATION, 'default="toggle"')
 				fields.innerHTML = html
 				initFields(fields)
-				fields.querySelector('[setting="option"]')?.addEventListener('valuechange', (e) => {
-					if (kind.value && e.target.value !== option) {
-						option = e.target.value
-						draw()
-					}
-				})
 				// A new row needs a new channel list; the saved channel belongs to the old row.
 				fields.querySelector('[setting="row"]')?.addEventListener('valuechange', async (e) => {
 					if (e.target.value === row) return

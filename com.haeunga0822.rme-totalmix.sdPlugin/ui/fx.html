@@ -10,8 +10,7 @@
 	<div data-global></div>
 	<script src="common.js"></script>
 	<script>
-		// Global FX and channel processing: global-fx, fx-param, fx-param-dial, processing-param. The action UUID picks the fields.
-		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
+		// Global FX: global-fx, fx-param, fx-param-dial. The action UUID picks the fields.
 		const EFFECTS = { reverbEnable: 'Reverb', echoEnable: 'Echo' }
 		const OPERATION = { toggle: 'Toggle', on: 'On', off: 'Off' }
 		const MODES = { set: 'Set to value', step: 'Step by value (hold repeats)' }
@@ -22,21 +21,11 @@
 			reverbVolume: 'Reverb volume', echoType: 'Echo type', echoDelaytime: 'Echo delay time', echoFeedback: 'Echo feedback',
 			echoHighcut: 'Echo high cut', echoWidth: 'Echo width', echoVolume: 'Echo volume',
 		}
-		const PROCESSING_PARAMS = {
-			reverbSend: 'Reverb Send', reverbReturn: 'Reverb Return', lowcutGrade: 'Low Cut grade', lowcutFreq: 'Low Cut frequency',
-			eqType1: 'EQ band 1 type', eqGain1: 'EQ band 1 gain', eqFreq1: 'EQ band 1 frequency', eqQ1: 'EQ band 1 Q',
-			eqGain2: 'EQ band 2 gain', eqFreq2: 'EQ band 2 frequency', eqQ2: 'EQ band 2 Q',
-			eqType3: 'EQ band 3 type', eqGain3: 'EQ band 3 gain', eqFreq3: 'EQ band 3 frequency', eqQ3: 'EQ band 3 Q',
-			compexpGain: 'Dynamics make-up gain', compexpAttack: 'Compressor attack', compexpRelease: 'Compressor release',
-			compTrsh: 'Compressor threshold', compRatio: 'Compressor ratio', expTrsh: 'Expander threshold', expRatio: 'Expander ratio',
-			alevMaxgain: 'Auto Level maximum gain', alevHeadroom: 'Auto Level headroom', alevRisetime: 'Auto Level rise time',
-		}
 		const NATIVE = 'TotalMix native unit (-10000 to 10000)'
 		const KINDS = {
 			'global-fx': { effect: true, operation: true },
 			'fx-param': { fxParam: true, mode: true, value: ['Value', NATIVE] },
 			'fx-param-dial': { fxParam: true, text: [['step', 'Step per tick', '1'], ['reset', 'Reset value (press)', NATIVE]] },
-			'processing-param': { processing: true, value: ['Value', NATIVE] },
 		}
 
 		const select = (setting, label, items, extra = '') =>
@@ -45,24 +34,18 @@
 				.join('')}</sdpi-select></sdpi-item>`
 		const field = (setting, label, placeholder) =>
 			`<sdpi-item label="${label}"><sdpi-textfield setting="${setting}" placeholder="${placeholder}"></sdpi-textfield></sdpi-item>`
-		const channel = (bus) =>
-			`<sdpi-item label="Channel"><sdpi-select setting="channel" datasource="getChannels:${bus}" hot-reload placeholder="Select channel"></sdpi-select></sdpi-item>`
 
 		async function main() {
 			const client = SDPIComponents.streamDeckClient
 			const { actionInfo } = await client.getConnectionInfo()
 			const kind = KINDS[actionInfo.action.split('.').pop()]
 			if (!kind) return
-			const saved = (await client.getSettings()).settings ?? {}
 			const fields = document.getElementById('fields')
-			let row = saved.row ?? 'input'
 
 			const draw = () => {
 				let html = ''
 				if (kind.effect) html += select('effect', 'Effect', EFFECTS, 'placeholder="Select"')
-				if (kind.processing) html += select('row', 'Row', ROWS, 'default="input"') + channel(row)
 				if (kind.fxParam) html += select('parameter', 'Parameter', FX_PARAMS, 'placeholder="Select"')
-				if (kind.processing) html += select('parameter', 'Parameter', PROCESSING_PARAMS, 'placeholder="Select"')
 				if (kind.mode) html += select('mode', 'Mode', MODES, 'placeholder="Select"')
 				if (kind.value) html += field('value', ...kind.value)
 				for (const [setting, label, placeholder] of kind.text ?? []) html += field(setting, label, placeholder)
@@ -70,14 +53,6 @@
 				if (kind.operation) html += select('operation', 'Operation', OPERATION, 'default="toggle"')
 				fields.innerHTML = html
 				initFields(fields)
-				// A new row needs a new channel list; the saved channel belongs to the old row.
-				fields.querySelector('[setting="row"]')?.addEventListener('valuechange', async (e) => {
-					if (e.target.value === row) return
-					row = e.target.value
-					const current = (await client.getSettings()).settings ?? {}
-					await client.setSettings({ ...current, row, channel: undefined })
-					draw()
-				})
 			}
 			draw()
 		}

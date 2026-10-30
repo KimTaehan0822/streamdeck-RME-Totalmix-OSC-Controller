@@ -1,4 +1,4 @@
-import { dbToNormalized } from '../protocol/fader-curve.js'
+import { dbToBar } from '../protocol/fader-curve.js'
 import { KEY, fitText, frame, plainText, type Overlay } from './svg.js'
 
 // Ported from the Companion module's "Fader + VU meter" dial and two-key button fader presets (src/presets.ts).
@@ -23,8 +23,8 @@ const RED = 'rgb(255,57,31)'
 const BLUE = 'rgb(40,140,255)'
 const STOPS: [number, number[]][] = [
 	[0, [40, 200, 80]],
-	[dbToNormalized(-18), [240, 210, 40]],
-	[dbToNormalized(-3), [255, 57, 31]],
+	[dbToBar(-18), [240, 210, 40]],
+	[dbToBar(-3), [255, 57, 31]],
 ]
 
 const colorAt = (v: number): number[] => {

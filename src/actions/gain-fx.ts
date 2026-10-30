@@ -1,11 +1,11 @@
 import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
-import { channelName, channelParameter, gainNormalized, gainText, globalParameter, globalParameterText, hasCapability } from '../readers.js'
+import { channelName, gainNormalized, gainText, globalParameter, globalParameterText, hasCapability } from '../readers.js'
 import { renderValueKey, renderValueStrip } from '../render/keys.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
 import { BLUE, ToggleAction, type Spec } from './channel-toggles.js'
-import { ALL, BUS_NAME, channelOf, int, num, pick } from './common.js'
+import { BUS_NAME, int, num, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
 const MODES = { set: 1, step: 1 }
@@ -39,34 +39,6 @@ const FX_PARAMS = {
 	echoHighcut: 'Echo high cut',
 	echoWidth: 'Echo width',
 	echoVolume: 'Echo volume',
-}
-
-const PROCESSING_PARAMS = {
-	reverbSend: 'Reverb Send',
-	reverbReturn: 'Reverb Return',
-	lowcutGrade: 'Low Cut grade',
-	lowcutFreq: 'Low Cut frequency',
-	eqType1: 'EQ band 1 type',
-	eqGain1: 'EQ band 1 gain',
-	eqFreq1: 'EQ band 1 frequency',
-	eqQ1: 'EQ band 1 Q',
-	eqGain2: 'EQ band 2 gain',
-	eqFreq2: 'EQ band 2 frequency',
-	eqQ2: 'EQ band 2 Q',
-	eqType3: 'EQ band 3 type',
-	eqGain3: 'EQ band 3 gain',
-	eqFreq3: 'EQ band 3 frequency',
-	eqQ3: 'EQ band 3 Q',
-	compexpGain: 'Dynamics make-up gain',
-	compexpAttack: 'Compressor attack',
-	compexpRelease: 'Compressor release',
-	compTrsh: 'Compressor threshold',
-	compRatio: 'Compressor ratio',
-	expTrsh: 'Expander threshold',
-	expRatio: 'Expander ratio',
-	alevMaxgain: 'Auto Level maximum gain',
-	alevHeadroom: 'Auto Level headroom',
-	alevRisetime: 'Auto Level rise time',
 }
 
 /** Step settings are strings from the PI; empty or invalid falls back to the default. */
@@ -229,34 +201,5 @@ export class FxParamDialAction extends TotalMixAction<JsonObject> {
 	}
 }
 
-@action({ UUID: ID + 'processing-param' })
-export class ProcessingParamAction extends TotalMixAction<JsonObject> {
-	private valid(s: JsonObject) {
-		const target = channelOf(s, ALL)
-		const parameter = pick(s.parameter, PROCESSING_PARAMS)
-		const value = num(s.value)
-		return target && parameter && Number.isFinite(value) ? { target, parameter, value } : undefined
-	}
-
-	protected render(s: JsonObject, ctx: RenderContext): string {
-		const v = this.valid(s)
-		if (!v) return SETUP_KEY
-		const current = channelParameter<number | boolean | string>(this.connection, v.target, v.parameter)
-		const overlay = hasCapability(this.connection, 'channelFx') ? ctx.overlay : 'unsupported'
-		return renderValueKey({ title: PROCESSING_PARAMS[v.parameter], value: current === undefined ? '' : String(current), overlay })
-	}
-
-	protected register(s: JsonObject): void {
-		const v = this.valid(s)
-		if (v) channelParameter(this.connection, v.target, v.parameter)
-	}
-
-	override async onKeyDown(ev: KeyDownEvent<JsonObject>): Promise<void> {
-		const v = this.valid(ev.payload.settings)
-		if (!v || !hasCapability(this.connection, 'channelFx')) return
-		await this.connection.run((c) => c.setChannelParameterValue(v.target, v.parameter, v.value))
-	}
-}
-
 export const gainFxActions = (connection: TotalMixConnection) =>
-	[GainAction, GainDialAction, GlobalFxAction, FxParamAction, FxParamDialAction, ProcessingParamAction].map((Action) => new Action(connection))
+	[GainAction, GainDialAction, GlobalFxAction, FxParamAction, FxParamDialAction].map((Action) => new Action(connection))

@@ -3,7 +3,7 @@ import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import type { FaderUnit, TotalMixController } from '../protocol/controller.js'
 import { stringifyPresetTarget } from '../model/preset-target.js'
-import { channelName, faderDb, faderNormalized, levelDb, levelNormalized, muted, panText, panValue, type MixTarget } from '../readers.js'
+import { channelName, faderBar, faderDb, levelBar, levelDb, muted, panText, panValue, type MixTarget } from '../readers.js'
 import { renderValueKey } from '../render/keys.js'
 import { renderButtonFader, renderVuStrip, type FaderRole, type MeterView } from '../render/meter.js'
 import { fitText, frame, plainText } from '../render/svg.js'
@@ -59,9 +59,9 @@ abstract class FaderFamilyAction extends TotalMixAction<JsonObject> {
 		const isMuted = muted(c, t)
 		return {
 			name: this.displayName(t),
-			fader: faderNormalized(c, t),
-			left: levelNormalized(c, t, 'left'),
-			right: levelNormalized(c, t, 'right'),
+			fader: faderBar(c, t),
+			left: levelBar(c, t, 'left'),
+			right: levelBar(c, t, 'right'),
 			faderDb: faderDb(c, t),
 			levelDb: levelDb(c, t),
 			muted: isMuted,
@@ -179,7 +179,7 @@ export class FaderAction extends ValueKeyAction {
 	}
 
 	protected show(t: MixTarget) {
-		return { value: faderDb(this.connection, t), bar: faderNormalized(this.connection, t) }
+		return { value: faderDb(this.connection, t), bar: faderBar(this.connection, t) }
 	}
 
 	protected send(id: string, t: MixTarget, set: boolean, value: number, s: JsonObject): void {

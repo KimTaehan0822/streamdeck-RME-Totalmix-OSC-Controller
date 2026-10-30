@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { TotalMixConnection } from '../dist/connection.js'
 import * as r from '../dist/readers.js'
-import { dbToNormalized } from '../dist/protocol/fader-curve.js'
+import { dbToBar, normalizedToDb } from '../dist/protocol/fader-curve.js'
 
 const settings = { host: '127.0.0.1', targetPort: 7001, feedbackPort: 9001, syncTimeoutMs: 50 }
 const tick = () => new Promise((resolve) => setImmediate(resolve))
@@ -25,17 +25,17 @@ function setup() {
 
 const input1 = { row: 'input', source: 1, destination: 2 }
 
-test('levelNormalized right side reads the next channel of a stereo pair', () => {
+test('levelBar right side reads the next channel of a stereo pair', () => {
 	const { conn, msg } = setup()
 	msg('/level/in/1', -20)
 	msg('/level/in/2', -6)
 	msg('/level/in/3', -40)
-	const left = r.levelNormalized(conn, input1, 'left')
-	assert.equal(r.levelNormalized(conn, input1, 'right'), left) // mono: right mirrors left
+	const left = r.levelBar(conn, input1, 'left')
+	assert.equal(r.levelBar(conn, input1, 'right'), left) // mono: right mirrors left
 	msg('/input/1/stereo', 1)
-	assert.equal(r.levelNormalized(conn, input1, 'right'), dbToNormalized(-6))
-	assert.equal(left, dbToNormalized(-20))
-	assert.equal(r.levelNormalized(conn, { row: 'input', source: 9, destination: 1 }, 'left'), 0)
+	assert.equal(r.levelBar(conn, input1, 'right'), dbToBar(-6))
+	assert.equal(left, dbToBar(-20))
+	assert.equal(r.levelBar(conn, { row: 'input', source: 9, destination: 1 }, 'left'), 0)
 	conn.stop()
 })
 
@@ -47,7 +47,7 @@ test('faderDb prefers the TotalMix display text', () => {
 	assert.match(fallback, /dB/)
 	conn.controller.state.setRouteDisplay({ bus: 'input', index: 1, output: 2 }, 'shown')
 	assert.equal(r.faderDb(conn, input1), 'shown')
-	assert.equal(r.faderNormalized(conn, input1), 0.5)
+	assert.equal(r.faderBar(conn, input1), dbToBar(normalizedToDb(0.5)))
 	conn.stop()
 })
 

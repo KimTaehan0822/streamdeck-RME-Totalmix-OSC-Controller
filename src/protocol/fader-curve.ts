@@ -15,6 +15,11 @@ export function dbToNormalized(db: number): number {
 	return clampNormalized(position / FADER_STEPS)
 }
 
+/** Bar position (0..1), linear in dB from -65 to +6 so every dB moves a bar the same distance. */
+export function dbToBar(db: number): number {
+	return clampNormalized((db + 65) / 71)
+}
+
 export function clampNormalized(value: number): number {
 	return Math.max(0, Math.min(1, value))
 }

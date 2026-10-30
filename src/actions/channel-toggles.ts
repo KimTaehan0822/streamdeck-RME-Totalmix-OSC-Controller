@@ -1,12 +1,12 @@
 import { action, type KeyDownEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
-import type { MixerBus, MixerChannelTarget } from '../model/device-profile.js'
+import type { MixerChannelTarget } from '../model/device-profile.js'
 import type { BinaryOperation, GroupType, TotalMixController } from '../protocol/controller.js'
 import { channelName, channelParameter, globalParameter, hasCapability, muted, soloed, type CapabilityKind } from '../readers.js'
 import { renderToggleKey } from '../render/keys.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
-import { ALL, BUS_NAME, channelOf, int, num, pick } from './common.js'
+import { ALL, BUS_NAME, channelOf, int, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
 
@@ -111,56 +111,6 @@ export class InputOptionAction extends ToggleAction {
 	}
 }
 
-const PROCESSING = { eqEnable: 'EQ', compexpEnable: 'COMP/EXP', lowcutEnable: 'LOW CUT', alevEnable: 'AUTO LEVEL' }
-@action({ UUID: ID + 'processing' })
-export class ProcessingAction extends ToggleAction {
-	protected spec(s: JsonObject): Spec | undefined {
-		const t = channelOf(s, ALL)
-		const option = pick(s.option, PROCESSING)
-		if (!t || !option) return undefined
-		return this.option(t, option, PROCESSING[option], BLUE, () => hasCapability(this.connection, 'channelFx'))
-	}
-}
-
-// Global OSC entries of the Companion channel_option list: label and the rows each applies to.
-const CHANNEL_OPTIONS: Record<string, [label: string, rows: MixerBus[]]> = {
-	mute: ['MUTE', ['output']],
-	phase: ['PHASE', ALL],
-	phaseRight: ['PHASE R', ALL],
-	msProc: ['MS', ['input']],
-	stereo: ['STEREO', ALL],
-	cue: ['CUE', ['output']],
-	talkbackSel: ['TALKBACK', ['output']],
-	gainRight: ['GAIN R', ['input']],
-	refLevel: ['REF LEVEL', ['input', 'output']],
-	width: ['WIDTH', ALL],
-}
-/** Value options send a number instead of switching; the key lights while the state equals it. */
-const VALUE_OPTIONS = new Set(['gainRight', 'refLevel', 'width'])
-
-@action({ UUID: ID + 'channel-option' })
-export class ChannelOptionAction extends ToggleAction {
-	protected spec(s: JsonObject): Spec | undefined {
-		const option = pick(s.option, CHANNEL_OPTIONS)
-		if (!option) return undefined
-		const [label, rows] = CHANNEL_OPTIONS[option]
-		// The PI has no default row here (the valid rows depend on the option), so an unset row is not guessed.
-		const t = s.row === undefined ? undefined : channelOf(s, rows)
-		if (!t) return undefined
-		const spec = this.option(t, option, label, BLUE, option === 'gainRight' ? () => hasCapability(this.connection, 'gain', t.index) : undefined)
-		if (!VALUE_OPTIONS.has(option)) return spec
-		const value = num(s.value)
-		if (!Number.isFinite(value)) return undefined
-		return {
-			...spec,
-			label: `${label} ${value}`,
-			read: () => channelParameter<number | boolean | string>(this.connection, t, option) === value,
-			press: (ctl) =>
-				option === 'refLevel' ? ctl.setChannelParameterDirect(t, option, value) : ctl.setChannelParameterValue(t, option, value),
-		}
-	}
-}
-
 @action({ UUID: ID + 'loopback' })
 export class LoopbackAction extends ToggleAction {
 	protected spec(s: JsonObject): Spec | undefined {
@@ -187,6 +137,6 @@ export class GroupAction extends ToggleAction {
 }
 
 export const channelToggleActions = (connection: TotalMixConnection) =>
-	[MuteAction, SoloAction, InputOptionAction, ProcessingAction, ChannelOptionAction, LoopbackAction, GroupAction].map(
+	[MuteAction, SoloAction, InputOptionAction, LoopbackAction, GroupAction].map(
 		(Action) => new Action(connection),
 	)

@@ -65,34 +65,6 @@
 			]
 		},
 		{
-			"Name": "Channel processing",
-			"UUID": "com.haeunga0822.rme-totalmix.processing",
-			"Icon": "imgs/channel",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/channel-toggle.html",
-			"States": [
-				{
-					"Image": "imgs/channel"
-				}
-			]
-		},
-		{
-			"Name": "Channel option",
-			"UUID": "com.haeunga0822.rme-totalmix.channel-option",
-			"Icon": "imgs/channel",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/channel-toggle.html",
-			"States": [
-				{
-					"Image": "imgs/channel"
-				}
-			]
-		},
-		{
 			"Name": "Output loopback",
 			"UUID": "com.haeunga0822.rme-totalmix.loopback",
 			"Icon": "imgs/channel",
@@ -143,7 +115,7 @@
 			]
 		},
 		{
-			"Name": "Button Fader",
+			"Name": "Fader(2-Button)",
 			"UUID": "com.haeunga0822.rme-totalmix.button-fader",
 			"Icon": "imgs/fader",
 			"Controllers": [
@@ -290,36 +262,8 @@
 			]
 		},
 		{
-			"Name": "Channel processing parameter",
-			"UUID": "com.haeunga0822.rme-totalmix.processing-param",
-			"Icon": "imgs/fader",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/fx.html",
-			"States": [
-				{
-					"Image": "imgs/fader"
-				}
-			]
-		},
-		{
 			"Name": "Snapshot",
 			"UUID": "com.haeunga0822.rme-totalmix.snapshot",
-			"Icon": "imgs/global",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/global"
-				}
-			]
-		},
-		{
-			"Name": "Save snapshot",
-			"UUID": "com.haeunga0822.rme-totalmix.save-snapshot",
 			"Icon": "imgs/global",
 			"Controllers": [
 				"Keypad"
@@ -346,64 +290,8 @@
 			]
 		},
 		{
-			"Name": "DURec transport",
-			"UUID": "com.haeunga0822.rme-totalmix.durec",
-			"Icon": "imgs/global",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/global"
-				}
-			]
-		},
-		{
-			"Name": "DURec channel record",
-			"UUID": "com.haeunga0822.rme-totalmix.durec-channel",
-			"Icon": "imgs/global",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/global"
-				}
-			]
-		},
-		{
-			"Name": "Undo / Redo",
-			"UUID": "com.haeunga0822.rme-totalmix.undo-redo",
-			"Icon": "imgs/global",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/global"
-				}
-			]
-		},
-		{
 			"Name": "Layout preset",
 			"UUID": "com.haeunga0822.rme-totalmix.layout",
-			"Icon": "imgs/global",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/global"
-				}
-			]
-		},
-		{
-			"Name": "Quick Workspace",
-			"UUID": "com.haeunga0822.rme-totalmix.quick-workspace",
 			"Icon": "imgs/global",
 			"Controllers": [
 				"Keypad"
@@ -426,48 +314,6 @@
 			"States": [
 				{
 					"Image": "imgs/global"
-				}
-			]
-		},
-		{
-			"Name": "Room EQ",
-			"UUID": "com.haeunga0822.rme-totalmix.room-eq",
-			"Icon": "imgs/global",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/global"
-				}
-			]
-		},
-		{
-			"Name": "Room EQ parameter",
-			"UUID": "com.haeunga0822.rme-totalmix.room-eq-param",
-			"Icon": "imgs/global",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/global"
-				}
-			]
-		},
-		{
-			"Name": "Channel name",
-			"UUID": "com.haeunga0822.rme-totalmix.channel-name",
-			"Icon": "imgs/channel",
-			"Controllers": [
-				"Keypad"
-			],
-			"PropertyInspectorPath": "ui/global-keys.html",
-			"States": [
-				{
-					"Image": "imgs/channel"
 				}
 			]
 		}

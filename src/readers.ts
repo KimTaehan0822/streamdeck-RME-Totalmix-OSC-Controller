@@ -3,7 +3,7 @@ import type { MixerChannelTarget, SourceTarget } from './model/device-profile.js
 import type { PresetMixerTarget } from './model/preset-target.js'
 import { detectDeviceProfile } from './model/profiles/index.js'
 import type { RoomEqSide } from './protocol/controller.js'
-import { dbToNormalized, formatDb, normalizedToDb } from './protocol/fader-curve.js'
+import { dbToBar, formatDb, normalizedToDb } from './protocol/fader-curve.js'
 
 export type MixTarget = PresetMixerTarget
 export type CapabilityKind =
@@ -22,14 +22,17 @@ export function channelName(c: TotalMixConnection, t: MixerChannelTarget): strin
 	return c.controller.state.getChannel(t).name ?? ''
 }
 
-export function faderNormalized(c: TotalMixConnection, t: MixTarget): number | undefined {
+export function faderBar(c: TotalMixConnection, t: MixTarget): number | undefined {
+	let value
 	if (t.row === 'output') {
 		c.registerOutput(t.output)
-		return c.controller.state.getOutput(t.output).value
+		value = c.controller.state.getOutput(t.output).value
+	} else {
+		const route = routeOf(t)
+		c.registerRoute(route)
+		value = c.controller.state.getRoute(route).value
 	}
-	const route = routeOf(t)
-	c.registerRoute(route)
-	return c.controller.state.getRoute(route).value
+	return value === undefined ? undefined : dbToBar(normalizedToDb(value))
 }
 
 export function faderDb(c: TotalMixConnection, t: MixTarget): string {
@@ -60,9 +63,9 @@ function levelSideDb(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right'
 	return typeof state.value === 'number' ? state.value : undefined
 }
 
-export function levelNormalized(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right'): number {
+export function levelBar(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right'): number {
 	const db = levelSideDb(c, t, side)
-	return db === undefined ? 0 : dbToNormalized(db)
+	return db === undefined ? 0 : dbToBar(db)
 }
 
 export function levelDb(c: TotalMixConnection, t: MixTarget): string {

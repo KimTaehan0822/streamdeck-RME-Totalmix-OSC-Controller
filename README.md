@@ -53,20 +53,16 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 **채널 키**
 - Mute / Solo: 채널 뮤트, 솔로
 - Input option: 48V, Inst, Pad, AutoSet
-- Channel processing: EQ, Dynamics 등 채널 프로세싱 켜기/끄기
-- Channel option: 위상, MS, 스테레오, Cue, 폭 등 채널 옵션 설정/토글
 - Output loopback: 출력 루프백
 - Group: 그룹 설정/토글
-- Channel name: 채널 이름 설정
 
 **페이더 / 값 조절 키**
-- Button Fader: 두 키로 페이더 올리기/내리기 프리셋 (누르고 있으면 반복)
+- Fader(2-Button): 두 키로 페이더 올리기/내리기 프리셋 (누르고 있으면 반복)
 - Fader: 페이더를 정한 값으로 설정(Set) 하거나 정한 값만큼 올리기/내리기(Step, 누르고 있으면 반복)
 - Pan: 팬 설정 또는 Step으로 조절 (Step은 누르고 있으면 반복)
 - Input gain: 입력 게인 올리기/내리기 (누르고 있으면 반복)
 - Global FX (Reverb / Echo): 글로벌 FX 켜기/끄기
 - FX parameter: FX 파라미터 설정 또는 Step으로 조절 (Step은 누르고 있으면 반복)
-- Channel processing parameter: 채널 프로세싱 파라미터 설정
 
 반복이 멈추지 않으면 그 키를 한 번 더 누르면 멈춥니다. Multi Action 안에서는 반복하지 않고 한 번만 동작합니다.
 
@@ -78,16 +74,12 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 
 **전역 키**
 - Snapshot: 스냅샷 **번호**로 불러오기 (TotalMix OSC에는 스냅샷 이름이 없습니다)
-- Save snapshot: 스냅샷 저장
 - Control Room: 컨트롤룸 기능
-- DURec transport / DURec channel record: DURec 재생·녹음, 채널 녹음
-- Undo / Redo
-- Layout preset, Quick Workspace, TotalMix window: 화면 레이아웃과 창 전환
-- Room EQ / Room EQ parameter: Room EQ 켜기/끄기와 파라미터
+- Layout preset, TotalMix window: 화면 레이아웃과 창 전환
 
 ## Key hints (키에 뜨는 표시)
 
 - **OFFLINE**: TotalMix에서 응답이 없음 (실행 여부, Enable OSC Control, 포트, 방화벽 확인)
-- **N/A**: 이 장치가 지원하지 않는 기능 (예: 48V 없는 입력, DURec 없는 장치)
+- **N/A**: 이 장치가 지원하지 않는 기능 (예: 48V 없는 입력)
 - **SET CHANNEL**: 채널을 아직 고르지 않음
 - **SETUP**: 다른 필수 설정이 비어 있음 (Property Inspector에서 입력)
