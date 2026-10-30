@@ -49,7 +49,12 @@ export abstract class TotalMixAction<S extends JsonObject> extends SingletonActi
 			}
 		})
 		this.instances.set(action.id, { action, settings: ev.payload.settings, redrawer })
-		if (action.isDial()) await action.setFeedbackLayout('layouts/strip.json')
+		if (action.isDial()) {
+			await action.setFeedbackLayout('layouts/strip.json').catch((error) => {
+				console.error(error instanceof Error ? error.message : String(error))
+			})
+		}
+		if (this.instances.get(action.id)?.action !== action) return // disappeared while awaiting
 		this.start()
 		this.refresh(action.id)
 	}

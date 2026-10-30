@@ -36,10 +36,19 @@ export class Redrawer {
 		const render = this.pending
 		this.pending = undefined
 		if (!render || this.disposed) return
-		const image = render()
+		let image: string
+		try {
+			image = render()
+		} catch (error) {
+			console.error(error instanceof Error ? error.message : String(error))
+			return
+		}
 		if (image === this.lastImage) return
 		this.lastImage = image
 		this.lastDrawAt = this.now()
-		void this.draw(image)
+		// a failed draw must not stop the same image being retried
+		this.draw(image).catch(() => {
+			if (this.lastImage === image) this.lastImage = undefined
+		})
 	}
 }
