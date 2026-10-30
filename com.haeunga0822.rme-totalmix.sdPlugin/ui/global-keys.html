@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<script src="sdpi-components.js"></script>
+</head>
+<body>
+	<div id="fields"></div>
+	<hr />
+	<div data-global></div>
+	<script src="common.js"></script>
+	<script>
+		// One page for all global keys (snapshot, control room, DURec, layouts, Room EQ, ...); the action UUID picks the fields.
+		const range = (from, to) => Object.fromEntries(Array.from({ length: to - from + 1 }, (_, i) => [from + i, String(from + i)]))
+		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
+		const OPERATION = { toggle: 'Toggle', on: 'On', off: 'Off' }
+		const SNAPSHOT_MODES = { recall: 'Recall (press loads it)', show: 'Show the active snapshot' }
+		const CONTROL_ROOM = {
+			mainDim: 'Dim', mainSpeakerB: 'Speaker B', speakerBLinked: 'Link Speaker B volume to Main', mainMuteFx: 'Mute FX return on Main',
+			mainMono: 'Mono', mainExtIn: 'External Input', mainTalkback: 'Talkback', globalMute: 'Global Mute enable',
+			globalSolo: 'Global PFL enable', recallMainVolume: 'Recall main output volume',
+		}
+		const DUREC = { recordStop: 'Record / Stop', record: 'Record', playPause: 'Play / Pause', stop: 'Stop', next: 'Next', previous: 'Previous' }
+		const UNDO_REDO = { undo: 'Undo', redo: 'Redo' }
+		const WINDOW = { show: 'Show window', hide: 'Hide window' }
+		const SIDES = { left: 'Left / mono', right: 'Right', both: 'Left and right' }
+		const ROOM_EQ_PARAMS = { reqDelay: 'Delay', reqVolumeCorr: 'Volume correction', reqType1: 'Band 1 type', reqType8: 'Band 8 type', reqType9: 'Band 9 type' }
+		for (let band = 1; band <= 9; band++) {
+			ROOM_EQ_PARAMS[`reqGain${band}`] = `Band ${band} gain`
+			ROOM_EQ_PARAMS[`reqFreq${band}`] = `Band ${band} frequency`
+			ROOM_EQ_PARAMS[`reqQ${band}`] = `Band ${band} Q`
+		}
+
+		// fields: [type, setting, label, items-or-placeholder]; 'channel' needs the row (fixed bus or the row select).
+		const KINDS = {
+			snapshot: ['mode', 'number'],
+			'save-snapshot': ['snapshotNumber'],
+			'control-room': ['function', 'operation'],
+			durec: ['command', DUREC],
+			'durec-channel': ['row:input,output', 'channel', 'operation'],
+			'undo-redo': ['command', UNDO_REDO],
+			layout: ['layout'],
+			'quick-workspace': ['workspace'],
+			window: ['window'],
+			'room-eq': ['output', 'side', 'operation'],
+			'room-eq-param': ['output', 'side', 'parameter', 'value'],
+			'channel-name': ['row:input,playback,output', 'channel', 'name'],
+		}
+
+		const select = (setting, label, items, extra = '') =>
+			`<sdpi-item label="${label}"><sdpi-select setting="${setting}" ${extra}>${Object.entries(items)
+				.map(([value, text]) => `<option value="${value}">${text}</option>`)
+				.join('')}</sdpi-select></sdpi-item>`
+		const text = (setting, label, placeholder) =>
+			`<sdpi-item label="${label}"><sdpi-textfield setting="${setting}" placeholder="${placeholder}"></sdpi-textfield></sdpi-item>`
+		const channel = (bus, label = 'Channel') =>
+			`<sdpi-item label="${label}"><sdpi-select setting="channel" datasource="getChannels:${bus}" hot-reload placeholder="Select"></sdpi-select></sdpi-item>`
+
+		async function main() {
+			const client = SDPIComponents.streamDeckClient
+			const { actionInfo } = await client.getConnectionInfo()
+			const id = actionInfo.action.split('.').pop()
+			const fields = KINDS[id]
+			if (!fields) return
+			const saved = (await client.getSettings()).settings ?? {}
+			const rowField = fields.find((f) => f.startsWith('row:'))
+			const rows = rowField?.slice(4).split(',')
+			let row = saved.row ?? rows?.[0]
+			let mode = saved.mode ?? 'recall'
+			const root = document.getElementById('fields')
+
+			const draw = () => {
+				let html = ''
+				for (const f of fields) {
+					if (f.startsWith('row:')) html += select('row', 'Row', Object.fromEntries(rows.map((r) => [r, ROWS[r]])), `default="${rows[0]}"`)
+					else if (f === 'channel') html += channel(row)
+					else if (f === 'output') html += channel('output', 'Output')
+					else if (f === 'mode') html += select('mode', 'Mode', SNAPSHOT_MODES, 'default="recall"')
+					else if (f === 'number') {
+						if (mode === 'recall') html += select('number', 'Snapshot', range(1, 8), 'placeholder="Select"')
+					} else if (f === 'snapshotNumber') html += select('number', 'Snapshot', range(1, 8), 'placeholder="Select"')
+					else if (f === 'function') html += select('function', 'Function', CONTROL_ROOM, 'placeholder="Select"')
+					else if (f === 'command') html += select('command', 'Command', KINDS[id][1], 'placeholder="Select"')
+					else if (f === 'operation') html += select('operation', 'Operation', OPERATION, 'default="toggle"')
+					else if (f === 'layout') html += select('layout', 'Layout preset', range(1, 6), 'placeholder="Select"')
+					else if (f === 'workspace') html += select('number', 'Quick Workspace', range(1, 30), 'placeholder="Select"')
+					else if (f === 'window') html += select('window', 'Window', WINDOW, 'placeholder="Select"')
+					else if (f === 'side') html += select('side', 'Channel selection', SIDES, 'default="left"')
+					else if (f === 'parameter') html += select('parameter', 'Parameter', ROOM_EQ_PARAMS, 'placeholder="Select"')
+					else if (f === 'value') html += text('value', 'Value', 'TotalMix native unit (-10000 to 10000)')
+					else if (f === 'name') html += text('name', 'New name', 'Name to set on press')
+				}
+				root.innerHTML = html
+				root.querySelector('[setting="mode"]')?.addEventListener('change', (e) => {
+					if (e.target.value !== mode) {
+						mode = e.target.value
+						draw()
+					}
+				})
+				// A new row needs a new channel list; the saved channel belongs to the old row.
+				root.querySelector('[setting="row"]')?.addEventListener('change', async (e) => {
+					if (e.target.value === row) return
+					row = e.target.value
+					const current = (await client.getSettings()).settings ?? {}
+					await client.setSettings({ ...current, row, channel: undefined })
+					draw()
+				})
+			}
+			draw()
+		}
+		main()
+	</script>
+</body>
+</html>

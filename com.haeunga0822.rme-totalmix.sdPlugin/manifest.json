@@ -302,6 +302,174 @@
 					"Image": "imgs/placeholder"
 				}
 			]
+		},
+		{
+			"Name": "Snapshot",
+			"UUID": "com.haeunga0822.rme-totalmix.snapshot",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Save snapshot",
+			"UUID": "com.haeunga0822.rme-totalmix.save-snapshot",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Control Room",
+			"UUID": "com.haeunga0822.rme-totalmix.control-room",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "DURec transport",
+			"UUID": "com.haeunga0822.rme-totalmix.durec",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "DURec channel record",
+			"UUID": "com.haeunga0822.rme-totalmix.durec-channel",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Undo / Redo",
+			"UUID": "com.haeunga0822.rme-totalmix.undo-redo",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Layout preset",
+			"UUID": "com.haeunga0822.rme-totalmix.layout",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Quick Workspace",
+			"UUID": "com.haeunga0822.rme-totalmix.quick-workspace",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "TotalMix window",
+			"UUID": "com.haeunga0822.rme-totalmix.window",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Room EQ",
+			"UUID": "com.haeunga0822.rme-totalmix.room-eq",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Room EQ parameter",
+			"UUID": "com.haeunga0822.rme-totalmix.room-eq-param",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Channel name",
+			"UUID": "com.haeunga0822.rme-totalmix.channel-name",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/global-keys.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
 		}
 	]
 }

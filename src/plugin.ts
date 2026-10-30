@@ -3,12 +3,13 @@ import { TotalMixConnection, type ConnectionSettings } from './connection.js'
 import { channelToggleActions } from './actions/channel-toggles.js'
 import { faderActions } from './actions/faders.js'
 import { gainFxActions } from './actions/gain-fx.js'
+import { globalActions } from './actions/global.js'
 import { channelItems, normalizeSettings } from './runtime/settings.js'
 
 export const connection = new TotalMixConnection()
 
-// Tasks 7-10 append their actions here (and their manifest entries).
-export const actions: SingletonAction[] = [...channelToggleActions(connection), ...faderActions(connection), ...gainFxActions(connection)]
+// Every action group is listed here (and in the manifest).
+export const actions: SingletonAction[] = [...channelToggleActions(connection), ...faderActions(connection), ...gainFxActions(connection), ...globalActions(connection)]
 
 let current: ConnectionSettings | undefined
 function apply(raw: Parameters<typeof normalizeSettings>[0]): void {
