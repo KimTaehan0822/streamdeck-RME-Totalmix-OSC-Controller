@@ -66,6 +66,7 @@
 				if (kind.value && VALUE_OPTIONS.includes(option)) html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="gain/width/ref level only"></sdpi-textfield></sdpi-item>`
 				html += select('operation', 'Operation', OPERATION, 'default="toggle"')
 				fields.innerHTML = html
+				loadSettings(fields)
 				fields.querySelector('[setting="option"]')?.addEventListener('valuechange', (e) => {
 					if (kind.value && e.target.value !== option) {
 						option = e.target.value

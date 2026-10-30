@@ -69,6 +69,7 @@
 				if (kind.text) html += '<sdpi-item label=""><span>Press the dial to set the reset value; with no reset value nothing happens.</span></sdpi-item>'
 				if (kind.operation) html += select('operation', 'Operation', OPERATION, 'default="toggle"')
 				fields.innerHTML = html
+				loadSettings(fields)
 				// A new row needs a new channel list; the saved channel belongs to the old row.
 				fields.querySelector('[setting="row"]')?.addEventListener('valuechange', async (e) => {
 					if (e.target.value === row) return

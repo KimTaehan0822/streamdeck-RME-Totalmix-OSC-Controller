@@ -91,6 +91,7 @@
 					else if (f === 'name') html += text('name', 'New name', 'Name to set on press')
 				}
 				root.innerHTML = html
+				loadSettings(root)
 				root.querySelector('[setting="mode"]')?.addEventListener('valuechange', (e) => {
 					if (e.target.value !== mode) {
 						mode = e.target.value
