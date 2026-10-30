@@ -113,7 +113,7 @@ export class GainDialAction extends TotalMixAction<JsonObject> {
 			fader: gainNormalized(c, input),
 			left: levelBar(c, t, 'left'),
 			right: levelBar(c, t, 'right'),
-			faderDb: text && `${text} dB`,
+			faderDb: text && `Gain ${text} dB`,
 			levelDb: levelDb(c, t),
 			muted: isMuted,
 			peek: isMuted && faderAdjustedRecently(`gain:${input}`),

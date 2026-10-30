@@ -123,7 +123,7 @@ test('gain dial draws the VU strip: level left, gain right, and a 48V badge whil
 	await dial.onWillAppear(d.appear)
 	await wait(60)
 	const svg = d.images.at(-1)
-	assert.match(svg, />20\.0 dB</)
+	assert.match(svg, />Gain 20\.0 dB</)
 	assert.match(svg, />-12\.0 dB</)
 	assert.match(svg, /fill="rgb\(40,140,255\)">48V</)
 	assert.match(svg, /linearGradient/)

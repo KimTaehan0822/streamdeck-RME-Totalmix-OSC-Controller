@@ -118,7 +118,8 @@ export function renderVuStrip(v: MeterView): string {
 	if (v.badge && badge) body += plainText(196, base(14, 15), badge, { size: 15, fill: v.badge.fill, anchor: 'end' })
 	if (!v.muted) {
 		body += plainText(4, base(82, 19), fitText(v.levelDb, 19, 96), { size: 19, fill: WHITE, anchor: 'start' })
-		body += plainText(196, base(82, 19), fitText(v.faderDb, 19, 96), { size: 19, fill: WHITE, anchor: 'end' })
+		// fitText overestimates digits; 150 lets 'Gain -11.0 dB' through while the real text still clears the left value.
+		body += plainText(196, base(82, 19), fitText(v.faderDb, 19, 150), { size: 19, fill: WHITE, anchor: 'end' })
 	} else if (v.peek) body += plainText(100, base(82, 19), fitText(v.faderDb, 19, 192), { size: 19, fill: WHITE })
 	else body += plainText(100, base(82, 19), 'MUTED', { size: 19, fill: RED })
 	return frame(200, 100, body, v.overlay)
