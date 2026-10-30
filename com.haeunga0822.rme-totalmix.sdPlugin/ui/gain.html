@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<script src="sdpi-components.js"></script>
+</head>
+<body>
+	<sdpi-item label="Input"><sdpi-select setting="channel" datasource="getChannels:input" hot-reload placeholder="Select channel"></sdpi-select></sdpi-item>
+	<sdpi-item label="Step (dB)"><sdpi-textfield setting="step" default="1" placeholder="1 (hold repeats; keys may be negative)"></sdpi-textfield></sdpi-item>
+	<hr />
+	<div data-global></div>
+	<script src="common.js"></script>
+</body>
+</html>

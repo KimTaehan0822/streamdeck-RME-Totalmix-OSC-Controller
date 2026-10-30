@@ -146,6 +146,13 @@ export function globalParameter<T extends number | boolean | string>(
 	return c.controller.state.getGlobalParameter<T>(parameter).value
 }
 
+/** What TotalMix shows for a global parameter: its display text, else the raw value. */
+export function globalParameterText(c: TotalMixConnection, parameter: string): string {
+	globalParameter(c, parameter)
+	const state = c.controller.state.getGlobalParameter<number | boolean | string>(parameter)
+	return String(state.display ?? state.value ?? '')
+}
+
 export function activeSnapshot(c: TotalMixConnection): number | undefined {
 	c.registerGlobal('snapshots')
 	return c.controller.state.activeSnapshot

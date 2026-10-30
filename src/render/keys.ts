@@ -48,3 +48,24 @@ export function renderSnapshotKey(v: SnapshotKeyView): string {
 	body += outlinedText(72, 104, n, { size: 56, fill: v.active ? 'rgb(0,205,215)' : WHITE })
 	return frame(KEY, KEY, body, v.overlay)
 }
+
+export interface ValueStripView {
+	title: string
+	value: string
+	bar?: number
+	/** Small text at the bottom right, e.g. a missing feature. */
+	note?: string
+	overlay: Overlay
+}
+
+/** Dial strip (200x100): title, bar growing from the left, value. */
+export function renderValueStrip(v: ValueStripView): string {
+	let body = outlinedText(100, 28, fitText(v.title, 22, 192), { size: 22, fill: WHITE })
+	if (v.bar !== undefined) {
+		const w = Math.round(Math.min(1, Math.max(0, v.bar)) * 180)
+		body += `<rect x="10" y="50" width="180" height="14" fill="#333"/><rect x="10" y="50" width="${w}" height="14" fill="rgb(40,140,255)"/>`
+	}
+	body += outlinedText(100, 92, fitText(v.value, 20, 120), { size: 20, fill: WHITE })
+	if (v.note) body += outlinedText(192, 92, v.note, { size: 14, fill: 'rgb(150,150,150)', anchor: 'end' })
+	return frame(200, 100, body, v.overlay)
+}

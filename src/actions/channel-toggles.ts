@@ -11,7 +11,7 @@ import { ALL, BUS_NAME, channelOf, int, num, pick } from './common.js'
 const ID = 'com.haeunga0822.rme-totalmix.'
 
 /** What one configured key needs; spec() returning undefined means incomplete settings (setup hint). */
-interface Spec {
+export interface Spec {
 	title: () => string
 	label: string
 	color: string
@@ -21,12 +21,12 @@ interface Spec {
 	supported?: () => boolean
 }
 
-const RED = 'rgb(200,30,30)'
+export const RED = 'rgb(200,30,30)'
 const AMBER = 'rgb(210,140,0)'
-const BLUE = 'rgb(0,100,200)'
+export const BLUE = 'rgb(0,100,200)'
 
 const operation = (v: unknown): BinaryOperation => (v === 'on' || v === 'off' ? v : 'toggle')
-abstract class ToggleAction extends TotalMixAction<JsonObject> {
+export abstract class ToggleAction extends TotalMixAction<JsonObject> {
 	protected abstract spec(s: JsonObject): Spec | undefined
 
 	/** Boolean channel parameter shown as a key; the press goes through setChannelOption. */

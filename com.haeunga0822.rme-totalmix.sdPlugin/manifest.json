@@ -204,6 +204,104 @@
 					"Image": "imgs/placeholder"
 				}
 			]
+		},
+		{
+			"Name": "Input gain",
+			"UUID": "com.haeunga0822.rme-totalmix.gain",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/gain.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Gain Dial",
+			"UUID": "com.haeunga0822.rme-totalmix.gain-dial",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Encoder"
+			],
+			"PropertyInspectorPath": "ui/gain.html",
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"TriggerDescription": {
+					"Rotate": "Gain",
+					"Push": "AutoSet"
+				}
+			},
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Global FX (Reverb / Echo)",
+			"UUID": "com.haeunga0822.rme-totalmix.global-fx",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/fx.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "FX parameter",
+			"UUID": "com.haeunga0822.rme-totalmix.fx-param",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/fx.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "FX Parameter Dial",
+			"UUID": "com.haeunga0822.rme-totalmix.fx-param-dial",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Encoder"
+			],
+			"PropertyInspectorPath": "ui/fx.html",
+			"Encoder": {
+				"layout": "layouts/strip.json",
+				"TriggerDescription": {
+					"Rotate": "FX parameter",
+					"Push": "Reset value"
+				}
+			},
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Channel processing parameter",
+			"UUID": "com.haeunga0822.rme-totalmix.processing-param",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/fx.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
 		}
 	]
 }
