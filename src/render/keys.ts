@@ -26,7 +26,9 @@ export interface ValueKeyView {
 
 export function renderValueKey(v: ValueKeyView): string {
 	let body = outlinedText(72, 40, fitText(v.title, 26), { size: 26, fill: WHITE })
-	body += outlinedText(72, 90, fitText(v.value, 34), { size: 34, fill: WHITE })
+	// A value too wide at 34 px (e.g. "-12.5 dB") steps down to 26 px before it is cut.
+	const size = fitText(v.value, 34) === v.value ? 34 : 26
+	body += outlinedText(72, 90, fitText(v.value, size), { size, fill: WHITE })
 	if (v.bar !== undefined) {
 		const w = Math.round(Math.min(1, Math.max(0, v.bar)) * 124)
 		body += `<rect x="10" y="108" width="124" height="14" fill="#333"/><rect x="10" y="108" width="${w}" height="14" fill="rgb(40,140,255)"/>`

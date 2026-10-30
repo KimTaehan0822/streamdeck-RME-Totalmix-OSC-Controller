@@ -11,8 +11,10 @@ const GLOBAL_BLOCK = `
 
 for (const slot of document.querySelectorAll('[data-global]')) slot.innerHTML = GLOBAL_BLOCK
 
-// Fields a page adds from script miss the settings sdpi received at connect; request them again once they exist.
-async function loadSettings(root) {
+// Fields a page adds from script miss what sdpi picks up while the page loads: sdpi-select only sees options
+// added after it is on the page, and saved settings only reach fields that existed at connect. Redo both.
+async function initFields(root) {
+	for (const s of root.querySelectorAll('sdpi-select')) s.append(...s.querySelectorAll('option'))
 	await Promise.all([...root.querySelectorAll('[setting]')].map((e) => e.updateComplete))
 	await SDPIComponents.streamDeckClient.getSettings()
 }

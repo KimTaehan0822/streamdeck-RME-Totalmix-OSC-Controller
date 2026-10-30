@@ -2,7 +2,9 @@ export const KEY = 144
 
 export type Overlay = 'none' | 'offline' | 'unsupported' | 'setup' | 'config'
 
-const FONT = 'Arial, Helvetica, sans-serif'
+// Same face and weight as Elgato's Spotify plugin; Malgun Gothic covers Hangul on Windows.
+const FONT = "'Segoe UI', 'Malgun Gothic', sans-serif"
+const WEIGHT = 600
 
 export function svgDataUrl(svg: string): string {
 	return 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(svg)
@@ -21,7 +23,7 @@ export function outlinedText(
 	opts: { size: number; fill: string; anchor?: 'start' | 'middle' | 'end' },
 ): string {
 	return (
-		`<text x="${x}" y="${y}" font-family="${FONT}" font-size="${opts.size}" font-weight="bold" ` +
+		`<text x="${x}" y="${y}" font-family="${FONT}" font-size="${opts.size}" font-weight="${WEIGHT}"` +
 		`text-anchor="${opts.anchor ?? 'middle'}" fill="${opts.fill}" stroke="#000" stroke-width="${Math.max(2, opts.size / 8)}" ` +
 		`paint-order="stroke" stroke-linejoin="round">${escapeXml(text)}</text>`
 	)

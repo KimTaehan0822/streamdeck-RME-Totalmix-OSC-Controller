@@ -64,3 +64,9 @@ test('unsupported and setup overlays', () => {
 	const s = toggle({ overlay: 'setup' })
 	assert.ok(s.includes('>SET<') && s.includes('>CHANNEL<'))
 })
+
+test('value too wide at 34 px steps down to 26 px instead of being cut', () => {
+	const wide = renderValueKey({ title: 'AN 1', value: '-12.5 dB', overlay: 'none' })
+	assert.ok(wide.includes('>-12.5 dB<') && wide.includes('font-size="26"'))
+	assert.ok(renderValueKey({ title: 'AN 1', value: '+3', overlay: 'none' }).includes('font-size="34"'))
+})

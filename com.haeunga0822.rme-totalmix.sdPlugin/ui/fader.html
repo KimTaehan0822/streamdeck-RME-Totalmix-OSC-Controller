@@ -48,7 +48,7 @@
 					html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`
 				}
 				fields.innerHTML = html
-				loadSettings(fields)
+				initFields(fields)
 				// A new row needs a new channel list; the saved channel belongs to the old row.
 				fields.querySelector('[setting="row"]').addEventListener('valuechange', async (e) => {
 					if (e.target.value === row) return
