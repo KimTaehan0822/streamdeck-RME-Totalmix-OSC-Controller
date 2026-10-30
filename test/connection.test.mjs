@@ -95,6 +95,17 @@ test('registered route is synced by the background loop', async () => {
 	conn.registerRoute({ bus: 'input', index: 1, output: 3 })
 	sync()
 	await tick()
-	assert.ok(sent.some((m) => m.address.startsWith('/sendsubmix/')))
+	assert.ok(sent.some((m) => m.address === '/sendsubmix/3'))
+	conn.stop()
+})
+
+test('callbacks from a replaced transport are ignored', () => {
+	const { conn, transports } = setup()
+	conn.start(settings)
+	conn.start(settings)
+	transports[0].onMessage({ address: '/hello', args: [] })
+	assert.equal(conn.status, 'connecting')
+	transports[0].onError(new Error('old'))
+	assert.equal(conn.status, 'connecting')
 	conn.stop()
 })

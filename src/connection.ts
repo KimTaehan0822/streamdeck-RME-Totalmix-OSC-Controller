@@ -56,7 +56,7 @@ export class TotalMixConnection {
 		this.createTransport = deps.createTransport ?? ((options, callbacks) => new OscTransport(options, callbacks))
 		this.setIntervalFn = deps.setInterval ?? ((callback, ms) => setInterval(callback, ms))
 		this._controller = this.createController()
-		// The synchronizer outlives start() so actions may register before the first start.
+		// start() clears all registrations; actions re-register through their keepalive.
 		this.synchronizer = new TargetSynchronizer(
 			async (target) => this._controller.syncSubmixFader(target),
 			async (target) => this._controller.syncChannel(target),
@@ -87,16 +87,19 @@ export class TotalMixConnection {
 			{ host: settings.host, targetPort: settings.targetPort, feedbackPort: settings.feedbackPort },
 			{
 				onListening: () => {
+					if (this.transport !== transport) return
 					void controller.requestInitialState().catch((error) => this.logError(error))
 					void this.syncNextBackgroundTarget()
 				},
 				onMessage: (message) => {
+					if (this.transport !== transport) return
 					controller.handleMessage(message)
 					this.lastMessageAt = this.now()
 					this._status = 'connected'
 					this.emitChange()
 				},
 				onError: (error) => {
+					if (this.transport !== transport) return
 					this._status = 'error'
 					this.logError(error)
 					this.emitChange()
