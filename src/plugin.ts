@@ -6,6 +6,10 @@ import { gainFxActions } from './actions/gain-fx.js'
 import { globalActions } from './actions/global.js'
 import { channelItems, normalizeSettings } from './runtime/settings.js'
 
+// The Stream Deck app keeps no console output; send errors to the plugin's logs folder instead.
+console.error = (...args: unknown[]) => streamDeck.logger.error(args.map(String).join(' '))
+console.info = (...args: unknown[]) => streamDeck.logger.info(args.map(String).join(' '))
+
 export const connection = new TotalMixConnection()
 
 // Every action group is listed here (and in the manifest).

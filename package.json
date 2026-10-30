@@ -11,7 +11,7 @@
 		"bundle": "rollup -c rollup.config.mjs",
 		"test": "npm run build && node --test test/*.test.mjs",
 		"watch": "rollup -c rollup.config.mjs -w --watch.onEnd=\"streamdeck restart com.haeunga0822.rme-totalmix\"",
-		"pack": "streamdeck pack com.haeunga0822.rme-totalmix.sdPlugin"
+		"pack": "npm run bundle && streamdeck pack com.haeunga0822.rme-totalmix.sdPlugin"
 	},
 	"dependencies": {
 		"@elgato/streamdeck": "3.0.4"

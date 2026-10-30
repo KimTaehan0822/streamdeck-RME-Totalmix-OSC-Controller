@@ -6,7 +6,7 @@ import { stringifyPresetTarget } from '../model/preset-target.js'
 import { channelName, faderDb, faderNormalized, levelDb, levelNormalized, muted, panText, panValue, type MixTarget } from '../readers.js'
 import { renderValueKey } from '../render/keys.js'
 import { renderButtonFader, renderVuStrip, type FaderRole, type MeterView } from '../render/meter.js'
-import { fitText, frame, outlinedText } from '../render/svg.js'
+import { fitText, frame, plainText } from '../render/svg.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
 import { FADER_PEEK_MS, faderAdjustedRecently, markFaderAdjusted } from '../state/fader-peek.js'
 import { ALL, BUS_NAME, channelOf as settingsChannel, num, pick } from './common.js'
@@ -212,9 +212,9 @@ export class PanDialAction extends DialAction {
 			`<rect x="${Math.min(x, 100)}" y="50" width="${Math.abs(x - 100)}" height="14" fill="rgb(40,140,255)"/>` +
 			`<rect x="99" y="44" width="2" height="26" fill="#fff"/>`
 		const body =
-			outlinedText(100, 28, fitText(this.displayName(t), 25, 192), { size: 25, fill: '#fff' }) +
+			plainText(100, 28, fitText(this.displayName(t), 25, 192), { size: 25, fill: '#fff' }) +
 			bar +
-			outlinedText(100, 92, String(panText(this.connection, t)), { size: 20, fill: '#fff' })
+			plainText(100, 92, String(panText(this.connection, t)), { size: 20, fill: '#fff' })
 		return frame(200, 100, body, ctx.overlay)
 	}
 

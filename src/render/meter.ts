@@ -1,5 +1,5 @@
 import { dbToNormalized } from '../protocol/fader-curve.js'
-import { KEY, fitText, frame, outlinedText, type Overlay } from './svg.js'
+import { KEY, fitText, frame, plainText, type Overlay } from './svg.js'
 
 // Ported from the Companion module's "Fader + VU meter" dial and two-key button fader presets (src/presets.ts).
 // Companion lays elements out in 0–100 units of the canvas; Scale.sx/sy convert those units to SVG pixels.
@@ -109,12 +109,12 @@ export function renderVuStrip(v: MeterView): string {
 	body += `<g${v.muted ? ' opacity="0.4"' : ''}>${bar(l, s, v.left)}${bar(r, s, v.right)}</g>`
 	if (v.muted) body += hatch([6, 16, 26, 36, 46, 56, 66, 76].map((x) => [x, 60, x + 14, 31]), s, 1)
 	body += marker(markerBox, s, v.fader, 1)
-	body += outlinedText(100, base(14, 25), fitText(v.name, 25, 192), { size: 25, fill: WHITE })
+	body += plainText(100, base(14, 25), fitText(v.name, 25, 192), { size: 25, fill: WHITE })
 	if (!v.muted) {
-		body += outlinedText(4, base(82, 20), fitText(v.levelDb, 20, 96), { size: 20, fill: WHITE, anchor: 'start' })
-		body += outlinedText(196, base(82, 20), fitText(v.faderDb, 20, 96), { size: 20, fill: WHITE, anchor: 'end' })
-	} else if (v.peek) body += outlinedText(100, base(82, 20), fitText(v.faderDb, 20, 192), { size: 20, fill: WHITE })
-	else body += outlinedText(100, base(82, 20), 'MUTED', { size: 20, fill: RED })
+		body += plainText(4, base(82, 20), fitText(v.levelDb, 20, 96), { size: 20, fill: WHITE, anchor: 'start' })
+		body += plainText(196, base(82, 20), fitText(v.faderDb, 20, 96), { size: 20, fill: WHITE, anchor: 'end' })
+	} else if (v.peek) body += plainText(100, base(82, 20), fitText(v.faderDb, 20, 192), { size: 20, fill: WHITE })
+	else body += plainText(100, base(82, 20), 'MUTED', { size: 20, fill: RED })
 	return frame(200, 100, body, v.overlay)
 }
 
@@ -146,7 +146,7 @@ export function renderButtonFader(v: MeterView, role: FaderRole): string {
 
 	// Text rows per role (centre y in units): name, fader dB, level dB; name stays when muted, the dB values hide
 	const size = 20 * u
-	const text = (t: string, cy: number, fill = WHITE, maxWidth = KEY) => outlinedText(KEY / 2, base(cy * u, size), fitText(t, size, maxWidth), { size, fill })
+	const text = (t: string, cy: number, fill = WHITE, maxWidth = KEY) => plainText(KEY / 2, base(cy * u, size), fitText(t, size, maxWidth), { size, fill })
 	const rows: [string, number][] = vertical
 		? high
 			? [['name', 11], ['value', 33]]

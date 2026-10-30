@@ -2,8 +2,9 @@ export const KEY = 144
 
 export type Overlay = 'none' | 'offline' | 'unsupported' | 'setup' | 'config'
 
-// Same face and weight as Elgato's Spotify plugin; Malgun Gothic covers Hangul on Windows.
-const FONT = "'Segoe UI', 'Malgun Gothic', sans-serif"
+// Same face, weight and plain fill (no outline) as Elgato's Spotify plugin. One family name only:
+// the Stream Deck SVG renderer is not a browser, and Windows font fallback still covers Hangul.
+const FONT = 'Segoe UI'
 const WEIGHT = 600
 
 export function svgDataUrl(svg: string): string {
@@ -16,16 +17,15 @@ export function escapeXml(text: string): string {
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-export function outlinedText(
+export function plainText(
 	x: number,
 	y: number,
 	text: string,
 	opts: { size: number; fill: string; anchor?: 'start' | 'middle' | 'end' },
 ): string {
 	return (
-		`<text x="${x}" y="${y}" font-family="${FONT}" font-size="${opts.size}" font-weight="${WEIGHT}"` +
-		`text-anchor="${opts.anchor ?? 'middle'}" fill="${opts.fill}" stroke="#000" stroke-width="${Math.max(2, opts.size / 8)}" ` +
-		`paint-order="stroke" stroke-linejoin="round">${escapeXml(text)}</text>`
+		`<text x="${x}" y="${y}" font-family="${FONT}" font-size="${opts.size}" font-weight="${WEIGHT}" ` +
+		`text-anchor="${opts.anchor ?? 'middle'}" fill="${opts.fill}">${escapeXml(text)}</text>`
 	)
 }
 
@@ -53,19 +53,19 @@ export function frame(width: number, height: number, body: string, overlay: Over
 	let content: string
 	switch (overlay) {
 		case 'offline':
-			content = `<g opacity="0.35">${body}</g>` + outlinedText(cx, cy + 8, 'OFFLINE', { size: 24, fill: 'rgb(255,57,31)' })
+			content = `<g opacity="0.35">${body}</g>` + plainText(cx, cy + 8, 'OFFLINE', { size: 24, fill: 'rgb(255,57,31)' })
 			break
 		case 'unsupported':
-			content = `<g opacity="0.25">${body}</g>` + outlinedText(cx, cy + 12, 'N/A', { size: 34, fill: 'rgb(150,150,150)' })
+			content = `<g opacity="0.25">${body}</g>` + plainText(cx, cy + 12, 'N/A', { size: 34, fill: 'rgb(150,150,150)' })
 			break
 		case 'setup':
 			content =
 				`<g opacity="0.35">${body}</g>` +
-				outlinedText(cx, cy - 6, 'SET', { size: 26, fill: '#fff' }) +
-				outlinedText(cx, cy + 24, 'CHANNEL', { size: 26, fill: '#fff' })
+				plainText(cx, cy - 6, 'SET', { size: 26, fill: '#fff' }) +
+				plainText(cx, cy + 24, 'CHANNEL', { size: 26, fill: '#fff' })
 			break
 		case 'config':
-			content = `<g opacity="0.35">${body}</g>` + outlinedText(cx, cy + 8, 'SETUP', { size: 26, fill: '#fff' })
+			content = `<g opacity="0.35">${body}</g>` + plainText(cx, cy + 8, 'SETUP', { size: 26, fill: '#fff' })
 			break
 		default:
 			content = body
