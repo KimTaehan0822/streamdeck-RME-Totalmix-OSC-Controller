@@ -80,6 +80,24 @@ test('gain dial rotate adds ticks times the step', async () => {
 	conn.stop()
 })
 
+test('gain dial moves both sides of a stereo pair', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/input/2/stereo', 1)
+	msg('/input/2/gain', 4)
+	msg('/input/3/gain', 4)
+	const dial = new GainDialAction(conn)
+	for (const channel of ['2', '3']) {
+		const d = fake(true, { channel })
+		await dial.onWillAppear(d.appear)
+		sent.length = 0
+		dial.onDialRotate(d.ev({ ticks: 1 }))
+		await wait()
+		assert.deepEqual(sent.filter((m) => m.address.endsWith('/gain')).map((m) => m.address).sort(), ['/input/2/gain', '/input/3/gain'], `channel ${channel}`)
+		await dial.onWillDisappear(d.appear)
+	}
+	conn.stop()
+})
+
 test('gain dial press mutes the input by default and shows MUTED', async () => {
 	const { conn, sent, msg } = setup()
 	msg('/input/1/mute', 0)

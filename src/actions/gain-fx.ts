@@ -48,6 +48,16 @@ const stepOf = (v: unknown, fallback: number): number => {
 	return Number.isFinite(n) ? n : fallback
 }
 
+/** Inputs a gain step moves: Global OSC gives each side of a stereo pair its own gain (pairs are 1/2, 3/4, ...). */
+function gainInputs(c: TotalMixConnection, input: number): number[] {
+	const left = input - (input % 2)
+	return channelParameter<boolean>(c, { bus: 'input', index: left }, 'stereo') === true ? [left, left + 1] : [input]
+}
+
+function adjustGain(c: TotalMixConnection, input: number, amount: number): void {
+	for (const i of gainInputs(c, input)) if (hasCapability(c, 'gain', i)) void c.run((ctl) => ctl.adjustInputGain(i, amount))
+}
+
 const inputName = (c: TotalMixConnection, input: number) => channelName(c, { bus: 'input', index: input }) || `${BUS_NAME.input} ${input + 1}`
 
 @action({ UUID: ID + 'gain' })
@@ -64,6 +74,7 @@ export class GainAction extends TotalMixAction<JsonObject> {
 		if (input === undefined) return
 		inputName(this.connection, input)
 		gainText(this.connection, input)
+		gainInputs(this.connection, input)
 	}
 
 	override onKeyDown(ev: KeyDownEvent<JsonObject>): void {
@@ -71,7 +82,7 @@ export class GainAction extends TotalMixAction<JsonObject> {
 		const input = int(s.channel, 0)
 		if (input === undefined || !hasCapability(this.connection, 'gain', input)) return
 		const step = stepOf(s.step, 1)
-		this.hold(ev.action, () => void this.connection.run((c) => c.adjustInputGain(input, step)))
+		this.hold(ev.action, () => adjustGain(this.connection, input, step))
 	}
 }
 
@@ -127,6 +138,7 @@ export class GainDialAction extends TotalMixAction<JsonObject> {
 		if (input === undefined) return
 		inputName(this.connection, input)
 		gainText(this.connection, input)
+		gainInputs(this.connection, input)
 		muted(this.connection, inputMix(input))
 		levelDb(this.connection, inputMix(input))
 	}
@@ -135,7 +147,7 @@ export class GainDialAction extends TotalMixAction<JsonObject> {
 		const input = int(ev.payload.settings.channel, 0)
 		if (input === undefined || !ev.payload.ticks || !hasCapability(this.connection, 'gain', input)) return
 		const amount = ev.payload.ticks * stepOf(ev.payload.settings.step, 1)
-		void this.connection.run((c) => c.adjustInputGain(input, amount))
+		adjustGain(this.connection, input, amount)
 		// While muted, show the gain briefly, then redraw once more so MUTED returns.
 		markFaderAdjusted(`gain:${input}`)
 		const id = ev.action.id
