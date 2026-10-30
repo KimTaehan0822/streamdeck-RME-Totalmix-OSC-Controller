@@ -5,10 +5,120 @@
 	"Name": "RME TotalMix",
 	"Version": "0.1.0.0",
 	"Author": "haeunga0822",
+	"Icon": "imgs/placeholder",
+	"Category": "RME TotalMix",
 	"Description": "Control RME TotalMix FX over Global OSC.",
 	"CodePath": "bin/plugin.js",
-	"Nodejs": { "Version": "20" },
-	"OS": [{ "Platform": "windows", "MinimumVersion": "10" }],
-	"Software": { "MinimumVersion": "7.3" },
-	"Actions": []
+	"Nodejs": {
+		"Version": "20"
+	},
+	"OS": [
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Software": {
+		"MinimumVersion": "7.3"
+	},
+	"Actions": [
+		{
+			"Name": "Mute",
+			"UUID": "com.haeunga0822.rme-totalmix.mute",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Solo",
+			"UUID": "com.haeunga0822.rme-totalmix.solo",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Input option (48V, Inst, Pad, AutoSet)",
+			"UUID": "com.haeunga0822.rme-totalmix.input-option",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Channel processing",
+			"UUID": "com.haeunga0822.rme-totalmix.processing",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Channel option",
+			"UUID": "com.haeunga0822.rme-totalmix.channel-option",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Output loopback",
+			"UUID": "com.haeunga0822.rme-totalmix.loopback",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		},
+		{
+			"Name": "Group",
+			"UUID": "com.haeunga0822.rme-totalmix.group",
+			"Icon": "imgs/placeholder",
+			"Controllers": [
+				"Keypad"
+			],
+			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"States": [
+				{
+					"Image": "imgs/placeholder"
+				}
+			]
+		}
+	]
 }

@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<script src="sdpi-components.js"></script>
+</head>
+<body>
+	<div id="fields"></div>
+	<hr />
+	<div data-global></div>
+	<script src="common.js"></script>
+	<script>
+		// One page for all channel toggle keys; the action UUID picks the fields.
+		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
+		const OPERATION = { toggle: 'Toggle', on: 'On', off: 'Off' }
+		const INPUT_OPTIONS = { phantom: '48V', instrument: 'Instrument', pad: 'Pad', autoset: 'AutoSet' }
+		const PROCESSING = { eqEnable: 'Parametric EQ', compexpEnable: 'Compressor / Expander', lowcutEnable: 'Low Cut', alevEnable: 'Auto Level' }
+		const CHANNEL_OPTIONS = {
+			mute: 'Mute (output)', phase: 'Phase invert (left/mono)', phaseRight: 'Phase invert (right)', msProc: 'MS processing (input)',
+			stereo: 'Stereo mode', cue: 'Cue (output)', talkbackSel: 'Talkback (output)', gainRight: 'Right-channel gain (input, value)',
+			refLevel: 'Reference level (value 0-3)', width: 'Stereo width (value)',
+		}
+		const GROUP_TYPES = { mute: 'Mute group', pfl: 'PFL group', fader: 'Fader group' }
+		const GROUPS = { 1: 'Group 1', 2: 'Group 2', 3: 'Group 3', 4: 'Group 4' }
+
+		// rows: selectable rows (first is the default, or none for a fixed bus); bus: fixed bus when there is no row select.
+		const KINDS = {
+			mute: { rows: ['input', 'playback', 'output'] },
+			solo: { rows: ['input', 'playback'] },
+			'input-option': { bus: 'input', option: INPUT_OPTIONS },
+			processing: { rows: ['input', 'playback', 'output'], option: PROCESSING },
+			'channel-option': { rows: ['input', 'playback', 'output'], noDefaultRow: true, option: CHANNEL_OPTIONS, value: true },
+			loopback: { bus: 'output' },
+			group: { group: true },
+		}
+
+		const select = (setting, label, items, extra = '') =>
+			`<sdpi-item label="${label}"><sdpi-select setting="${setting}" ${extra}>${Object.entries(items)
+				.map(([value, text]) => `<option value="${value}">${text}</option>`)
+				.join('')}</sdpi-select></sdpi-item>`
+
+		const channel = (bus) =>
+			`<sdpi-item label="Channel"><sdpi-select setting="channel" datasource="getChannels:${bus}" hot-reload placeholder="Select channel"></sdpi-select></sdpi-item>`
+
+		async function main() {
+			const client = SDPIComponents.streamDeckClient
+			const { actionInfo } = await client.getConnectionInfo()
+			const kind = KINDS[actionInfo.action.split('.').pop()]
+			if (!kind) return
+			const saved = (await client.getSettings()).settings ?? {}
+			const rowItems = kind.rows && Object.fromEntries(kind.rows.map((r) => [r, ROWS[r]]))
+			const fields = document.getElementById('fields')
+			let row = saved.row ?? (kind.noDefaultRow ? undefined : kind.rows?.[0])
+
+			const draw = () => {
+				let html = ''
+				if (kind.group) html += select('type', 'Group type', GROUP_TYPES, 'placeholder="Select"') + select('group', 'Group', GROUPS, 'placeholder="Select"')
+				else {
+					if (rowItems) html += select('row', 'Row', rowItems, kind.noDefaultRow ? 'placeholder="Select"' : `default="${kind.rows[0]}"`)
+					const bus = kind.bus ?? row
+					if (bus) html += channel(bus)
+				}
+				if (kind.option) html += select('option', 'Option', kind.option, 'placeholder="Select"')
+				if (kind.value) html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="gain/width/ref level only"></sdpi-textfield></sdpi-item>`
+				html += select('operation', 'Operation', OPERATION, 'default="toggle"')
+				fields.innerHTML = html
+				// A new row needs a new channel list; the saved channel belongs to the old row.
+				fields.querySelector('[setting="row"]')?.addEventListener('change', async (e) => {
+					if (e.target.value === row) return
+					row = e.target.value
+					const current = (await client.getSettings()).settings ?? {}
+					await client.setSettings({ ...current, row, channel: undefined })
+					draw()
+				})
+			}
+			draw()
+		}
+		main()
+	</script>
+</body>
+</html>
