@@ -13,6 +13,8 @@ export interface MeterView {
 	muted: boolean
 	/** muted and the fader was adjusted within the last 700 ms */
 	peek: boolean
+	/** Small tag at the top right of the strip, e.g. 48V on a Gain Dial. */
+	badge?: { text: string; fill: string }
 	overlay: Overlay
 }
 
@@ -109,7 +111,11 @@ export function renderVuStrip(v: MeterView): string {
 	body += `<g${v.muted ? ' opacity="0.4"' : ''}>${bar(l, s, v.left)}${bar(r, s, v.right)}</g>`
 	if (v.muted) body += hatch([6, 16, 26, 36, 46, 56, 66, 76].map((x) => [x, 60, x + 14, 31]), s, 1)
 	body += marker(markerBox, s, v.fader, 1)
-	body += plainText(100, base(14, 24), fitText(v.name, 24, 192), { size: 24, fill: WHITE })
+	// A badge takes the right end of the name row; the name centres in what is left.
+	const badge = v.badge && fitText(v.badge.text, 15, 96)
+	const nameRight = badge ? 196 - badge.length * 9 - 8 : 196
+	body += plainText(n((4 + nameRight) / 2), base(14, 24), fitText(v.name, 24, nameRight - 4), { size: 24, fill: WHITE })
+	if (v.badge && badge) body += plainText(196, base(14, 15), badge, { size: 15, fill: v.badge.fill, anchor: 'end' })
 	if (!v.muted) {
 		body += plainText(4, base(82, 19), fitText(v.levelDb, 19, 96), { size: 19, fill: WHITE, anchor: 'start' })
 		body += plainText(196, base(82, 19), fitText(v.faderDb, 19, 96), { size: 19, fill: WHITE, anchor: 'end' })

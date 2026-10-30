@@ -57,8 +57,6 @@ export interface ValueStripView {
 	bar?: number
 	/** Small text at the bottom right, e.g. a missing feature. */
 	note?: string
-	/** Note colour; grey when unset. */
-	noteFill?: string
 	overlay: Overlay
 }
 
@@ -70,6 +68,6 @@ export function renderValueStrip(v: ValueStripView): string {
 		body += `<rect x="10" y="50" width="180" height="14" fill="#333"/><rect x="10" y="50" width="${w}" height="14" fill="rgb(40,140,255)"/>`
 	}
 	body += plainText(100, 92, fitText(v.value, 19, 120), { size: 19, fill: WHITE })
-	if (v.note) body += plainText(192, 92, v.note, { size: 13, fill: v.noteFill ?? 'rgb(150,150,150)', anchor: 'end' })
+	if (v.note) body += plainText(192, 92, v.note, { size: 13, fill: 'rgb(150,150,150)', anchor: 'end' })
 	return frame(200, 100, body, v.overlay)
 }

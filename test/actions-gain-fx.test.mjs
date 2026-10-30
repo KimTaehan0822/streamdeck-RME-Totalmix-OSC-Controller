@@ -113,6 +113,24 @@ test('gain dial press can switch 48V or do nothing', async () => {
 	conn.stop()
 })
 
+test('gain dial draws the VU strip: level left, gain right, and a 48V badge while on', async () => {
+	const { conn, msg } = setup()
+	msg('/input/1/gain', 20)
+	msg('/level/in/1', -12)
+	msg('/input/1/48v', 1)
+	const dial = new GainDialAction(conn)
+	const d = fake(true, { channel: '1', press: 'phantom' })
+	await dial.onWillAppear(d.appear)
+	await wait(60)
+	const svg = d.images.at(-1)
+	assert.match(svg, />20\.0 dB</)
+	assert.match(svg, />-12\.0 dB</)
+	assert.match(svg, /fill="rgb\(40,140,255\)">48V</)
+	assert.match(svg, /linearGradient/)
+	await dial.onWillDisappear(d.appear)
+	conn.stop()
+})
+
 test('gain dial press toggles autoset', async () => {
 	const { conn, sent, msg } = setup()
 	msg('/input/1/autoset', 0)
@@ -134,7 +152,7 @@ test('gain dial press without AutoSet sends nothing', async () => {
 	const d = fake(true, { channel: '1', press: 'autoset' })
 	await dial.onWillAppear(d.appear)
 	await wait()
-	assert.match(d.images.at(-1), /N\/A/)
+	assert.doesNotMatch(d.images.at(-1), /AUTOSET/)
 	const before = sent.length
 	await dial.onDialDown(d.ev())
 	assert.equal(sent.length, before)
