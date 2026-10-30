@@ -181,6 +181,8 @@ export class TotalMixController {
 	private readonly context: SelectionContext = {}
 	private readonly selectionDelayMs: number
 	private readonly pendingInteractiveValues = new Map<string, PendingInteractiveValue>()
+	/** Output of the last /mix/…/solo TotalMix reported per source; Global OSC switches PFL through that path. */
+	private readonly soloOutputs = new Map<string, number>()
 	private pendingLegacyGain: PendingLegacyGain | undefined
 
 	constructor(
@@ -428,7 +430,10 @@ export class TotalMixController {
 			if (mix[4] === 'faderlin') this.state.setRoute(target, clampNormalized(value), 'confirmed')
 			else if (mix[4] === 'fader') this.state.setRoute(target, dbToNormalized(value), 'confirmed', formatDb(value))
 			else if (mix[4] === 'balpan') this.state.setRoutePan(target, clampNormalized((value + 1) / 2), 'confirmed')
-			else this.state.setChannelParameter(target, `mix:${mix[4]}`, value, 'confirmed')
+			else if (mix[4] === 'solo') {
+				this.soloOutputs.set(`${target.bus}:${target.index}`, target.output)
+				this.state.setSolo({ bus: target.bus, index: target.index }, value >= 0.5, 'confirmed')
+			} else this.state.setChannelParameter(target, `mix:${mix[4]}`, value, 'confirmed')
 			return true
 		}
 
@@ -1098,7 +1103,12 @@ export class TotalMixController {
 				throw new Error(`No ${kind} state received from TotalMix`)
 			const desired = operation === 'on' || (operation === 'toggle' && !current.value)
 			if (this.isGlobalOsc) {
-				await this.sendOsc(`/${target.bus}/${target.index}/${kind === 'solo' ? 'pfl' : 'mute'}`, desired ? 1 : 0)
+				// TotalMix ignores /input/N/pfl; PFL switches through the submix solo path it reports.
+				const address =
+					kind === 'solo'
+						? `/mix/${target.bus === 'input' ? 'in' : 'pb'}/${target.index}/${this.soloOutputs.get(`${target.bus}:${target.index}`) ?? 0}/solo`
+						: `/${target.bus}/${target.index}/mute`
+				await this.sendOsc(address, desired ? 1 : 0)
 				if (kind === 'mute') this.state.setMute(target, desired, 'optimistic')
 				else this.state.setSolo(target, desired, 'optimistic')
 				return

@@ -69,7 +69,7 @@ test('Global OSC maps PFL, channel options, output mute, pan, snapshots, and gro
 	await controller.setGroup('mute', 2, 'on')
 
 	assert.deepEqual(sent, [
-		{ address: '/playback/5/pfl', args: [1] },
+		{ address: '/mix/pb/5/0/solo', args: [1] },
 		{ address: '/input/2/48v', args: [1] },
 		{ address: '/output/3/mute', args: [1] },
 		{ address: '/mix/in/2/7/balpan', args: [0.25] },
@@ -235,15 +235,22 @@ test('Repeated Global OSC metadata does not trigger another definition revision'
 	assert.equal(controller.state.discoveryRevision, revision + 1)
 })
 
-test('Global OSC solo toggle without a reported PFL state assumes off and then flips', async () => {
-	// TotalMix's /sendchan dump carries no pfl, so waiting for it never ends.
+test('Global OSC solo goes through the submix solo path TotalMix reports', async () => {
+	// Checked on a Babyface Pro: /input/N/pfl is ignored, /mix/in/N/<out>/solo switches PFL.
 	const sent = []
 	const controller = createController(async (address, ...args) => sent.push({ address, args }))
-	await controller.setSolo({ bus: 'input', index: 0 }, 'toggle')
-	await controller.setSolo({ bus: 'input', index: 0 }, 'toggle')
+	controller.handleMessage({ address: '/mix/in/4/4/solo', args: [0] })
+	assert.equal(controller.state.getChannel({ bus: 'input', index: 4 }).solo.value, false)
+	await controller.setSolo({ bus: 'input', index: 4 }, 'toggle')
+	controller.handleMessage({ address: '/mix/in/4/4/solo', args: [1] })
+	assert.equal(controller.state.getChannel({ bus: 'input', index: 4 }).solo.value, true)
+	await controller.setSolo({ bus: 'input', index: 4 }, 'toggle')
+	// Nothing reported yet for this channel: off, through output 0.
+	await controller.setSolo({ bus: 'playback', index: 2 }, 'toggle')
 	assert.deepEqual(sent, [
-		{ address: '/input/0/pfl', args: [1] },
-		{ address: '/input/0/pfl', args: [0] },
+		{ address: '/mix/in/4/4/solo', args: [1] },
+		{ address: '/mix/in/4/4/solo', args: [0] },
+		{ address: '/mix/pb/2/0/solo', args: [1] },
 	])
 })
 

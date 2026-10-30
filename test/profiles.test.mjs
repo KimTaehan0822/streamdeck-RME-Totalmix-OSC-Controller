@@ -26,6 +26,7 @@ test('Global OSC device names select only matching built-in profiles', () => {
 	assert.equal(detectDeviceProfile('Fireface UCX')?.id, 'fireface-ucx')
 	assert.equal(detectDeviceProfile('Fireface 802 FS')?.id, 'fireface-802-fs')
 	assert.equal(detectDeviceProfile('Babyface Pro FS')?.id, 'babyface-pro-fs')
+	assert.equal(detectDeviceProfile('Babyface Pro (1)')?.id, 'babyface-pro-fs')
 	assert.equal(detectDeviceProfile('Babyface (12345678)')?.id, 'babyface')
 	assert.equal(detectDeviceProfile('Digiface AES')?.id, 'digiface-aes')
 	assert.equal(detectDeviceProfile('Digiface Dante')?.id, 'digiface-dante')
