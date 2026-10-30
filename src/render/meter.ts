@@ -146,7 +146,7 @@ export function renderButtonFader(v: MeterView, role: FaderRole): string {
 
 	// Text rows per role (centre y in units): name, fader dB, level dB; name stays when muted, the dB values hide
 	const size = 20 * u
-	const text = (t: string, cy: number, fill = WHITE) => outlinedText(KEY / 2, base(cy * u, size), fitText(t, size, KEY - 8), { size, fill })
+	const text = (t: string, cy: number, fill = WHITE, maxWidth = KEY) => outlinedText(KEY / 2, base(cy * u, size), fitText(t, size, maxWidth), { size, fill })
 	const rows: [string, number][] = vertical
 		? high
 			? [['name', 11], ['value', 33]]
@@ -155,7 +155,7 @@ export function renderButtonFader(v: MeterView, role: FaderRole): string {
 			? [['value', 12]]
 			: [['name', 12], ['level', 83]]
 	for (const [kind, cy] of rows) {
-		if (kind === 'name') body += text(v.name, cy)
+		if (kind === 'name') body += text(v.name, cy, WHITE, KEY - 8)
 		else if (!v.muted) body += text(kind === 'value' ? v.faderDb : v.levelDb, cy)
 	}
 	// MUTED (or briefly the fader dB) sits in the bottom row of the bottom / right key

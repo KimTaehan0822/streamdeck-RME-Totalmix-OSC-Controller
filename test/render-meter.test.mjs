@@ -66,3 +66,18 @@ test('vu strip is 200x100', () => {
 test('hangul names are escaped and fit', () => {
 	assert.ok(renderVuStrip(view({ name: '마이크 <1>' })).includes('마이크 &lt;1&gt;'))
 })
+
+test('dB texts on keys are not truncated', () => {
+	for (const role of ['bottom', 'left', 'top', 'right']) {
+		const svg = renderButtonFader(view({ levelDb: '-12.3 dB', faderDb: '-12.3 dB' }), role)
+		assert.ok(!svg.includes('…'), role)
+	}
+})
+
+test('strip bar geometry and horizontal roles', () => {
+	// left 0.75 of the 176px bar = 132px; right 0.3 = 52.8px
+	assert.deepEqual(fills(renderVuStrip(view())).map((f) => f[2]), [132, 52.8])
+	// horizontal: left key covers 0-0.5 (bar 94 units * 1.44 = 135.36 px), right key 0.5-1
+	assert.equal(fills(renderButtonFader(view({ left: 0.75 }), 'left'))[0][2], 135.36)
+	assert.equal(fills(renderButtonFader(view({ left: 0.75 }), 'right'))[0][2], 67.68)
+})
