@@ -35,7 +35,7 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 
 ## Plugin settings (플러그인 설정)
 
-아무 액션이나 눌러서 오른쪽 Property Inspector 맨 위의 공통 항목에 입력합니다 (모든 액션에 공유).
+아무 액션이나 눌러서 Property Inspector 맨 아래의 **TotalMix connection (OSC)** 을 펼쳐 입력합니다 (평소에는 접혀 있고, 모든 액션에 공유).
 
 | 항목 | 기본값 |
 | --- | --- |
@@ -69,7 +69,7 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 **다이얼 (Stream Deck +)**
 - VU Dial: 돌리면 페이더 ±1 dB, 누르면 뮤트, 레벨 미터 표시. **Touch tap mutes** 옵션(기본 켜짐)을 끄면 화면 터치로는 뮤트되지 않습니다.
 - Pan Dial: 돌리면 팬, 누르면 가운데
-- Gain Dial: 돌리면 게인, 누르면 AutoSet
+- Gain Dial: 돌리면 게인, 누르면 고른 기능 켜기/끄기 (Mute 기본, 48V, Pad, Instrument, AutoSet, 아무것도 안 함)
 - FX Parameter Dial: 돌리면 FX 파라미터, 누르면 초기값
 
 **전역 키**

@@ -7,8 +7,24 @@
 <body>
 	<sdpi-item label="Input"><sdpi-select setting="channel" datasource="getChannels:input" hot-reload placeholder="Select channel"></sdpi-select></sdpi-item>
 	<sdpi-item label="Step (dB)"><sdpi-textfield setting="step" default="1" placeholder="1 (hold repeats; keys may be negative)"></sdpi-textfield></sdpi-item>
+	<sdpi-item label="Dial press" id="press" hidden>
+		<sdpi-select setting="press" default="mute">
+			<option value="mute">Mute</option>
+			<option value="phantom">48V</option>
+			<option value="pad">Pad</option>
+			<option value="instrument">Instrument</option>
+			<option value="autoset">AutoSet</option>
+			<option value="none">Nothing</option>
+		</sdpi-select>
+	</sdpi-item>
 	<hr />
 	<div data-global></div>
 	<script src="common.js"></script>
+	<script>
+		// Only the Gain Dial has a press choice; the Input gain key shares this page.
+		SDPIComponents.streamDeckClient.getConnectionInfo().then(({ actionInfo }) => {
+			if (actionInfo.action.endsWith('.gain-dial')) document.getElementById('press').hidden = false
+		})
+	</script>
 </body>
 </html>

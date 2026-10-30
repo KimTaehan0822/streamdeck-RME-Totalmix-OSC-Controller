@@ -1,7 +1,7 @@
 import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
-import { channelName, gainNormalized, gainText, globalParameter, globalParameterText, hasCapability } from '../readers.js'
+import { channelName, channelParameter, gainNormalized, gainText, globalParameter, globalParameterText, hasCapability, muted } from '../readers.js'
 import { renderValueKey, renderValueStrip } from '../render/keys.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
 import { BLUE, ToggleAction, type Spec } from './channel-toggles.js'
@@ -74,6 +74,12 @@ export class GainAction extends TotalMixAction<JsonObject> {
 	}
 }
 
+// What a Gain Dial press switches; AutoSet exists only on some interfaces, so Mute is the default.
+const PRESS = { mute: 'MUTED', phantom: '48V', pad: 'PAD', instrument: 'INST', autoset: 'AUTOSET', none: '' }
+type Press = keyof typeof PRESS
+const pressOf = (s: JsonObject): Press => pick(s.press ?? 'mute', PRESS) ?? 'mute'
+const inputMix = (input: number) => ({ row: 'input' as const, source: input, destination: 0 })
+
 @action({ UUID: ID + 'gain-dial' })
 export class GainDialAction extends TotalMixAction<JsonObject> {
 	protected render(s: JsonObject, ctx: RenderContext): string {
@@ -81,11 +87,19 @@ export class GainDialAction extends TotalMixAction<JsonObject> {
 		if (input === undefined) return SETUP_STRIP
 		const c = this.connection
 		const text = gainText(c, input)
+		const press = pressOf(s)
+		// The note shows the pressed switch while it is on (or N/A when this input has none).
+		let note: string | undefined
+		let noteFill: string | undefined
+		if (press === 'mute') [note, noteFill] = muted(c, inputMix(input)) ? [PRESS.mute, 'rgb(255,57,31)'] : []
+		else if (press !== 'none' && !hasCapability(c, press, input)) note = `${PRESS[press]} N/A`
+		else if (press !== 'none' && channelParameter<boolean>(c, { bus: 'input', index: input }, press) === true) [note, noteFill] = [PRESS[press], 'rgb(40,140,255)']
 		return renderValueStrip({
 			title: inputName(c, input),
 			value: text && `${text} dB`,
 			bar: gainNormalized(c, input),
-			note: hasCapability(c, 'autoset', input) ? undefined : 'AUTOSET N/A',
+			note,
+			noteFill,
 			overlay: hasCapability(c, 'gain', input) ? ctx.overlay : 'unsupported',
 		})
 	}
@@ -106,8 +120,12 @@ export class GainDialAction extends TotalMixAction<JsonObject> {
 
 	override async onDialDown(ev: DialDownEvent<JsonObject>): Promise<void> {
 		const input = int(ev.payload.settings.channel, 0)
-		if (input === undefined || !hasCapability(this.connection, 'autoset', input)) return
-		await this.connection.run((c) => c.setChannelOption({ bus: 'input', index: input }, 'autoset', 'toggle'))
+		const press = pressOf(ev.payload.settings)
+		if (input === undefined || press === 'none') return
+		const t = { bus: 'input' as const, index: input }
+		if (press === 'mute') return this.connection.run((c) => c.setMute(t, 'toggle'))
+		if (!hasCapability(this.connection, press, input)) return
+		await this.connection.run((c) => c.setChannelOption(t, press, 'toggle'))
 	}
 }
 
