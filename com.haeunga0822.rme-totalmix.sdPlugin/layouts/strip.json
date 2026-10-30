@@ -1,0 +1,5 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+	"id": "com.haeunga0822.rme-totalmix.strip",
+	"items": [{ "key": "canvas", "type": "pixmap", "rect": [0, 0, 200, 100] }]
+}
