@@ -143,7 +143,8 @@ export class ButtonFaderAction extends FaderFamilyAction {
 		const t = targetOf(s)
 		const role = pick(s.role, ROLES)
 		if (!t || !role) return
-		const amount = role === 'top' || role === 'right' ? 1 : -1
+		const step = num(s.step)
+		const amount = (role === 'top' || role === 'right' ? 1 : -1) * (step > 0 ? step : 1)
 		this.hold(ev.action, () => this.apply(ev.action.id, t, true, (c) => adjustFader(c, t, amount, 'db')))
 	}
 }

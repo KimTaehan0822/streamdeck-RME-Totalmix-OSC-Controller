@@ -12,7 +12,7 @@
 	<script>
 		// Keys of the fader family: button-fader, fader, pan. The action UUID picks the fields.
 		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
-		const ROLES = { top: 'Top key (+1 dB)', bottom: 'Bottom key (-1 dB)', left: 'Left key (-1 dB)', right: 'Right key (+1 dB)' }
+		const ROLES = { top: 'Top key (up)', bottom: 'Bottom key (down)', left: 'Left key (down)', right: 'Right key (up)' }
 		const UNITS = { db: 'dB', linear: 'Linear (0-1)' }
 		const MODES = { set: 'Set to value', step: 'Step by value (hold repeats)' }
 		const KINDS = {
@@ -41,8 +41,10 @@
 				let html = select('row', 'Row', ROWS, 'default="input"')
 				html += channel('channel', row === 'output' ? 'Output' : 'Source', row)
 				if (row !== 'output') html += channel('destination', 'Destination', 'output')
-				if (kind.role) html += select('role', 'Key role', ROLES, 'placeholder="Select"')
-				else {
+				if (kind.role) {
+					html += select('role', 'Key role', ROLES, 'placeholder="Select"')
+					html += `<sdpi-item label="Step per press (dB)"><sdpi-textfield setting="step" default="1" placeholder="1 (e.g. 0.5, 2)"></sdpi-textfield></sdpi-item>`
+				} else {
 					html += select('mode', 'Mode', MODES, 'placeholder="Select"')
 					if (kind.unit) html += select('unit', 'Unit', UNITS, 'default="db"')
 					html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`

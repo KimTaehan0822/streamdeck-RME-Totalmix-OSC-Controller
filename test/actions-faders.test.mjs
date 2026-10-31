@@ -131,6 +131,20 @@ test('button-fader inside a multi-action steps once and does not repeat', async 
 	conn.stop()
 })
 
+test('button-fader step setting sets the dB per press (bottom, 2 dB = -2 dB)', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/output/3/faderlin', 0.5)
+	const key = new ButtonFaderAction(conn)
+	const k = fake('k1', false, { row: 'output', channel: 3, role: 'bottom', step: '2' }, true)
+	await key.onWillAppear(k.appear)
+	key.onKeyDown(k.ev())
+	await wait()
+	const last = sent.filter((m) => m.address === '/output/3/faderlin').at(-1)
+	assert.ok(Math.abs(last.args[0] - dbToNormalized(normalizedToDb(0.5) - 2)) < 1e-6)
+	await key.onWillDisappear(k.appear)
+	conn.stop()
+})
+
 test('valid channel with a missing role or destination shows SETUP, a missing channel shows CHANNEL', async () => {
 	const { conn } = setup()
 	for (const [Action, dial, s, hint] of [

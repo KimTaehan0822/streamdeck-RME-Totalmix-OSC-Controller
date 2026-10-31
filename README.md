@@ -57,7 +57,7 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 - Group: 그룹 설정/토글
 
 **페이더 / 값 조절 키**
-- Fader(2-Button): 두 키로 페이더 올리기/내리기 프리셋 (누르고 있으면 반복)
+- Fader(2-Button): 두 키로 페이더 올리기/내리기 프리셋 (누르고 있으면 반복, 한 번에 움직이는 양은 **Step per press (dB)**, 기본 1 dB)
 - Fader: 페이더를 정한 값으로 설정(Set) 하거나 정한 값만큼 올리기/내리기(Step, 누르고 있으면 반복)
 - Pan: 팬 설정 또는 Step으로 조절 (Step은 누르고 있으면 반복)
 - Input gain: 입력 게인 올리기/내리기 (누르고 있으면 반복)
