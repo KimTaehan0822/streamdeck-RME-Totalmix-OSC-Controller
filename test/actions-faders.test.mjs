@@ -48,6 +48,20 @@ test('vu-dial rotate of 3 ticks adjusts by +3 dB', async () => {
 	conn.stop()
 })
 
+test('vu-dial step setting scales each tick (2 ticks x 0.5 dB = +1 dB)', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/output/3/faderlin', 0.5)
+	const dial = new VuDialAction(conn)
+	const d = fake('d1', true, { row: 'output', channel: '3', step: '0.5' })
+	await dial.onWillAppear(d.appear)
+	dial.onDialRotate(d.ev({ ticks: 2 }))
+	await wait()
+	const last = sent.filter((m) => m.address === '/output/3/faderlin').at(-1)
+	assert.ok(Math.abs(last.args[0] - dbToNormalized(normalizedToDb(0.5) + 1)) < 1e-6)
+	await dial.onWillDisappear(d.appear)
+	conn.stop()
+})
+
 test('vu-dial press mutes, touch tap does nothing when touchMute is off', async () => {
 	const { conn, sent, msg } = setup()
 	msg('/output/3/mute', 0)

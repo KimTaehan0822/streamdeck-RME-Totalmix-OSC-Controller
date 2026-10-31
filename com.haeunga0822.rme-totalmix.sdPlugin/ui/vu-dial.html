@@ -13,8 +13,8 @@
 		// Encoder dials: vu-dial, pan-dial. The action UUID picks the fields.
 		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
 		const KINDS = {
-			'vu-dial': { touchMute: true },
-			'pan-dial': { step: true },
+			'vu-dial': { touchMute: true, step: 'dB' },
+			'pan-dial': { step: 'pan' },
 		}
 
 		const select = (setting, label, items, extra = '') =>
@@ -38,7 +38,8 @@
 				html += channel('channel', row === 'output' ? 'Output' : 'Source', row)
 				if (row !== 'output') html += channel('destination', 'Destination', 'output')
 				if (kind.touchMute) html += `<sdpi-item label="Touch tap mutes"><sdpi-checkbox setting="touchMute" default="true"></sdpi-checkbox></sdpi-item>`
-				if (kind.step) html += `<sdpi-item label="Step per tick"><sdpi-textfield setting="step" default="5" placeholder="5"></sdpi-textfield></sdpi-item>`
+				if (kind.step === 'dB') html += `<sdpi-item label="Step per tick (dB)"><sdpi-textfield setting="step" default="1" placeholder="1 (e.g. 0.5, 2)"></sdpi-textfield></sdpi-item>`
+				if (kind.step === 'pan') html += `<sdpi-item label="Step per tick"><sdpi-textfield setting="step" default="5" placeholder="5"></sdpi-textfield></sdpi-item>`
 				fields.innerHTML = html
 				initFields(fields)
 				// A new row needs a new channel list; the saved channel belongs to the old row.

@@ -113,7 +113,8 @@ export class VuDialAction extends DialAction {
 	}
 
 	protected rotate(id: string, t: MixTarget, ev: DialRotateEvent<JsonObject>): void {
-		this.apply(id, t, true, (c) => adjustFader(c, t, ev.payload.ticks, 'db'))
+		const step = num(ev.payload.settings.step)
+		this.apply(id, t, true, (c) => adjustFader(c, t, ev.payload.ticks * (step > 0 ? step : 1), 'db'))
 	}
 
 	protected press(t: MixTarget): Promise<void> {

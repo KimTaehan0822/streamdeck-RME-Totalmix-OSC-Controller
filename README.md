@@ -67,7 +67,7 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 반복이 멈추지 않으면 그 키를 한 번 더 누르면 멈춥니다. Multi Action 안에서는 반복하지 않고 한 번만 동작합니다.
 
 **다이얼 (Stream Deck +)**
-- VU Dial: 돌리면 페이더 ±1 dB, 누르면 뮤트, 레벨 미터 표시. **Touch tap mutes** 옵션(기본 켜짐)을 끄면 화면 터치로는 뮤트되지 않습니다.
+- VU Dial: 돌리면 페이더가 한 칸에 **Step per tick (dB)** 만큼 움직임 (기본 1 dB, 0.5 같은 소수도 가능), 누르면 뮤트, 레벨 미터 표시. **Touch tap mutes** 옵션(기본 켜짐)을 끄면 화면 터치로는 뮤트되지 않습니다.
 - Pan Dial: 돌리면 팬, 누르면 가운데
 - Gain Dial: 돌리면 게인, 누르면 고른 기능 켜기/끄기 (Mute 기본, 48V, Pad, Instrument, AutoSet, 아무것도 안 함)
 - FX Parameter Dial: 돌리면 FX 파라미터, 누르면 초기값
