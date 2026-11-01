@@ -3,7 +3,7 @@ import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import type { FaderUnit, TotalMixController } from '../protocol/controller.js'
 import { stringifyPresetTarget } from '../model/preset-target.js'
-import { channelName, faderBar, faderDb, levelBar, levelDb, muted, panText, panValue, type MixTarget } from '../readers.js'
+import { channelName, faderBar, faderDb, levelBar, levelDb, muted, panText, panValue, type LevelMode, type MixTarget } from '../readers.js'
 import { renderValueKey } from '../render/keys.js'
 import { renderButtonFader, renderVuStrip, type FaderRole, type MeterView } from '../render/meter.js'
 import { fitText, frame, plainText } from '../render/svg.js'
@@ -14,6 +14,8 @@ import { ALL, BUS_NAME, channelOf as settingsChannel, num, pick } from './common
 const ID = 'com.haeunga0822.rme-totalmix.'
 const ROLES: Record<FaderRole, unknown> = { top: 1, bottom: 1, left: 1, right: 1 }
 const MODES = { set: 1, step: 1 }
+const LEVEL_MODES: Record<LevelMode, unknown> = { peak: 1, rms: 1, lufs: 1 }
+const levelModeOf = (s: JsonObject): LevelMode => pick(s.levelMode ?? 'peak', LEVEL_MODES) ?? 'peak'
 // The PI offers "linear"; the controller calls the same thing "normalized".
 const UNITS: Record<string, FaderUnit> = { db: 'db', linear: 'normalized' }
 const EMPTY: MeterView = { name: '', left: 0, right: 0, faderDb: '', levelDb: '', muted: false, peek: false, overlay: 'setup' }
@@ -54,16 +56,16 @@ abstract class FaderFamilyAction extends TotalMixAction<JsonObject> {
 		return channelName(this.connection, ch) || `${BUS_NAME[ch.bus]} ${ch.index + 1}`
 	}
 
-	protected meter(t: MixTarget, overlay: RenderContext['overlay']): MeterView {
+	protected meter(t: MixTarget, overlay: RenderContext['overlay'], mode: LevelMode = 'peak'): MeterView {
 		const c = this.connection
 		const isMuted = muted(c, t)
 		return {
 			name: this.displayName(t),
 			fader: faderBar(c, t),
-			left: levelBar(c, t, 'left'),
-			right: levelBar(c, t, 'right'),
+			left: levelBar(c, t, 'left', mode),
+			right: levelBar(c, t, 'right', mode),
 			faderDb: faderDb(c, t),
-			levelDb: levelDb(c, t),
+			levelDb: levelDb(c, t, mode),
 			muted: isMuted,
 			peek: isMuted && faderAdjustedRecently(stringifyPresetTarget(t)),
 			overlay,
@@ -109,7 +111,7 @@ abstract class DialAction extends FaderFamilyAction {
 export class VuDialAction extends DialAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
-		return renderVuStrip(t ? this.meter(t, ctx.overlay) : emptyFor(s))
+		return renderVuStrip(t ? this.meter(t, ctx.overlay, levelModeOf(s)) : emptyFor(s))
 	}
 
 	protected rotate(id: string, t: MixTarget, ev: DialRotateEvent<JsonObject>): void {
@@ -135,7 +137,7 @@ export class ButtonFaderAction extends FaderFamilyAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
 		const role = pick(s.role, ROLES)
-		return t && role ? renderButtonFader(this.meter(t, ctx.overlay), role) : renderButtonFader(emptyFor(s), 'top')
+		return t && role ? renderButtonFader(this.meter(t, ctx.overlay, levelModeOf(s)), role) : renderButtonFader(emptyFor(s), 'top')
 	}
 
 	override onKeyDown(ev: KeyDownEvent<JsonObject>): void {

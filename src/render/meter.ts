@@ -117,7 +117,7 @@ export function renderVuStrip(v: MeterView): string {
 	body += plainText(n((4 + nameRight) / 2), base(14, 24), fitText(v.name, 24, nameRight - 4), { size: 24, fill: WHITE })
 	if (v.badge && badge) body += plainText(196, base(14, 15), badge, { size: 15, fill: v.badge.fill, anchor: 'end' })
 	if (!v.muted) {
-		body += plainText(4, base(82, 19), fitText(v.levelDb, 19, 96), { size: 19, fill: WHITE, anchor: 'start' })
+		body += plainText(4, base(82, 19), fitText(v.levelDb, 19, 116), { size: 19, fill: WHITE, anchor: 'start' })
 		// fitText overestimates digits; 150 lets 'Gain -11.0 dB' through while the real text still clears the left value.
 		body += plainText(196, base(82, 19), fitText(v.faderDb, 19, 150), { size: 19, fill: WHITE, anchor: 'end' })
 	} else if (v.peek) body += plainText(100, base(82, 19), fitText(v.faderDb, 19, 192), { size: 19, fill: WHITE })
@@ -164,7 +164,10 @@ export function renderButtonFader(v: MeterView, role: FaderRole): string {
 	for (const [kind, cy] of rows) {
 		// Long names shrink (down to 7 units, about 22 Latin or 13 Hangul characters) to fit the key rather than being cut.
 		if (kind === 'name') body += text(v.name, cy, WHITE, KEY - 8, fitSize(v.name, size, KEY - 8, 7 * u))
-		else if (!v.muted) body += text(kind === 'value' ? v.faderDb : v.levelDb, cy)
+		else if (!v.muted) {
+			const value = kind === 'value' ? v.faderDb : v.levelDb
+			body += text(value, cy, WHITE, KEY, fitSize(value, size, KEY, 10 * u))
+		}
 	}
 	// MUTED (or briefly the fader dB) sits in the bottom row of the bottom / right key
 	if (v.muted && vertical !== high) body += v.peek ? text(v.faderDb, 83) : text('MUTED', 83, RED)

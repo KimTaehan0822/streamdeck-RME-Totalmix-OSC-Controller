@@ -88,6 +88,12 @@ test('right key shows the fader value in its bottom row, level row of the left k
 	assert.ok(y > 100, `value baseline ${y} should sit in the bottom row`)
 })
 
+test('a LUFS level value is not cut on the dial or the two-key fader', () => {
+	const levelDb = '-23.0 LUFS'
+	assert.ok(renderVuStrip(view({ levelDb })).includes(`>${levelDb}<`))
+	assert.ok(renderButtonFader(view({ levelDb }), 'left').includes(`>${levelDb}<`))
+})
+
 test('long names shrink to fit the key instead of being cut', () => {
 	for (const role of ['left', 'top']) {
 		const svg = save(`long-${role}`, renderButtonFader(view({ name: 'Analog 1/2 Mic' }), role))

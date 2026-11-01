@@ -64,6 +64,8 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 - Global FX (Reverb / Echo): 글로벌 FX 켜기/끄기
 - FX parameter: FX 파라미터 설정 또는 Step으로 조절 (Step은 누르고 있으면 반복)
 
+VU Dial과 Fader(2-Button)의 **Level display**에서 레벨 표시를 Peak(기본), RMS dBFS(근사), LUFS(근사) 중에서 고를 수 있습니다. TotalMix OSC는 피크 값만 보내므로 RMS와 LUFS는 그 피크를 시간 평균한 근사값입니다 (RMS 0.3초, LUFS 3초, K-가중치 없음). 측정이나 납품 기준으로 쓰지 마세요.
+
 반복이 멈추지 않으면 그 키를 한 번 더 누르면 멈춥니다. Multi Action 안에서는 반복하지 않고 한 번만 동작합니다.
 
 **다이얼 (Stream Deck +)**
