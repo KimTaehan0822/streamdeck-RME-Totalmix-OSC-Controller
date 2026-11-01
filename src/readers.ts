@@ -4,13 +4,8 @@ import type { PresetMixerTarget } from './model/preset-target.js'
 import { detectDeviceProfile } from './model/profiles/index.js'
 import type { RoomEqSide } from './protocol/controller.js'
 import { dbToBar, formatDb, normalizedToDb } from './protocol/fader-curve.js'
-import { averageEnergy } from './state/level-average.js'
 
 export type MixTarget = PresetMixerTarget
-export type LevelMode = 'peak' | 'rms' | 'lufs'
-// RMS follows the signal; LUFS uses the short-term loudness window. LUFS adds BS.1770's offset but has no K-weighting (no audio to filter).
-const LEVEL_WINDOW_MS = { rms: 300, lufs: 3000 }
-const LUFS_OFFSET = -0.691
 export type CapabilityKind =
 	'gain' | 'phantom' | 'instrument' | 'pad' | 'autoset' | 'duRec' | 'globalFx' | 'roomEq' | 'channelFx'
 
@@ -53,13 +48,12 @@ export function faderDb(c: TotalMixConnection, t: MixTarget): string {
 	return state.value === undefined ? '' : state.display || formatDb(normalizedToDb(state.value))
 }
 
-function sideChannel(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right'): MixerChannelTarget {
-	const channel = channelOf(t)
+function levelSideDb(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right'): number | undefined {
+	let channel = channelOf(t)
 	// Global OSC sends one level per channel; a stereo pair's right side is the next index.
-	return side === 'right' && channelParameter<boolean>(c, channel, 'stereo') === true ? { ...channel, index: channel.index + 1 } : channel
-}
-
-function levelSideDb(c: TotalMixConnection, channel: MixerChannelTarget): number | undefined {
+	if (side === 'right' && channelParameter<boolean>(c, channel, 'stereo') === true) {
+		channel = { ...channel, index: channel.index + 1 }
+	}
 	c.registerChannel(channel)
 	const state = c.controller.state.getChannel(channel).levelLeft
 	if (state.display) {
@@ -69,38 +63,14 @@ function levelSideDb(c: TotalMixConnection, channel: MixerChannelTarget): number
 	return typeof state.value === 'number' ? state.value : undefined
 }
 
-/** Energy of one channel in an averaged mode; undefined until TotalMix has sent a level. */
-function channelEnergy(c: TotalMixConnection, channel: MixerChannelTarget, mode: Exclude<LevelMode, 'peak'>): number | undefined {
-	const db = levelSideDb(c, channel)
-	return db === undefined ? undefined : averageEnergy(`${channel.bus}:${channel.index}`, db, LEVEL_WINDOW_MS[mode])
+export function levelBar(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right'): number {
+	const db = levelSideDb(c, t, side)
+	return db === undefined ? 0 : dbToBar(db)
 }
 
-const energyDb = (energy: number) => (energy > 0 ? 10 * Math.log10(energy) : Number.NEGATIVE_INFINITY)
-
-export function levelBar(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right', mode: LevelMode = 'peak'): number {
-	const channel = sideChannel(c, t, side)
-	if (mode === 'peak') {
-		const db = levelSideDb(c, channel)
-		return db === undefined ? 0 : dbToBar(db)
-	}
-	const energy = channelEnergy(c, channel, mode)
-	return energy === undefined ? 0 : dbToBar(energyDb(energy))
-}
-
-export function levelDb(c: TotalMixConnection, t: MixTarget, mode: LevelMode = 'peak'): string {
-	const left = sideChannel(c, t, 'left')
-	const right = sideChannel(c, t, 'right')
-	if (mode === 'peak') {
-		const dbs = [left, right].map((ch) => levelSideDb(c, ch)).filter((db) => db !== undefined)
-		return dbs.length === 0 ? '' : formatDb(Math.max(...dbs))
-	}
-	const channels = left.index === right.index ? [left] : [left, right]
-	const energies = channels.map((ch) => channelEnergy(c, ch, mode)).filter((e) => e !== undefined)
-	if (energies.length === 0) return ''
-	// Loudness sums the channels; RMS shows the louder one, like the peak reading.
-	return mode === 'lufs'
-		? formatDb(LUFS_OFFSET + energyDb(energies.reduce((a, b) => a + b, 0))).replace('dB', 'LUFS')
-		: formatDb(energyDb(Math.max(...energies))).replace('dB', 'dBFS')
+export function levelDb(c: TotalMixConnection, t: MixTarget): string {
+	const dbs = [levelSideDb(c, t, 'left'), levelSideDb(c, t, 'right')].filter((db) => db !== undefined)
+	return dbs.length === 0 ? '' : formatDb(Math.max(...dbs))
 }
 
 export function muted(c: TotalMixConnection, t: MixTarget): boolean {

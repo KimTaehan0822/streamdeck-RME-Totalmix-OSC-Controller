@@ -37,7 +37,6 @@
 				let html = select('row', 'Row', ROWS, 'default="input"')
 				html += channel('channel', row === 'output' ? 'Output' : 'Source', row)
 				if (row !== 'output') html += channel('destination', 'Destination', 'output')
-				if (kind.touchMute) html += select('levelMode', 'Level display', { peak: 'Peak', rms: 'RMS dBFS (approx.)', lufs: 'LUFS (approx.)' }, 'default="peak"')
 				if (kind.touchMute) html += `<sdpi-item label="Touch tap mutes"><sdpi-checkbox setting="touchMute" default="true"></sdpi-checkbox></sdpi-item>`
 				if (kind.step === 'dB') html += `<sdpi-item label="Step per tick (dB)"><sdpi-textfield setting="step" default="1" placeholder="1 (e.g. 0.5, 2)"></sdpi-textfield></sdpi-item>`
 				if (kind.step === 'pan') html += `<sdpi-item label="Step per tick"><sdpi-textfield setting="step" default="5" placeholder="5"></sdpi-textfield></sdpi-item>`

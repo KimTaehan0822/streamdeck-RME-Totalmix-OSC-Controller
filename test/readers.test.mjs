@@ -3,7 +3,6 @@ import test from 'node:test'
 import { TotalMixConnection } from '../dist/connection.js'
 import * as r from '../dist/readers.js'
 import { dbToBar, normalizedToDb } from '../dist/protocol/fader-curve.js'
-import { averageEnergy } from '../dist/state/level-average.js'
 
 const settings = { host: '127.0.0.1', targetPort: 7001, feedbackPort: 9001, syncTimeoutMs: 50 }
 const tick = () => new Promise((resolve) => setImmediate(resolve))
@@ -38,30 +37,6 @@ test('levelBar right side reads the next channel of a stereo pair', () => {
 	assert.equal(left, dbToBar(-20))
 	assert.equal(r.levelBar(conn, { row: 'input', source: 9, destination: 1 }, 'left'), 0)
 	conn.stop()
-})
-
-test('rms and lufs readings average the level and carry their unit', () => {
-	const { conn, msg } = setup()
-	msg('/level/in/20', -20)
-	const mono = { row: 'input', source: 20, destination: 2 }
-	assert.equal(r.levelDb(conn, mono, 'rms'), '-20.0 dBFS')
-	assert.equal(r.levelDb(conn, mono, 'lufs'), '-20.7 LUFS')
-	assert.ok(Math.abs(r.levelBar(conn, mono, 'left', 'rms') - dbToBar(-20)) < 1e-9)
-	msg('/input/22/stereo', 1)
-	msg('/level/in/22', -20)
-	msg('/level/in/23', -20)
-	const stereo = { row: 'input', source: 22, destination: 2 }
-	assert.equal(r.levelDb(conn, stereo, 'lufs'), '-17.7 LUFS') // loudness sums both sides
-	assert.equal(r.levelDb(conn, { row: 'input', source: 30, destination: 2 }, 'lufs'), '')
-	conn.stop()
-})
-
-test('averageEnergy weights each reading by how long it held, within the window', () => {
-	const e = (db) => 10 ** (db / 10)
-	assert.equal(averageEnergy('a', -10, 300, 1000), e(-10))
-	averageEnergy('a', -30, 300, 1100) // -10 held for 100 ms
-	assert.ok(Math.abs(averageEnergy('a', -30, 300, 1300) - (e(-10) + 2 * e(-30)) / 3) < 1e-9)
-	assert.ok(Math.abs(averageEnergy('a', -30, 300, 1500) - e(-30)) < 1e-9) // -10 left the window
 })
 
 test('faderDb prefers the TotalMix display text', () => {
