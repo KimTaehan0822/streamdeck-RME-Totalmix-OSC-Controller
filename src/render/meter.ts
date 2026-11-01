@@ -162,8 +162,8 @@ export function renderButtonFader(v: MeterView, role: FaderRole): string {
 			? [['value', 83]]
 			: [['name', 12], ['level', 83]]
 	for (const [kind, cy] of rows) {
-		// Long names shrink (down to 10 units) to fit the key rather than being cut.
-		if (kind === 'name') body += text(v.name, cy, WHITE, KEY - 8, fitSize(v.name, size, KEY - 8, 10 * u))
+		// Long names shrink (down to 7 units, about 22 Latin or 13 Hangul characters) to fit the key rather than being cut.
+		if (kind === 'name') body += text(v.name, cy, WHITE, KEY - 8, fitSize(v.name, size, KEY - 8, 7 * u))
 		else if (!v.muted) body += text(kind === 'value' ? v.faderDb : v.levelDb, cy)
 	}
 	// MUTED (or briefly the fader dB) sits in the bottom row of the bottom / right key

@@ -94,5 +94,6 @@ test('long names shrink to fit the key instead of being cut', () => {
 		assert.ok(svg.includes('>Analog 1/2 Mic<'), role)
 		const size = Number(/font-size="([\d.]+)"[^>]*>Analog 1\/2 Mic</.exec(svg)?.[1])
 		assert.ok(size < 28.8, `${role} name size ${size}`)
+		for (const name of ['Headset Microphone', '게임 PC 사운드 입력단']) assert.ok(renderButtonFader(view({ name }), role).includes(`>${name}<`), name)
 	}
 })
