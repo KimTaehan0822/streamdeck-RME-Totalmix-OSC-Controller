@@ -41,6 +41,8 @@ test('emoji name cut at the boundary still encodes', () => {
 test('a name with Hangul uses the bold Hangul font; Latin text keeps Segoe UI', () => {
 	assert.match(toggle({ title: '보컬 Mic', label: undefined }), /font-family="Malgun Gothic"[^>]*font-weight="700"[^>]*>보컬 Mic</)
 	assert.match(toggle({ title: 'Mic', label: undefined }), /font-family="Segoe UI"[^>]*font-weight="600"[^>]*>Mic</)
+	assert.match(toggle({ title: '보컬' }), /font-size="21.3"[^>]*>보컬</) // 26 scaled down: Hangul stands taller than Latin
+	assert.match(toggle({ title: 'Mic' }), /font-size="26"[^>]*>Mic</)
 })
 
 test('xml-illegal control chars are removed', () => {
@@ -52,7 +54,7 @@ test('a long name shrinks to fit the key; only one too long even at the smallest
 	const fitted = toggle({ title: '마이크채널입력하나둘' })
 	assert.ok(fitted.includes('>마이크채널입력하나둘<'))
 	assert.ok(Number(/font-size="([\d.]+)"[^>]*>마이크/.exec(fitted)[1]) < 26)
-	const cut = toggle({ title: '마이크채널입력하나둘마이크채널입력하나둘' })
+	const cut = toggle({ title: '마이크채널입력하나둘'.repeat(3) })
 	assert.ok(cut.includes('…'))
 	assert.ok(toggle({ title: '마이크' }).includes('>마이크<'))
 })

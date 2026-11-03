@@ -12,6 +12,8 @@ const WEIGHT = 600
 const HANGUL_FONT = 'Malgun Gothic'
 const HANGUL_WEIGHT = 700
 const HANGUL = /[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3]/
+// Hangul stands much taller than Latin at the same size and ran into the key edge and the meter bars.
+const HANGUL_SCALE = 0.82
 
 export function svgDataUrl(svg: string): string {
 	return 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(svg)
@@ -30,15 +32,16 @@ export function plainText(
 	opts: { size: number; fill: string; anchor?: 'start' | 'middle' | 'end' },
 ): string {
 	const hangul = HANGUL.test(text)
+	const size = hangul ? +(opts.size * HANGUL_SCALE).toFixed(1) : opts.size
 	return (
-		`<text x="${x}" y="${y}" font-family="${hangul ? HANGUL_FONT : FONT}" font-size="${opts.size}" font-weight="${hangul ? HANGUL_WEIGHT : WEIGHT}" ` +
+		`<text x="${x}" y="${y}" font-family="${hangul ? HANGUL_FONT : FONT}" font-size="${size}" font-weight="${hangul ? HANGUL_WEIGHT : WEIGHT}" ` +
 		`text-anchor="${opts.anchor ?? 'middle'}" fill="${opts.fill}">${escapeXml(text)}</text>`
 	)
 }
 
-// Hangul, CJK and full-width characters are about 1 em wide, the rest 0.6 em
+// Hangul and other CJK and full-width characters are about 1 em wide (Hangul drawn at HANGUL_SCALE), the rest 0.6 em
 const WIDE = /[\u1100-\u11ff\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\uff00-\uffef]|[\u{20000}-\u{3ffff}]/u
-const charWidth = (c: string, size: number) => (WIDE.test(c) ? 1 : 0.6) * size
+const charWidth = (c: string, size: number) => (HANGUL.test(c) ? HANGUL_SCALE : WIDE.test(c) ? 1 : 0.6) * size
 
 // shortcut: per-class width estimate (no font metrics in Node); upgrade if cut-offs look wrong on a real key
 export function fitText(text: string, size: number, maxWidth = KEY - 8): string {

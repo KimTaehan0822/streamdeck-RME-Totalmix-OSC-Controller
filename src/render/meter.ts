@@ -163,7 +163,7 @@ export function renderButtonFader(v: MeterView, role: FaderRole): string {
 			? [['value', 83]]
 			: [['name', 12], ['level', 83]]
 	for (const [kind, cy] of rows) {
-		// Long names shrink (down to 7 units, about 21 Latin or 12 Hangul characters) to fit the key rather than being cut.
+		// Long names shrink (down to 7 units, about 21 Latin or 15 Hangul characters) to fit the key rather than being cut.
 		if (kind === 'name') body += text(v.name, cy, WHITE, KEY - 8, fitSize(v.name, size, NAME_WIDTH, 7 * u))
 		else if (!v.muted) body += text(kind === 'value' ? v.faderDb : v.levelDb, cy)
 	}
