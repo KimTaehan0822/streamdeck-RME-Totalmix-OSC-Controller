@@ -62,6 +62,25 @@ test('vu-dial step setting scales each tick (2 ticks x 0.5 dB = +1 dB)', async (
 	conn.stop()
 })
 
+test('display name replaces the channel name on the dial and fader keys; blank keeps it', async () => {
+	const { conn, msg } = setup()
+	msg('/output/3/name', 'Monitors')
+	for (const [Action, dial, extra] of [[VuDialAction, true, {}], [ButtonFaderAction, false, { role: 'left' }], [FaderAction, false, { mode: 'step', value: '1' }]]) {
+		const action = new Action(conn)
+		const named = fake('n1', dial, { row: 'output', channel: 3, displayName: ' My Mix ', ...extra })
+		await action.onWillAppear(named.appear)
+		await wait()
+		assert.match(named.images.at(-1), />My Mix</)
+		await action.onWillDisappear(named.appear)
+		const blank = fake('n2', dial, { row: 'output', channel: 3, displayName: ' ', ...extra })
+		await action.onWillAppear(blank.appear)
+		await wait()
+		assert.match(blank.images.at(-1), />Monitors</)
+		await action.onWillDisappear(blank.appear)
+	}
+	conn.stop()
+})
+
 test('vu-dial press mutes, touch tap does nothing when touchMute is off', async () => {
 	const { conn, sent, msg } = setup()
 	msg('/output/3/mute', 0)

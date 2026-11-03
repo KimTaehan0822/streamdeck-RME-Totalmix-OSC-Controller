@@ -49,16 +49,18 @@ abstract class FaderFamilyAction extends TotalMixAction<JsonObject> {
 		super.onWillDisappear(ev)
 	}
 
-	protected displayName(t: MixTarget): string {
+	protected displayName(t: MixTarget, s: JsonObject): string {
+		const custom = typeof s.displayName === 'string' ? s.displayName.trim() : ''
+		if (custom) return custom
 		const ch = t.row === 'output' ? { bus: 'output' as const, index: t.output } : { bus: t.row, index: t.source }
 		return channelName(this.connection, ch) || `${BUS_NAME[ch.bus]} ${ch.index + 1}`
 	}
 
-	protected meter(t: MixTarget, overlay: RenderContext['overlay']): MeterView {
+	protected meter(t: MixTarget, s: JsonObject, overlay: RenderContext['overlay']): MeterView {
 		const c = this.connection
 		const isMuted = muted(c, t)
 		return {
-			name: this.displayName(t),
+			name: this.displayName(t, s),
 			fader: faderBar(c, t),
 			left: levelBar(c, t, 'left'),
 			right: levelBar(c, t, 'right'),
@@ -73,7 +75,7 @@ abstract class FaderFamilyAction extends TotalMixAction<JsonObject> {
 	protected register(s: JsonObject): void {
 		const t = targetOf(s)
 		if (!t) return
-		this.meter(t, 'none')
+		this.meter(t, s, 'none')
 		panValue(this.connection, t)
 	}
 
@@ -109,7 +111,7 @@ abstract class DialAction extends FaderFamilyAction {
 export class VuDialAction extends DialAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
-		return renderVuStrip(t ? this.meter(t, ctx.overlay) : emptyFor(s))
+		return renderVuStrip(t ? this.meter(t, s, ctx.overlay) : emptyFor(s))
 	}
 
 	protected rotate(id: string, t: MixTarget, ev: DialRotateEvent<JsonObject>): void {
@@ -135,7 +137,7 @@ export class ButtonFaderAction extends FaderFamilyAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
 		const role = pick(s.role, ROLES)
-		return t && role ? renderButtonFader(this.meter(t, ctx.overlay), role) : renderButtonFader(emptyFor(s), 'top')
+		return t && role ? renderButtonFader(this.meter(t, s, ctx.overlay), role) : renderButtonFader(emptyFor(s), 'top')
 	}
 
 	override onKeyDown(ev: KeyDownEvent<JsonObject>): void {
@@ -161,7 +163,7 @@ abstract class ValueKeyAction extends FaderFamilyAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
 		if (!t || !this.valid(s)) return SETUP_KEY
-		return renderValueKey({ title: this.displayName(t), ...this.show(t), overlay: ctx.overlay })
+		return renderValueKey({ title: this.displayName(t, s), ...this.show(t), overlay: ctx.overlay })
 	}
 
 	override onKeyDown(ev: KeyDownEvent<JsonObject>): void {
@@ -214,7 +216,7 @@ export class PanDialAction extends DialAction {
 			`<rect x="${Math.min(x, 100)}" y="50" width="${Math.abs(x - 100)}" height="14" fill="rgb(40,140,255)"/>` +
 			`<rect x="99" y="44" width="2" height="26" fill="#fff"/>`
 		const body =
-			plainText(100, 28, fitText(this.displayName(t), 24, 192), { size: 24, fill: '#fff' }) +
+			plainText(100, 28, fitText(this.displayName(t, s), 24, 192), { size: 24, fill: '#fff' }) +
 			bar +
 			plainText(100, 92, String(panText(this.connection, t)), { size: 19, fill: '#fff' })
 		return frame(200, 100, body, ctx.overlay)

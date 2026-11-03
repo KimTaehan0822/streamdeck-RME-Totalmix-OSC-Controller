@@ -114,7 +114,8 @@ export function renderVuStrip(v: MeterView): string {
 	// A badge takes the right end of the name row; the name centres in what is left.
 	const badge = v.badge && fitText(v.badge.text, 15, 96)
 	const nameRight = badge ? 196 - badge.length * 9 - 8 : 196
-	body += plainText(n((4 + nameRight) / 2), base(14, 24), fitText(v.name, 24, nameRight - 4), { size: 24, fill: WHITE })
+	const nameSize = fitSize(v.name, 24, nameRight - 8, 12)
+	body += plainText(n((4 + nameRight) / 2), base(14, nameSize), fitText(v.name, nameSize, nameRight - 4), { size: nameSize, fill: WHITE })
 	if (v.badge && badge) body += plainText(196, base(14, 15), badge, { size: 15, fill: v.badge.fill, anchor: 'end' })
 	if (!v.muted) {
 		body += plainText(4, base(82, 19), fitText(v.levelDb, 19, 96), { size: 19, fill: WHITE, anchor: 'start' })

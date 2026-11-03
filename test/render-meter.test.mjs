@@ -94,6 +94,11 @@ test('capitals count as wider, so an all-caps name is sized below a lowercase on
 	assert.ok(sizeOf('daw out') > sizeOf('DAW OUT'))
 })
 
+test('a long name shrinks on the VU strip too', () => {
+	const svg = renderVuStrip(view({ name: 'Streaming Mix Bus' }))
+	assert.ok(svg.includes('>Streaming Mix Bus<'))
+})
+
 test('long names shrink to fit the key instead of being cut', () => {
 	for (const role of ['left', 'top']) {
 		const svg = save(`long-${role}`, renderButtonFader(view({ name: 'Analog 1/2 Mic' }), role))

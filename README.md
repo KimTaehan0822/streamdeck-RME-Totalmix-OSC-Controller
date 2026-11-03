@@ -67,10 +67,14 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 반복이 멈추지 않으면 그 키를 한 번 더 누르면 멈춥니다. Multi Action 안에서는 반복하지 않고 한 번만 동작합니다.
 
 **다이얼 (Stream Deck +)**
-- VU Dial: 돌리면 페이더가 한 칸에 **Step per tick (dB)** 만큼 움직임 (기본 1 dB, 0.5 같은 소수도 가능), 누르면 뮤트, 레벨 미터 표시. **Touch tap mutes** 옵션(기본 켜짐)을 끄면 화면 터치로는 뮤트되지 않습니다.
+- VU Dial: **Display name** 칸에 이름을 넣으면 그 이름으로 표시 (비우면 TotalMix 이름). 돌리면 페이더가 한 칸에 **Step per tick (dB)** 만큼 움직임 (기본 1 dB, 0.5 같은 소수도 가능), 누르면 뮤트, 레벨 미터 표시. **Touch tap mutes** 옵션(기본 켜짐)을 끄면 화면 터치로는 뮤트되지 않습니다.
 - Pan Dial: 돌리면 팬, 누르면 가운데
 - Gain Dial: 돌리면 게인, 누르면 고른 기능 켜기/끄기 (Mute 기본, 48V, Pad, Instrument, AutoSet, 아무것도 안 함)
 - FX Parameter Dial: 돌리면 FX 파라미터, 누르면 초기값
+
+**숨긴 채널**
+- 설정 화면의 **Hidden channels** 를 켜면 TotalMix에서 숨긴 채널도 채널 목록에 `(hidden)` 표시와 함께 나옵니다 (모든 액션에 공유). TotalMix의 **Receive on hidden Channels** 도 켜야 조작할 수 있습니다.
+- TotalMix는 숨긴 채널의 상태를 보내지 않으므로 이름, 레벨, 페이더 값은 표시되지 않고 현재 값을 기준으로 하는 조작(Step, Toggle)은 안 될 수 있습니다.
 
 **전역 키**
 - Snapshot: 스냅샷 **번호**로 불러오기 (TotalMix OSC에는 스냅샷 이름이 없습니다)

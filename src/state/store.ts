@@ -238,6 +238,11 @@ export class TotalMixStateStore {
 			})
 	}
 
+	/** Channels TotalMix has never reported: it sends nothing for channels hidden from OSC, so only the device profile knows them. */
+	getHiddenChannels(bus: MixerBus, profileChannels: ChannelDefinition[]): ChannelDefinition[] {
+		return profileChannels.filter((channel) => !this.discoveredChannels[bus].has(channel.index))
+	}
+
 	get hasGlobalDiscoveryData(): boolean {
 		return Object.values(this.discoveredChannels).some((channels) => channels.size > 0)
 	}

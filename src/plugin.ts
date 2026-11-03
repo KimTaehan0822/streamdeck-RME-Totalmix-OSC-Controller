@@ -16,7 +16,13 @@ export const connection = new TotalMixConnection()
 export const actions: SingletonAction[] = [...channelToggleActions(connection), ...faderActions(connection), ...gainFxActions(connection), ...globalActions(connection)]
 
 let current: ConnectionSettings | undefined
-function apply(raw: Parameters<typeof normalizeSettings>[0]): void {
+let showHidden = false
+function apply(raw: Parameters<typeof normalizeSettings>[0] & { showHiddenChannels?: unknown }): void {
+	const hidden = raw.showHiddenChannels === true || raw.showHiddenChannels === 'true'
+	if (hidden !== showHidden) {
+		showHidden = hidden
+		for (const event of requested.keys()) pushChannels(event, event.split(':')[1])
+	}
 	const next = normalizeSettings(raw)
 	if (current && JSON.stringify(current) === JSON.stringify(next)) return
 	current = next
@@ -27,7 +33,7 @@ function apply(raw: Parameters<typeof normalizeSettings>[0]): void {
 // The list is re-pushed whenever it changes (e.g. TotalMix connects), which hot-reload picks up.
 const requested = new Map<string, string>()
 function pushChannels(event: string, bus: unknown, force = false): void {
-	const items = channelItems(connection.controller.state, bus)
+	const items = channelItems(connection.controller.state, bus, showHidden)
 	const json = JSON.stringify(items)
 	if (!force && requested.get(event) === json) return
 	requested.set(event, json)

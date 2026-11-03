@@ -1,5 +1,6 @@
 import type { ConnectionSettings } from '../connection.js'
 import type { ChannelDefinition, MixerBus } from '../model/device-profile.js'
+import { detectDeviceProfile } from '../model/profiles/index.js'
 
 type RawSettings = Partial<Record<keyof ConnectionSettings, unknown>>
 
@@ -20,14 +21,26 @@ export function normalizeSettings(raw: RawSettings): ConnectionSettings {
 }
 
 const BUS_LABEL = { input: 'Input', playback: 'Playback', output: 'Output' } as const
+const PROFILE_LIST = { input: 'inputs', playback: 'playbacks', output: 'outputs' } as const
 
 /** Dropdown items for a bus; unknown bus gives none, no discovered channels gives 1..48 so actions can be set up offline. */
 export function channelItems(
-	state: { getDiscoveredChannels(bus: MixerBus): ChannelDefinition[] },
+	state: {
+		getDiscoveredChannels(bus: MixerBus): ChannelDefinition[]
+		getHiddenChannels?(bus: MixerBus, profileChannels: ChannelDefinition[]): ChannelDefinition[]
+		detectedDevice?: string
+	},
 	bus: unknown,
+	showHidden = false,
 ): { value: number; label: string }[] {
 	if (bus !== 'input' && bus !== 'playback' && bus !== 'output') return []
 	const found = state.getDiscoveredChannels(bus)
-	if (found.length) return found.map((c) => ({ value: c.index, label: c.label }))
+	if (found.length) {
+		const items = found.map((c) => ({ value: c.index, label: c.label }))
+		const profile = showHidden && state.detectedDevice ? detectDeviceProfile(state.detectedDevice) : undefined
+		if (!profile || !state.getHiddenChannels) return items
+		const hidden = state.getHiddenChannels(bus, profile[PROFILE_LIST[bus]]).map((c) => ({ value: c.index, label: `${c.label} (hidden)` }))
+		return [...items, ...hidden].sort((a, b) => a.value - b.value)
+	}
 	return Array.from({ length: 48 }, (_, i) => ({ value: i, label: `${BUS_LABEL[bus]} ${i + 1}` }))
 }
