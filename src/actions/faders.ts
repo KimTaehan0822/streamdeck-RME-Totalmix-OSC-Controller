@@ -4,7 +4,7 @@ import type { TotalMixConnection } from '../connection.js'
 import type { FaderUnit, TotalMixController } from '../protocol/controller.js'
 import { stringifyPresetTarget } from '../model/preset-target.js'
 import { channelName, faderBar, faderDb, levelBar, levelDb, muted, panText, panValue, type MixTarget } from '../readers.js'
-import { renderValueKey } from '../render/keys.js'
+import { renderValueKey, type ValueKeyView } from '../render/keys.js'
 import { renderButtonFader, renderVuStrip, type FaderRole, type MeterView } from '../render/meter.js'
 import { fitText, frame, plainText } from '../render/svg.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
@@ -154,7 +154,7 @@ export class ButtonFaderAction extends FaderFamilyAction {
 const SETUP_KEY = renderValueKey({ title: '', value: '', overlay: 'setup' })
 
 abstract class ValueKeyAction extends FaderFamilyAction {
-	protected abstract show(t: MixTarget): { value: string; bar: number | undefined }
+	protected abstract show(t: MixTarget): Pick<ValueKeyView, 'value' | 'bar' | 'meter'>
 	protected abstract send(id: string, t: MixTarget, set: boolean, value: number, s: JsonObject): void
 	protected valid(s: JsonObject): boolean {
 		return !!pick(s.mode, MODES) && Number.isFinite(num(s.value))
@@ -183,7 +183,8 @@ export class FaderAction extends ValueKeyAction {
 	}
 
 	protected show(t: MixTarget) {
-		return { value: faderDb(this.connection, t), bar: faderBar(this.connection, t) }
+		const c = this.connection
+		return { value: faderDb(c, t), meter: { fader: faderBar(c, t), left: levelBar(c, t, 'left'), right: levelBar(c, t, 'right'), muted: muted(c, t) } }
 	}
 
 	protected send(id: string, t: MixTarget, set: boolean, value: number, s: JsonObject): void {

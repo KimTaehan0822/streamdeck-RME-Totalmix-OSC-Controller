@@ -66,6 +66,27 @@ test('value bar is clamped to 0..1', () => {
 	assert.ok(!renderValueKey({ title: 'T', value: '0', overlay: 'none' }).includes('height="14"'))
 })
 
+test('value key meter: VU colours and fader line in the same 124x14 box', () => {
+	const m = (o) => renderValueKey({ title: 'T', value: '0', meter: { fader: 0.5, left: 0.5, right: 0.25, muted: false, ...o }, overlay: 'none' })
+	const s = m({})
+	assert.ok(s.includes('<linearGradient id="g"'))
+	assert.ok(s.includes('x="10" y="108" width="124" height="6" fill="url(#g)" opacity="0.25"'))
+	assert.ok(s.includes('x="10" y="116" width="124" height="6" fill="url(#g)" opacity="0.25"'))
+	assert.ok(s.includes('x="10" y="108" width="62" height="6" fill="url(#g)"/>'))
+	assert.ok(s.includes('x="10" y="116" width="31" height="6" fill="url(#g)"/>'))
+	assert.ok(s.includes('<line x1="72" y1="105" x2="72" y2="125" stroke="rgb(40,140,255)"'))
+	assert.ok(!s.includes('height="14"'))
+	assert.ok(!s.includes('stroke="rgb(255,57,31)"'))
+	assert.ok(!m({ fader: undefined }).includes('stroke="rgb(40,140,255)"'))
+	const muted = m({ muted: true })
+	assert.ok(muted.includes('<g opacity="0.4"><rect x="10" y="108"'))
+	assert.ok(muted.includes('stroke="rgb(255,57,31)"'))
+	for (const value of ['0.0 dB', '-5.0 dB', '-12.5 dB']) {
+		const key = renderValueKey({ title: 'T', value, meter: { left: 0, right: 0, muted: false }, overlay: 'none' })
+		assert.ok(key.includes(`font-size="26" font-weight="600" text-anchor="middle" fill="#fff">${value}<`), value)
+	}
+})
+
 test('unsupported and setup overlays', () => {
 	const u = toggle({ overlay: 'unsupported' })
 	assert.ok(u.includes('N/A'))

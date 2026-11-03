@@ -1,3 +1,4 @@
+import { renderKeyMeter, type MeterBars } from './meter.js'
 import { KEY, NAME_WIDTH, fitSize, fitText, frame, plainText, type Overlay } from './svg.js'
 
 const WHITE = '#fff'
@@ -23,15 +24,19 @@ export interface ValueKeyView {
 	title: string
 	value: string
 	bar?: number
+	/** Level meter drawn in place of the plain bar. */
+	meter?: MeterBars
 	overlay: Overlay
 }
 
 export function renderValueKey(v: ValueKeyView): string {
 	let body = plainText(72, 40, fitText(v.title, 26), { size: 26, fill: WHITE })
 	// A value too wide at 34 px (e.g. "-12.5 dB") steps down to 26 px before it is cut.
-	const size = fitText(v.value, 34) === v.value ? 34 : 26
+	// A meter key keeps one size: its dB value changes length as the fader moves, and the size would jump with it.
+	const size = !v.meter && fitText(v.value, 34) === v.value ? 34 : 26
 	body += plainText(72, 90, fitText(v.value, size), { size, fill: WHITE })
-	if (v.bar !== undefined) {
+	if (v.meter) body += renderKeyMeter(v.meter)
+	else if (v.bar !== undefined) {
 		const w = Math.round(Math.min(1, Math.max(0, v.bar)) * 124)
 		body += `<rect x="10" y="108" width="124" height="14" fill="#333"/><rect x="10" y="108" width="${w}" height="14" fill="rgb(40,140,255)"/>`
 	}

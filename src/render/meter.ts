@@ -126,6 +126,19 @@ export function renderVuStrip(v: MeterView): string {
 	return frame(200, 100, body, v.overlay)
 }
 
+export type MeterBars = Pick<MeterView, 'fader' | 'left' | 'right' | 'muted'>
+
+/** The VU strip's bars and fader line, fitted to the 124x14 value bar of a key. */
+export function renderKeyMeter(v: MeterBars): string {
+	const s: Scale = { sx: 1, sy: 1, vertical: false, min: 0, max: 1 }
+	const l: Box = { x: 10, y: 108, w: 124, h: 6 }
+	const r: Box = { x: 10, y: 116, w: 124, h: 6 }
+	let body = `<defs>${gradient(l, s)}</defs>`
+	body += `<g${v.muted ? ' opacity="0.4"' : ''}>${bar(l, s, v.left)}${bar(r, s, v.right)}</g>`
+	if (v.muted) body += hatch([12, 28, 44, 60, 76, 92, 108, 124].map((x) => [x, 122, x + 10, 108]), s, 1)
+	return body + marker({ x: 10, y: 105, w: 124, h: 20 }, s, v.fader, 1)
+}
+
 export function renderButtonFader(v: MeterView, role: FaderRole): string {
 	const vertical = role === 'top' || role === 'bottom'
 	const high = role === 'top' || role === 'right'

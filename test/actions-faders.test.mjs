@@ -71,6 +71,7 @@ test('display name replaces the channel name on the dial and fader keys; blank k
 		await action.onWillAppear(named.appear)
 		await wait()
 		assert.match(named.images.at(-1), />My Mix</)
+		if (Action === FaderAction) assert.match(named.images.at(-1), /height="6" fill="url\(#g\)"/)
 		await action.onWillDisappear(named.appear)
 		const blank = fake('n2', dial, { row: 'output', channel: 3, displayName: ' ', ...extra })
 		await action.onWillAppear(blank.appear)
