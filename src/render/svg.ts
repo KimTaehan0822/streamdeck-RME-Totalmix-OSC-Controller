@@ -5,9 +5,13 @@ export const NAME_WIDTH = KEY - 16
 export type Overlay = 'none' | 'offline' | 'unsupported' | 'setup' | 'config'
 
 // Same face, weight and plain fill (no outline) as Elgato's Spotify plugin. One family name only:
-// the Stream Deck SVG renderer is not a browser, and Windows font fallback still covers Hangul.
+// the Stream Deck SVG renderer is not a browser.
 const FONT = 'Segoe UI'
 const WEIGHT = 600
+// Segoe UI has no Hangul and the fallback draws it thin; Malgun Gothic has only Regular and Bold, and Bold matches Segoe's 600.
+const HANGUL_FONT = 'Malgun Gothic'
+const HANGUL_WEIGHT = 700
+const HANGUL = /[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3]/
 
 export function svgDataUrl(svg: string): string {
 	return 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(svg)
@@ -25,8 +29,9 @@ export function plainText(
 	text: string,
 	opts: { size: number; fill: string; anchor?: 'start' | 'middle' | 'end' },
 ): string {
+	const hangul = HANGUL.test(text)
 	return (
-		`<text x="${x}" y="${y}" font-family="${FONT}" font-size="${opts.size}" font-weight="${WEIGHT}" ` +
+		`<text x="${x}" y="${y}" font-family="${hangul ? HANGUL_FONT : FONT}" font-size="${opts.size}" font-weight="${hangul ? HANGUL_WEIGHT : WEIGHT}" ` +
 		`text-anchor="${opts.anchor ?? 'middle'}" fill="${opts.fill}">${escapeXml(text)}</text>`
 	)
 }

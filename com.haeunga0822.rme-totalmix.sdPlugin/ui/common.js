@@ -10,7 +10,6 @@ const GLOBAL_BLOCK = `
 	details.connection > summary:hover, details.connection > summary:focus-visible { color: #d8d8d8; }
 	details.connection > summary:focus-visible { outline: 1px solid #708090; }
 </style>
-<sdpi-item label="Hidden channels"><sdpi-checkbox setting="showHiddenChannels" global label="Show in channel lists"></sdpi-checkbox></sdpi-item>
 <details class="connection"><summary>TotalMix connection (OSC)</summary>
 <sdpi-item label="Host"><sdpi-textfield setting="host" global default="127.0.0.1"></sdpi-textfield></sdpi-item>
 <sdpi-item label="TotalMix port"><sdpi-textfield setting="targetPort" global default="7001" pattern="^[0-9]{1,5}$"></sdpi-textfield></sdpi-item>

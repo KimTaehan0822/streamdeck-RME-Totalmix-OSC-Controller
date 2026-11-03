@@ -3,7 +3,6 @@ import test from 'node:test'
 import { TotalMixConnection } from '../dist/connection.js'
 import * as r from '../dist/readers.js'
 import { dbToBar, normalizedToDb } from '../dist/protocol/fader-curve.js'
-import { channelItems } from '../dist/runtime/settings.js'
 
 const settings = { host: '127.0.0.1', targetPort: 7001, feedbackPort: 9001, syncTimeoutMs: 50 }
 const tick = () => new Promise((resolve) => setImmediate(resolve))
@@ -37,23 +36,6 @@ test('levelBar right side reads the next channel of a stereo pair', () => {
 	assert.equal(r.levelBar(conn, input1, 'right'), dbToBar(-6))
 	assert.equal(left, dbToBar(-20))
 	assert.equal(r.levelBar(conn, { row: 'input', source: 9, destination: 1 }, 'left'), 0)
-	conn.stop()
-})
-
-test('hidden channels join the list only when asked; a stereo pair right side stays out', () => {
-	const { conn, msg } = setup()
-	const state = conn.controller.state
-	msg('/status/device', 'Babyface Pro (1)')
-	msg('/input/0/name', 'Mic')
-	msg('/input/4/name', 'GamePC')
-	msg('/input/4/stereo', 1)
-	msg('/input/5/mute', 0)
-	assert.deepEqual(channelItems(state, 'input').map((i) => i.label), ['Mic', 'GamePC'])
-	const all = channelItems(state, 'input', true)
-	assert.deepEqual(all.slice(0, 4).map((i) => [i.value, i.label]), [[0, 'Mic'], [1, 'AN 2 (hidden)'], [2, 'AN 3 (hidden)'], [3, 'AN 4 (hidden)']])
-	assert.deepEqual(all[4], { value: 4, label: 'GamePC' })
-	assert.equal(all[5].value, 6) // 5 is GamePC's right side
-	assert.equal(all.length, 11) // 12 channels less the right side
 	conn.stop()
 })
 

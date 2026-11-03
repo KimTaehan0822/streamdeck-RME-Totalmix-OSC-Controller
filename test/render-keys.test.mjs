@@ -38,6 +38,11 @@ test('emoji name cut at the boundary still encodes', () => {
 	assert.doesNotThrow(() => svgDataUrl(toggle({ title: 'x\ud83d' })))
 })
 
+test('a name with Hangul uses the bold Hangul font; Latin text keeps Segoe UI', () => {
+	assert.match(toggle({ title: '보컬 Mic', label: undefined }), /font-family="Malgun Gothic"[^>]*font-weight="700"[^>]*>보컬 Mic</)
+	assert.match(toggle({ title: 'Mic', label: undefined }), /font-family="Segoe UI"[^>]*font-weight="600"[^>]*>Mic</)
+})
+
 test('xml-illegal control chars are removed', () => {
 	const svg = toggle({ title: 'A\u0001B\u000bC' })
 	assert.ok(svg.includes('>ABC<'))
