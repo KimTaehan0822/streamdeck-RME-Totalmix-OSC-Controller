@@ -52,7 +52,13 @@ export abstract class ToggleAction extends TotalMixAction<JsonObject> {
 		const spec = this.spec(s)
 		if (!spec) return renderToggleKey({ title: '', on: false, onColor: '#000', overlay: this.setupHint(s) })
 		const overlay = spec.supported && !spec.supported() ? 'unsupported' : ctx.overlay
-		return renderToggleKey({ title: spec.title(), label: spec.label, on: spec.read(), onColor: spec.color, overlay })
+		return renderToggleKey({
+			title: ctx.userTitle ? '' : spec.title(),
+			label: ctx.userTitle ? undefined : spec.label,
+			on: spec.read(),
+			onColor: spec.color,
+			overlay,
+		})
 	}
 
 	protected register(s: JsonObject): void {
@@ -71,6 +77,11 @@ export abstract class ToggleAction extends TotalMixAction<JsonObject> {
 
 @action({ UUID: ID + 'mute' })
 export class MuteAction extends ToggleAction {
+	protected override keyState(s: JsonObject): 0 | 1 | undefined {
+		const spec = this.spec(s)
+		return spec && (spec.read() ? 1 : 0)
+	}
+
 	protected spec(s: JsonObject): Spec | undefined {
 		const t = channelOf(s, ALL)
 		if (!t) return undefined

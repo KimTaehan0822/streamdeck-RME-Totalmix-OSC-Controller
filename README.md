@@ -51,7 +51,7 @@ Stream Deck(특히 Stream Deck + / XL)에서 RME TotalMix FX를 **Global OSC**�
 채널 선택 목록은 TotalMix에 연결되기 전에는 **1..48 번호 목록**으로 보입니다. 연결되면 실제 채널 이름으로 바뀝니다.
 
 **채널 키**
-- Mute / Solo: 채널 뮤트, 솔로
+- Mute / Solo: 채널 뮤트, 솔로. Mute는 스트림덱 앱에서 상태 1(뮤트 꺼짐)과 상태 2(뮤트 켜짐)의 아이콘과 제목을 따로 정할 수 있습니다. 직접 정한 아이콘이 있는 상태에서는 플러그인 화면(OFFLINE 표시 포함) 대신 그 아이콘이 보입니다.
 - Input option: 48V, Inst, Pad, AutoSet
 - Output loopback: 출력 루프백
 - Group: 그룹 설정/토글

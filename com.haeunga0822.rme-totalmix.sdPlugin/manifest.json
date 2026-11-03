@@ -30,7 +30,11 @@
 				"Keypad"
 			],
 			"PropertyInspectorPath": "ui/channel-toggle.html",
+			"DisableAutomaticStates": true,
 			"States": [
+				{
+					"Image": "imgs/channel"
+				},
 				{
 					"Image": "imgs/channel"
 				}

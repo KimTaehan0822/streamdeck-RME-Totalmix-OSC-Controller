@@ -88,6 +88,12 @@ test('right key shows the fader value in its bottom row, level row of the left k
 	assert.ok(y > 100, `value baseline ${y} should sit in the bottom row`)
 })
 
+test('capitals count as wider, so an all-caps name is sized below a lowercase one', () => {
+	const sizeOf = (name) => Number(/font-size="([\d.]+)"/.exec(renderButtonFader(view({ name }), 'left'))?.[1])
+	assert.ok(sizeOf('DAW OUT') <= 26, `DAW OUT at ${sizeOf('DAW OUT')}`)
+	assert.ok(sizeOf('daw out') > sizeOf('DAW OUT'))
+})
+
 test('long names shrink to fit the key instead of being cut', () => {
 	for (const role of ['left', 'top']) {
 		const svg = save(`long-${role}`, renderButtonFader(view({ name: 'Analog 1/2 Mic' }), role))

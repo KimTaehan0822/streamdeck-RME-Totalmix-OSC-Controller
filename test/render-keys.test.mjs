@@ -32,7 +32,7 @@ test('long names are cut with an ellipsis', () => {
 })
 
 test('emoji name cut at the boundary still encodes', () => {
-	const svg = toggle({ title: 'a'.repeat(9) + '😀😀😀' })
+	const svg = toggle({ title: 'a'.repeat(21) + '😀😀😀' })
 	assert.ok(svg.includes('…'))
 	assert.doesNotThrow(() => svgDataUrl(svg))
 	assert.doesNotThrow(() => svgDataUrl(toggle({ title: 'x\ud83d' })))
@@ -43,10 +43,12 @@ test('xml-illegal control chars are removed', () => {
 	assert.ok(svg.includes('>ABC<'))
 })
 
-test('long Hangul name is cut', () => {
-	const svg = toggle({ title: '마이크채널입력하나둘' })
-	assert.ok(svg.includes('…'))
-	assert.ok(!svg.includes('둘'))
+test('a long name shrinks to fit the key; only one too long even at the smallest size is cut', () => {
+	const fitted = toggle({ title: '마이크채널입력하나둘' })
+	assert.ok(fitted.includes('>마이크채널입력하나둘<'))
+	assert.ok(Number(/font-size="([\d.]+)"[^>]*>마이크/.exec(fitted)[1]) < 26)
+	const cut = toggle({ title: '마이크채널입력하나둘마이크채널입력하나둘' })
+	assert.ok(cut.includes('…'))
 	assert.ok(toggle({ title: '마이크' }).includes('>마이크<'))
 })
 

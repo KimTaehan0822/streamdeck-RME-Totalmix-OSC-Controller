@@ -1,4 +1,4 @@
-import { KEY, fitText, frame, plainText, type Overlay } from './svg.js'
+import { KEY, NAME_WIDTH, fitSize, fitText, frame, plainText, type Overlay } from './svg.js'
 
 const WHITE = '#fff'
 
@@ -12,7 +12,9 @@ export interface ToggleKeyView {
 
 export function renderToggleKey(v: ToggleKeyView): string {
 	let body = `<rect width="${KEY}" height="${KEY}" fill="${v.on ? v.onColor : '#000'}"/>`
-	body += plainText(72, v.label ? 62 : 82, fitText(v.title, 26), { size: 26, fill: WHITE })
+	// Long channel names shrink to fit the key rather than being cut.
+	const size = fitSize(v.title, 26, NAME_WIDTH, 10)
+	body += plainText(72, v.label ? 62 : 82, fitText(v.title, size), { size, fill: WHITE })
 	if (v.label) body += plainText(72, 104, fitText(v.label, 26), { size: 26, fill: WHITE })
 	return frame(KEY, KEY, body, v.overlay)
 }

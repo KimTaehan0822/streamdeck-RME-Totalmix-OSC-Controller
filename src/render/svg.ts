@@ -1,4 +1,6 @@
 export const KEY = 144
+/** Widest a name may be on a key: the key's edges sit under the device's bezel. */
+export const NAME_WIDTH = KEY - 16
 
 export type Overlay = 'none' | 'offline' | 'unsupported' | 'setup' | 'config'
 
@@ -49,7 +51,8 @@ export function fitText(text: string, size: number, maxWidth = KEY - 8): string 
 
 /** Font size at which text fits maxWidth, never above size nor below min (fitText still cuts what min cannot fit). */
 export function fitSize(text: string, size: number, maxWidth: number, min: number): number {
-	const width = Array.from(text).reduce((w, c) => w + charWidth(c, size), 0)
+	// Capitals measure about 0.72 em in Segoe UI Semibold; counting them at 0.6 left "DAW OUT" wider than planned.
+	const width = Array.from(text).reduce((w, c) => w + (/[A-Z]/.test(c) ? 0.72 * size : charWidth(c, size)), 0)
 	// The small margin keeps float rounding from pushing the result just past maxWidth, which fitText would cut.
 	return width <= maxWidth ? size : Math.max(min, Math.floor((size * maxWidth) / width - 1e-6))
 }

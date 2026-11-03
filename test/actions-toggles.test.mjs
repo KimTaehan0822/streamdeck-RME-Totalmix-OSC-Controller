@@ -20,9 +20,19 @@ function setup() {
 /** Minimal ev.action: a key that records the images it was given. */
 function fakeKey(settings) {
 	const images = []
-	const action = { id: 'k1', isDial: () => false, isKey: () => true, isInMultiAction: () => false, setImage: async (image) => void images.push(decodeURIComponent(image)) }
+	const states = []
+	const action = {
+		id: 'k1',
+		isDial: () => false,
+		isKey: () => true,
+		isInMultiAction: () => false,
+		setImage: async (image) => void images.push(decodeURIComponent(image)),
+		setState: async (state) => void states.push(state),
+	}
 	return {
 		images,
+		states,
+		action,
 		appear: { action, payload: { settings } },
 		press: { action, payload: { settings } },
 	}
@@ -49,6 +59,50 @@ async function press(action, settings) {
 	await action.onWillDisappear(key.appear)
 	return image
 }
+
+test('mute follows the mixer with its native state; other toggles stay single-state', async () => {
+	const { conn, msg } = setup()
+	msg('/input/2/mute', 1)
+	const key = fakeKey({ row: 'input', channel: 2 })
+	const action = new MuteAction(conn)
+	await action.onWillAppear(key.appear)
+	await tick()
+	assert.deepEqual(key.states, [1])
+	msg('/input/2/mute', 0)
+	await tick()
+	assert.deepEqual(key.states, [1, 0])
+	await action.onWillDisappear(key.appear)
+	const solo = fakeKey({ row: 'input', channel: 2 })
+	const soloAction = new SoloAction(conn)
+	await soloAction.onWillAppear(solo.appear)
+	await tick()
+	assert.deepEqual(solo.states, [])
+	await soloAction.onWillDisappear(solo.appear)
+	conn.stop()
+})
+
+test('a user title on the current state replaces the drawn text; the other state keeps it', async () => {
+	const { conn, msg } = setup()
+	msg('/input/2/name', 'Condenser')
+	msg('/input/2/mute', 0)
+	const key = fakeKey({ row: 'input', channel: 2 })
+	const action = new MuteAction(conn)
+	await action.onWillAppear(key.appear)
+	await tick()
+	assert.match(key.images.at(-1), /Condenser/)
+	const title = (state, text, showTitle = true) => action.onTitleParametersDidChange({ action: key.action, payload: { state, title: text, titleParameters: { showTitle } } })
+	title(1, 'ON AIR')
+	await tick()
+	assert.match(key.images.at(-1), /Condenser/) // state 0 is showing
+	msg('/input/2/mute', 1)
+	await tick()
+	assert.doesNotMatch(key.images.at(-1), /Condenser|MUTE/)
+	title(1, 'ON AIR', false) // hidden in the app, so the drawn text returns
+	await tick()
+	assert.match(key.images.at(-1), /Condenser/)
+	await action.onWillDisappear(key.appear)
+	conn.stop()
+})
 
 test('mute press toggles via setMute', async () => {
 	const { conn, sent, msg } = setup()
