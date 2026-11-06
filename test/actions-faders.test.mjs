@@ -140,12 +140,15 @@ test('vu-dial press recall sets the chosen dB; a bad value sends nothing', async
 	near(ok.faders().at(-1).args[0], dbToNormalized(-20))
 	assert.equal(ok.mutes().length, 0)
 	await ok.done()
-	const bad = await heldDial({ pressAction: 'recall', pressDb: 'abc' })
-	await bad.dial.onDialDown(bad.d.ev())
-	await bad.dial.onDialUp(bad.d.ev())
-	await wait()
-	assert.equal(bad.faders().length + bad.mutes().length, 0)
-	await bad.done()
+	// a blank-looking value must not jump the fader to 0 dB
+	for (const pressDb of ['abc', ' ']) {
+		const bad = await heldDial({ pressAction: 'recall', pressDb })
+		await bad.dial.onDialDown(bad.d.ev())
+		await bad.dial.onDialUp(bad.d.ev())
+		await wait()
+		assert.equal(bad.faders().length + bad.mutes().length, 0, JSON.stringify(pressDb))
+		await bad.done()
+	}
 })
 
 test('vu-dial pressed turns run the left and right actions once per hold', async () => {

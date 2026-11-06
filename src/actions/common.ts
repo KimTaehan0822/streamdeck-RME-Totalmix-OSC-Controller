@@ -4,7 +4,8 @@ import type { MixerBus, MixerChannelTarget } from '../model/device-profile.js'
 export const BUS_NAME: Record<MixerBus, string> = { input: 'Input', playback: 'Playback', output: 'Output' }
 export const ALL: MixerBus[] = ['input', 'playback', 'output']
 // Settings come from the PI as strings (select values), so everything is parsed with Number().
-export const num = (v: unknown): number => (v === '' || v === null || typeof v === 'boolean' ? NaN : Number(v))
+// A blank or space-only field is "no value": Number(' ') is 0, which would jump a fader to 0 dB.
+export const num = (v: unknown): number => ((typeof v === 'string' && v.trim() === '') || v === null || typeof v === 'boolean' ? NaN : Number(v))
 export const int = (v: unknown, min: number, max = Number.MAX_SAFE_INTEGER): number | undefined => {
 	const n = num(v)
 	return Number.isInteger(n) && n >= min && n <= max ? n : undefined
