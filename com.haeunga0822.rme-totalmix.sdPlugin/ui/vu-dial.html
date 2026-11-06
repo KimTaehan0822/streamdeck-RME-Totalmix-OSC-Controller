@@ -13,9 +13,18 @@
 		// Encoder dials: vu-dial, pan-dial. The action UUID picks the fields.
 		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
 		const KINDS = {
-			'vu-dial': { touchMute: true, step: 'dB' },
+			'vu-dial': { touchMute: true, step: 'dB', pressActions: true },
 			'pan-dial': { step: 'pan' },
 		}
+
+		const PRESS = { mute: 'Mute toggle', recall: 'Recall volume' }
+		const TURN = { step: 'Step volume', muteToggle: 'Mute toggle', muteOn: 'Mute on', muteOff: 'Mute off', recall: 'Recall volume' }
+		// [action setting, dB setting, label, choices, default]
+		const PRESS_SLOTS = [
+			['pressAction', 'pressDb', 'Press', PRESS, 'mute'],
+			['leftAction', 'leftDb', 'Press + turn left', TURN, 'step'],
+			['rightAction', 'rightDb', 'Press + turn right', TURN, 'step'],
+		]
 
 		const select = (setting, label, items, extra = '') =>
 			`<sdpi-item label="${label}"><sdpi-select setting="${setting}" ${extra}>${Object.entries(items)
@@ -40,9 +49,22 @@
 				html += `<sdpi-item label="Display name"><sdpi-textfield setting="displayName" placeholder="Empty: name from TotalMix"></sdpi-textfield></sdpi-item>`
 				if (kind.touchMute) html += `<sdpi-item label="Touch tap mutes"><sdpi-checkbox setting="touchMute" default="true"></sdpi-checkbox></sdpi-item>`
 				if (kind.step === 'dB') html += `<sdpi-item label="Step per tick (dB)"><sdpi-textfield setting="step" default="1" placeholder="1 (e.g. 0.5, 2)"></sdpi-textfield></sdpi-item>`
+				// Folded like the connection block (its styles come from common.js); a dB field shows only for Recall volume.
+				if (kind.pressActions)
+					html += `<details class="connection"><summary>Press actions</summary>${PRESS_SLOTS.map(
+						([action, db, label, items, def]) =>
+							select(action, label, items, `default="${def}"`) +
+							`<sdpi-item label="Recall volume (dB)" data-db="${action}" hidden><sdpi-textfield setting="${db}" placeholder="e.g. -20 or 0"></sdpi-textfield></sdpi-item>`,
+					).join('')}</details>`
 				if (kind.step === 'pan') html += `<sdpi-item label="Step per tick"><sdpi-textfield setting="step" default="5" placeholder="5"></sdpi-textfield></sdpi-item>`
 				fields.innerHTML = html
-				initFields(fields)
+				initFields(fields).then(() => {
+					for (const sel of fields.querySelectorAll('details sdpi-select')) {
+						const show = () => (fields.querySelector(`[data-db="${sel.getAttribute('setting')}"]`).hidden = sel.value !== 'recall')
+						sel.addEventListener('valuechange', show)
+						show()
+					}
+				})
 				// A new row needs a new channel list; the saved channel belongs to the old row.
 				fields.querySelector('[setting="row"]').addEventListener('valuechange', async (e) => {
 					if (e.target.value === row) return
