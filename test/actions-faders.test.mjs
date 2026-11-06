@@ -94,9 +94,107 @@ test('vu-dial press mutes, touch tap does nothing when touchMute is off', async 
 	await dial.onTouchTap(on.ev({ tapPos: [1, 1], hold: false }))
 	assert.deepEqual(sent.at(-1), { address: '/output/3/mute', args: [1] })
 	await dial.onDialDown(on.ev())
+	await dial.onDialUp(on.ev())
 	assert.equal(sent.filter((m) => m.address === '/output/3/mute').length, 2)
 	await dial.onWillDisappear(on.appear)
 	conn.stop()
+})
+
+/** VU dial on output 3 (fader 0.5, unmuted) with the given extra settings. */
+async function heldDial(extra) {
+	const ctx = setup()
+	ctx.msg('/output/3/faderlin', 0.5)
+	ctx.msg('/output/3/mute', 0)
+	const dial = new VuDialAction(ctx.conn)
+	const d = fake('d1', true, { row: 'output', channel: 3, ...extra })
+	await dial.onWillAppear(d.appear)
+	const mutes = () => ctx.sent.filter((m) => m.address === '/output/3/mute')
+	const faders = () => ctx.sent.filter((m) => m.address === '/output/3/faderlin')
+	const done = async () => {
+		await dial.onWillDisappear(d.appear)
+		ctx.conn.stop()
+	}
+	return { ...ctx, dial, d, mutes, faders, done }
+}
+const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} != ${b}`)
+
+test('vu-dial press acts on release, not when turned while held', async () => {
+	const { dial, d, mutes, done } = await heldDial({})
+	await dial.onDialDown(d.ev())
+	assert.equal(mutes().length, 0)
+	await dial.onDialUp(d.ev())
+	assert.deepEqual(mutes(), [{ address: '/output/3/mute', args: [1] }])
+	await dial.onDialDown(d.ev())
+	dial.onDialRotate(d.ev({ ticks: 1, pressed: true }))
+	await dial.onDialUp(d.ev())
+	await wait()
+	assert.equal(mutes().length, 1)
+	await done()
+})
+
+test('vu-dial press recall sets the chosen dB; a bad value sends nothing', async () => {
+	const ok = await heldDial({ pressAction: 'recall', pressDb: '-20' })
+	await ok.dial.onDialDown(ok.d.ev())
+	await ok.dial.onDialUp(ok.d.ev())
+	await wait()
+	near(ok.faders().at(-1).args[0], dbToNormalized(-20))
+	assert.equal(ok.mutes().length, 0)
+	await ok.done()
+	const bad = await heldDial({ pressAction: 'recall', pressDb: 'abc' })
+	await bad.dial.onDialDown(bad.d.ev())
+	await bad.dial.onDialUp(bad.d.ev())
+	await wait()
+	assert.equal(bad.faders().length + bad.mutes().length, 0)
+	await bad.done()
+})
+
+test('vu-dial pressed turns run the left and right actions once per hold', async () => {
+	const { dial, d, mutes, faders, done } = await heldDial({ leftAction: 'muteOn', rightAction: 'recall', rightDb: '0' })
+	await dial.onDialDown(d.ev())
+	for (const ticks of [-1, -1, 2, 2]) dial.onDialRotate(d.ev({ ticks, pressed: true }))
+	await dial.onDialUp(d.ev())
+	await wait()
+	assert.deepEqual(mutes(), [{ address: '/output/3/mute', args: [1] }])
+	assert.equal(faders().length, 1)
+	near(faders()[0].args[0], dbToNormalized(0))
+	await done()
+	// muteOn again would send nothing (mute is already on), so a toggle shows each new hold fires again
+	const again = await heldDial({ leftAction: 'muteToggle' })
+	for (let i = 0; i < 2; i++) {
+		await again.dial.onDialDown(again.d.ev())
+		again.dial.onDialRotate(again.d.ev({ ticks: -1, pressed: true }))
+		again.dial.onDialRotate(again.d.ev({ ticks: -1, pressed: true }))
+		await again.dial.onDialUp(again.d.ev())
+		await wait()
+	}
+	assert.deepEqual(again.mutes().map((m) => m.args[0]), [1, 0])
+	await again.done()
+})
+
+test('vu-dial pressed turn steps by default on every tick', async () => {
+	const { dial, d, mutes, faders, done } = await heldDial({ step: '1' })
+	await dial.onDialDown(d.ev())
+	dial.onDialRotate(d.ev({ ticks: 2, pressed: true }))
+	await wait()
+	near(faders().at(-1).args[0], dbToNormalized(normalizedToDb(0.5) + 2))
+	await dial.onDialUp(d.ev())
+	await wait()
+	assert.equal(mutes().length, 0)
+	await done()
+})
+
+test('vu-dial hold state does not survive the dial disappearing', async () => {
+	const { dial, d, mutes, done } = await heldDial({})
+	await dial.onDialDown(d.ev())
+	dial.onDialRotate(d.ev({ ticks: 1, pressed: true }))
+	await dial.onWillDisappear(d.appear)
+	await dial.onWillAppear(d.appear)
+	await dial.onDialUp(d.ev())
+	await dial.onDialDown(d.ev())
+	await dial.onDialUp(d.ev())
+	await wait()
+	assert.equal(mutes().length, 1)
+	await done()
 })
 
 test('two instances with different targets render independently', async () => {
@@ -199,6 +297,7 @@ test('incomplete or invalid settings render setup and send nothing', async () =>
 		action.onKeyDown?.(f.ev())
 		action.onDialRotate?.(f.ev({ ticks: 1 }))
 		await action.onDialDown?.(f.ev())
+		await action.onDialUp?.(f.ev())
 		await action.onWillDisappear(f.appear)
 	}
 	await wait()

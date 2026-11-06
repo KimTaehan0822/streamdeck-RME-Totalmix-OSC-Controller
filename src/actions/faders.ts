@@ -1,7 +1,7 @@
-import { action, type DialDownEvent, type DialRotateEvent, type KeyDownEvent, type TouchTapEvent, type WillDisappearEvent } from '@elgato/streamdeck'
+import { action, type DialDownEvent, type DialRotateEvent, type DialUpEvent, type KeyDownEvent, type TouchTapEvent, type WillDisappearEvent } from '@elgato/streamdeck'
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
-import type { FaderUnit, TotalMixController } from '../protocol/controller.js'
+import type { BinaryOperation, FaderUnit, TotalMixController } from '../protocol/controller.js'
 import { stringifyPresetTarget } from '../model/preset-target.js'
 import { channelName, faderBar, faderDb, levelBar, levelDb, muted, panText, panValue, type MixTarget } from '../readers.js'
 import { renderValueKey, type ValueKeyView } from '../render/keys.js'
@@ -14,6 +14,9 @@ import { ALL, BUS_NAME, channelOf as settingsChannel, num, pick } from './common
 const ID = 'com.haeunga0822.rme-totalmix.'
 const ROLES: Record<FaderRole, unknown> = { top: 1, bottom: 1, left: 1, right: 1 }
 const MODES = { set: 1, step: 1 }
+const PRESS_ACTIONS = { mute: 1, recall: 1 }
+const TURN_ACTIONS = { step: 1, muteToggle: 1, muteOn: 1, muteOff: 1, recall: 1 }
+const MUTE_OPS: Record<string, BinaryOperation> = { mute: 'toggle', muteToggle: 'toggle', muteOn: 'on', muteOff: 'off' }
 // The PI offers "linear"; the controller calls the same thing "normalized".
 const UNITS: Record<string, FaderUnit> = { db: 'db', linear: 'normalized' }
 const EMPTY: MeterView = { name: '', left: 0, right: 0, faderDb: '', levelDb: '', muted: false, peek: false, overlay: 'setup' }
@@ -109,20 +112,60 @@ abstract class DialAction extends FaderFamilyAction {
 
 @action({ UUID: ID + 'vu-dial' })
 export class VuDialAction extends DialAction {
+	/** Per held dial: whether it turned, and which directions already ran a once-per-hold action. */
+	private readonly presses = new Map<string, { turned: boolean; fired: Set<string> }>()
+
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
 		return renderVuStrip(t ? this.meter(t, s, ctx.overlay) : emptyFor(s))
 	}
 
+	override onWillDisappear(ev: WillDisappearEvent<JsonObject>): void {
+		this.presses.delete(ev.action.id)
+		super.onWillDisappear(ev)
+	}
+
+	// The press acts on release so a press-and-turn can skip it.
+	override async onDialDown(ev: DialDownEvent<JsonObject>): Promise<void> {
+		this.presses.set(ev.action.id, { turned: false, fired: new Set() })
+	}
+
+	async onDialUp(ev: DialUpEvent<JsonObject>): Promise<void> {
+		const hold = this.presses.get(ev.action.id)
+		this.presses.delete(ev.action.id)
+		const s = ev.payload.settings
+		const t = targetOf(s)
+		if (hold && !hold.turned && t) await this.run(ev.action.id, t, pick(s.pressAction, PRESS_ACTIONS) ?? 'mute', s.pressDb)
+	}
+
 	protected rotate(id: string, t: MixTarget, ev: DialRotateEvent<JsonObject>): void {
-		const step = num(ev.payload.settings.step)
-		this.apply(id, t, true, (c) => adjustFader(c, t, ev.payload.ticks * (step > 0 ? step : 1), 'db'))
+		const s = ev.payload.settings
+		const step = num(s.step)
+		const hold = ev.payload.pressed ? this.presses.get(id) : undefined
+		const dir = ev.payload.ticks < 0 ? 'left' : 'right'
+		const chosen = ev.payload.pressed ? (pick(s[dir + 'Action'], TURN_ACTIONS) ?? 'step') : 'step'
+		if (hold) hold.turned = true
+		if (chosen === 'step') return this.apply(id, t, true, (c) => adjustFader(c, t, ev.payload.ticks * (step > 0 ? step : 1), 'db'))
+		if (hold?.fired.has(dir)) return
+		hold?.fired.add(dir)
+		void this.run(id, t, chosen, s[dir + 'Db'])
+	}
+
+	/** A mute operation or a recall to `db` (nothing when it is not a number). */
+	private async run(id: string, t: MixTarget, chosen: string, db: unknown): Promise<void> {
+		if (chosen !== 'recall') return this.mute(t, MUTE_OPS[chosen])
+		const value = num(db)
+		if (Number.isFinite(value)) this.apply(id, t, true, (c) => setFader(c, t, value, 'db'))
+	}
+
+	private mute(t: MixTarget, op: BinaryOperation): Promise<void> {
+		return this.connection.run((c) =>
+			t.row === 'output' ? c.setChannelOption({ bus: 'output', index: t.output }, 'mute', op) : c.setMute({ bus: t.row, index: t.source }, op),
+		)
 	}
 
 	protected press(t: MixTarget): Promise<void> {
-		return this.connection.run((c) =>
-			t.row === 'output' ? c.setChannelOption({ bus: 'output', index: t.output }, 'mute', 'toggle') : c.setMute({ bus: t.row, index: t.source }, 'toggle'),
-		)
+		return this.mute(t, 'toggle')
 	}
 
 	override async onTouchTap(ev: TouchTapEvent<JsonObject>): Promise<void> {
