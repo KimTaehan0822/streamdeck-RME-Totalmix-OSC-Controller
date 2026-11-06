@@ -174,6 +174,17 @@ test('vu-dial pressed turns run the left and right actions once per hold', async
 	await again.done()
 })
 
+test('vu-dial pressed turn without a recorded press still runs once and skips the release', async () => {
+	// e.g. the plugin restarted while the dial was held: dialDown never arrived
+	const { dial, d, mutes, done } = await heldDial({ leftAction: 'muteToggle' })
+	dial.onDialRotate(d.ev({ ticks: -1, pressed: true }))
+	dial.onDialRotate(d.ev({ ticks: -1, pressed: true }))
+	await dial.onDialUp(d.ev())
+	await wait()
+	assert.deepEqual(mutes().map((m) => m.args[0]), [1])
+	await done()
+})
+
 test('vu-dial pressed turn steps by default on every tick', async () => {
 	const { dial, d, mutes, faders, done } = await heldDial({ step: '1' })
 	await dial.onDialDown(d.ev())

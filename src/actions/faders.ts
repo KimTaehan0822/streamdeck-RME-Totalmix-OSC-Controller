@@ -141,6 +141,8 @@ export class VuDialAction extends DialAction {
 	protected rotate(id: string, t: MixTarget, ev: DialRotateEvent<JsonObject>): void {
 		const s = ev.payload.settings
 		const step = num(s.step)
+		// A held turn with no recorded press (e.g. the plugin restarted mid-hold) starts its own hold.
+		if (ev.payload.pressed && !this.presses.has(id)) this.presses.set(id, { turned: false, fired: new Set() })
 		const hold = ev.payload.pressed ? this.presses.get(id) : undefined
 		const dir = ev.payload.ticks < 0 ? 'left' : 'right'
 		const chosen = ev.payload.pressed ? (pick(s[dir + 'Action'], TURN_ACTIONS) ?? 'step') : 'step'
