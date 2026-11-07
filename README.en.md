@@ -6,7 +6,7 @@ Control **RME TotalMix FX** with the keys and dials of an Elgato Stream Deck. Fa
 
 ## Download
 
-Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-rme-totalmix-OSC/releases/latest) page and unzip it. It contains:
+Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) page and unzip it. It contains:
 
 - `RME-TotalMix.streamDeckPlugin`: the installer
 - The manual as PDF (one per language)
