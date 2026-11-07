@@ -1062,7 +1062,14 @@ export class TotalMixController {
 	}
 
 	async syncSubmixFader(target: SubmixTarget): Promise<void> {
-		return this.queue.run(async () => this.syncSubmixFaderInternal(target))
+		return this.queue.run(async () => {
+			if (!this.justChanged(this.state.getRoute(target))) await this.syncSubmixFaderInternal(target)
+		})
+	}
+
+	/** A value this plugin just sent is newer than any dump, and TotalMix may leave it out of one, stalling the queue. */
+	private justChanged(state: ValueState<number>): boolean {
+		return state.quality === 'optimistic' && Date.now() - state.updatedAt < 2000
 	}
 
 	async syncChannel(target: SourceTarget): Promise<void> {
@@ -1081,7 +1088,9 @@ export class TotalMixController {
 	}
 
 	async syncOutputFader(output: number): Promise<void> {
-		return this.queue.run(async () => this.syncOutputInternal(output))
+		return this.queue.run(async () => {
+			if (!this.justChanged(this.state.getOutput(output))) await this.syncOutputInternal(output)
+		})
 	}
 
 	private async setBinary(target: SourceTarget, operation: BinaryOperation, kind: 'mute' | 'solo'): Promise<void> {

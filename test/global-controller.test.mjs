@@ -265,3 +265,19 @@ test('Global OSC option toggle that TotalMix never reports assumes off and then 
 		{ address: '/input/4/instrument', args: [0] },
 	])
 })
+
+test('a background fader sync skips a route and output the dial just changed', async () => {
+	const sent = []
+	const controller = createController(async (address, ...args) => sent.push({ address, args }))
+	const route = { bus: 'input', index: 4, output: 4 }
+	controller.handleMessage({ address: '/mix/in/4/4/faderlin', args: [0.8] })
+	controller.handleMessage({ address: '/output/4/faderlin', args: [0.8] })
+	await controller.adjustSubmixFader(route, -1, 'db')
+	await controller.adjustOutputFader(4, -1, 'db')
+	const before = sent.length
+	// TotalMix leaves a fader it is still applying out of its dump, so waiting here stalls the dial for the whole timeout.
+	await controller.syncSubmixFader(route)
+	await controller.syncOutputFader(4)
+	assert.deepEqual(sent.slice(before), [])
+	assert.equal(controller.state.getRoute(route).quality, 'optimistic')
+})
