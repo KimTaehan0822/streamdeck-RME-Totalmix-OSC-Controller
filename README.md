@@ -59,6 +59,10 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 **OSC 포트가 다른 프로그램과 겹치는 경우**, 예를 들어 Bitfocus Companion의 TotalMix 모듈처럼 같은 포트를 쓰는 프로그램을 함께 켜 둔다면, 포트를 바꿔 주세요. TotalMix에서 두 번째 OSC 리모트를 켜서 다른 포트(예: incoming 7002 / outgoing 9002)를 정하고, 위 **TotalMix port**와 **Feedback port**에도 같은 번호를 넣으면 됩니다. 포트를 바꾸면 Stream Deck을 다시 시작하지 않아도 적용됩니다.
 
+## 설정 화면 언어
+
+설정 화면 맨 아래의 **▸ Language**를 펼쳐 **English / 한국어 / 日本語** 중에서 고릅니다. 고르는 즉시 설정 화면의 글자가 바뀌고, 모든 액션에 똑같이 적용됩니다. 처음 값은 English입니다. 키에 뜨는 글자(OFFLINE 등)와 액션 목록의 이름은 바뀌지 않습니다.
+
 ## 액션 목록
 
 **채널 키**
