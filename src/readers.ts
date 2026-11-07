@@ -50,11 +50,12 @@ export function faderDb(c: TotalMixConnection, t: MixTarget): string {
 
 function levelSideDb(c: TotalMixConnection, t: MixTarget, side: 'left' | 'right'): number | undefined {
 	let channel = channelOf(t)
+	// Register the shown channel only: TotalMix reports no fader for a pair's right half, so syncing it times out.
+	c.registerChannel(channel)
 	// Global OSC sends one level per channel; a stereo pair's right side is the next index.
 	if (side === 'right' && channelParameter<boolean>(c, channel, 'stereo') === true) {
 		channel = { ...channel, index: channel.index + 1 }
 	}
-	c.registerChannel(channel)
 	const state = c.controller.state.getChannel(channel).levelLeft
 	if (state.display) {
 		const parsed = Number.parseFloat(state.display.replace(',', '.'))

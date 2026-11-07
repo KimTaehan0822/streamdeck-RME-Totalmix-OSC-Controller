@@ -39,6 +39,21 @@ test('levelBar right side reads the next channel of a stereo pair', () => {
 	conn.stop()
 })
 
+test('the right meter of a stereo output pair does not sync the partner output fader', async () => {
+	const { conn, sent, msg, sync } = setup()
+	msg('/status/device', 'x')
+	msg('/output/4/stereo', 1)
+	msg('/level/out/5', -6)
+	assert.equal(r.levelBar(conn, { row: 'output', output: 4 }, 'right'), dbToBar(-6))
+	// TotalMix never reports a fader for the right half of a pair, so syncing it would block the queue.
+	for (let i = 0; i < 5; i++) {
+		sync()
+		await new Promise((resolve) => setTimeout(resolve, 60))
+	}
+	assert.ok(!sent.some((m) => m.address === '/sendchan/output/5'), 'partner output 5 was synced')
+	conn.stop()
+})
+
 test('faderDb prefers the TotalMix display text', () => {
 	const { conn, msg } = setup()
 	assert.equal(r.faderDb(conn, input1), '')
