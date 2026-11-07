@@ -1,4 +1,4 @@
-# RME TotalMix – Stream Deck 플러그인
+# OSC Controller for RME TotalMix (Stream Deck 플러그인)
 
 **한국어** | [English](README.en.md) | [日本語](README.ja.md)
 
@@ -13,6 +13,7 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
   - `RME TotalMix 스트림덱 플러그인 사용설명서.pdf`: 한국어
   - `RME TotalMix Stream Deck Plugin Manual (English).pdf`: 영어
   - `RME TotalMix Stream Deck プラグイン 取扱説明書 (日本語).pdf`: 일본어
+- `LICENSE.txt`: 이 플러그인의 라이선스 (MIT)
 - `THIRD-PARTY-NOTICES.txt`: 함께 쓰인 오픈소스 고지
 
 ## 필요한 것
@@ -47,7 +48,7 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 ### 3. 첫 키 만들기
 
-1. Stream Deck 소프트웨어의 액션 목록에서 **RME TotalMix OSC Controller** 카테고리를 엽니다.
+1. Stream Deck 소프트웨어의 액션 목록에서 **OSC Controller for RME TotalMix** 카테고리를 엽니다.
 2. 예를 들어 **Fader(2-Button)** 를 키 두 개에 끌어다 놓습니다. 하나는 올리기, 하나는 내리기로 정하고 같은 채널을 고릅니다.
 3. 채널 목록은 TotalMix에 연결되기 전에는 1~48 번호로 보이고, 연결되면 실제 채널 이름으로 바뀝니다.
 
@@ -137,4 +138,4 @@ npm run pack
 
 ## 고지
 
-이 플러그인이 사용하는 오픈소스의 라이선스는 `THIRD-PARTY-NOTICES.txt`에 있습니다. RME, TotalMix는 RME Audio의 상표이며, 이 플러그인은 RME와 관계없는 비공식 프로젝트입니다.
+이 플러그인은 MIT 라이선스로 배포됩니다 (`LICENSE` 파일 참고). 이 플러그인이 사용하는 오픈소스의 라이선스는 `THIRD-PARTY-NOTICES.txt`에 있습니다. RME, TotalMix는 RME Audio의 상표이며, 이 플러그인은 RME와 관계없는 비공식 프로젝트입니다.

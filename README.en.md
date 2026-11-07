@@ -1,4 +1,4 @@
-# RME TotalMix – Stream Deck Plugin
+# OSC Controller for RME TotalMix (Stream Deck plugin)
 
 [한국어](README.md) | **English** | [日本語](README.ja.md)
 
@@ -13,6 +13,7 @@ Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://g
   - `RME TotalMix 스트림덱 플러그인 사용설명서.pdf`: Korean
   - `RME TotalMix Stream Deck Plugin Manual (English).pdf`: English
   - `RME TotalMix Stream Deck プラグイン 取扱説明書 (日本語).pdf`: Japanese
+- `LICENSE.txt`: the license of this plugin (MIT)
 - `THIRD-PARTY-NOTICES.txt`: notices for the open-source software used
 
 ## Requirements
@@ -47,7 +48,7 @@ Double-click `RME-TotalMix.streamDeckPlugin` and approve when the Stream Deck so
 
 ### 3. Make your first keys
 
-1. Open the **RME TotalMix OSC Controller** category in the action list of the Stream Deck software.
+1. Open the **OSC Controller for RME TotalMix** category in the action list of the Stream Deck software.
 2. For example, drag **Fader(2-Button)** onto two keys. Make one the up key and the other the down key, and choose the same channel on both.
 3. Before TotalMix is connected, the channel lists show the numbers 1 to 48; once connected they show the real channel names.
 
@@ -137,4 +138,4 @@ npm run pack
 
 ## Notices
 
-Licenses of the open-source software this plugin uses are in `THIRD-PARTY-NOTICES.txt`. RME and TotalMix are trademarks of RME Audio. This plugin is an unofficial project not affiliated with RME.
+This plugin is released under the MIT License (see `LICENSE`). Licenses of the open-source software this plugin uses are in `THIRD-PARTY-NOTICES.txt`. RME and TotalMix are trademarks of RME Audio. This plugin is an unofficial project not affiliated with RME.
