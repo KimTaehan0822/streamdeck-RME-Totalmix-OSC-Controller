@@ -1,5 +1,7 @@
 # RME TotalMix – Stream Deck 플러그인
 
+**한국어** | [English](README.en.md) | [日本語](README.ja.md)
+
 Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 플러그인입니다. 페이더, 뮤트, 솔로, 게인, FX, 스냅샷을 키 하나로 다루고, 키와 다이얼 화면에서 레벨 미터를 볼 수 있습니다. TotalMix의 **Global OSC**로 직접 통신하므로 다른 프로그램은 필요 없습니다.
 
 ## 다운로드
@@ -7,7 +9,10 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 [최신 릴리즈](https://github.com/KimTaehan0822/streamdeck-rme-totalmix-OSC/releases/latest) 페이지에서 `RME-TotalMix-StreamDeck-v<버전>.zip`을 받아 압축을 풉니다. 안에 들어 있는 파일은 아래와 같습니다.
 
 - `RME-TotalMix.streamDeckPlugin`: 설치 파일
-- `RME TotalMix 스트림덱 플러그인 사용설명서.pdf`: 그림이 들어간 자세한 설명서
+- 사용설명서 PDF (언어별로 하나씩)
+  - `RME TotalMix 스트림덱 플러그인 사용설명서.pdf`: 한국어
+  - `RME TotalMix Stream Deck Plugin Manual (English).pdf`: 영어
+  - `RME TotalMix Stream Deck プラグイン 取扱説明書 (日本語).pdf`: 일본어
 - `THIRD-PARTY-NOTICES.txt`: 함께 쓰인 오픈소스 고지
 
 ## 필요한 것
