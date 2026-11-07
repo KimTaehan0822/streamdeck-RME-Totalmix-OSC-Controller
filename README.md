@@ -47,7 +47,7 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 ### 3. 첫 키 만들기
 
-1. Stream Deck 소프트웨어의 액션 목록에서 **RME TotalMix** 카테고리를 엽니다.
+1. Stream Deck 소프트웨어의 액션 목록에서 **RME TotalMix OSC Controller** 카테고리를 엽니다.
 2. 예를 들어 **Fader(2-Button)** 를 키 두 개에 끌어다 놓습니다. 하나는 올리기, 하나는 내리기로 정하고 같은 채널을 고릅니다.
 3. 채널 목록은 TotalMix에 연결되기 전에는 1~48 번호로 보이고, 연결되면 실제 채널 이름으로 바뀝니다.
 

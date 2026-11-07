@@ -47,7 +47,7 @@ Double-click `RME-TotalMix.streamDeckPlugin` and approve when the Stream Deck so
 
 ### 3. Make your first keys
 
-1. Open the **RME TotalMix** category in the action list of the Stream Deck software.
+1. Open the **RME TotalMix OSC Controller** category in the action list of the Stream Deck software.
 2. For example, drag **Fader(2-Button)** onto two keys. Make one the up key and the other the down key, and choose the same channel on both.
 3. Before TotalMix is connected, the channel lists show the numbers 1 to 48; once connected they show the real channel names.
 

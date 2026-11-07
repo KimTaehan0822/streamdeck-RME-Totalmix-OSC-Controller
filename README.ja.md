@@ -47,7 +47,7 @@ Elgato Stream Deck のキーとダイヤルで **RME TotalMix FX** を操作す�
 
 ### 3. 最初のキーを作る
 
-1. Stream Deck ソフトウェアのアクション一覧で **RME TotalMix** カテゴリを開きます。
+1. Stream Deck ソフトウェアのアクション一覧で **RME TotalMix OSC Controller** カテゴリを開きます。
 2. たとえば **Fader(2-Button)** を2つのキーにドラッグします。片方を上げる、もう片方を下げるキーにし、同じチャンネルを選びます。
 3. TotalMix に接続する前はチャンネルリストが 1〜48 の番号で表示され、接続すると実際のチャンネル名に変わります。
 
