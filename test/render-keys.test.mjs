@@ -27,12 +27,12 @@ test('show-mode snapshot key shows the active number', () => {
 	assert.ok(svg.includes('>7</text>'))
 })
 
-test('long names are cut with an ellipsis', () => {
-	assert.ok(toggle({ title: 'A very long channel name' }).includes('…'))
+test('a long name without spaces is cut with an ellipsis', () => {
+	assert.ok(toggle({ title: 'Averylongchannelnamewithoutspaces' }).includes('…'))
 })
 
 test('emoji name cut at the boundary still encodes', () => {
-	const svg = toggle({ title: 'a'.repeat(21) + '😀😀😀' })
+	const svg = toggle({ title: 'a'.repeat(22) + '😀😀😀' })
 	assert.ok(svg.includes('…'))
 	assert.doesNotThrow(() => svgDataUrl(svg))
 	assert.doesNotThrow(() => svgDataUrl(toggle({ title: 'x\ud83d' })))
@@ -99,4 +99,33 @@ test('value too wide at 34 px steps down to 26 px instead of being cut', () => {
 	const wide = renderValueKey({ title: 'AN 1', value: '-12.5 dB', overlay: 'none' })
 	assert.ok(wide.includes('>-12.5 dB<') && wide.includes('font-size="26"'))
 	assert.ok(renderValueKey({ title: 'AN 1', value: '+3', overlay: 'none' }).includes('font-size="34"'))
+})
+
+test('every built-in label, FX title and FX value shrinks to fit instead of being cut', () => {
+	const labels = ['MUTE GROUP', 'PFL GROUP', 'FADER GROUP', 'SPEAKER B', 'GLOBAL MUTE', 'GLOBAL PFL', 'RECALL VOLUME', 'LOOPBACK', 'TALKBACK', 'AUTOSET']
+	for (const label of labels) assert.ok(!toggle({ title: 'CONTROL ROOM', label }).includes('…'), label)
+	for (const title of ['Reverb smoothness', 'Reverb room scale', 'Echo delay time', 'Mic/Inst 12'])
+		assert.ok(!renderValueKey({ title, value: '0', overlay: 'none' }).includes('…'), title)
+	for (const value of ['Vintage Plate', 'Medium Room', 'Stereo Echo', '-144.5 dB'])
+		assert.ok(!renderValueKey({ title: 'T', value, overlay: 'none' }).includes('…'), value)
+})
+
+const texts = (svg) => [...svg.matchAll(/font-size="([\d.]+)"[^>]*>([^<]*)<\/text>/g)].map((m) => [m[2], Number(m[1])])
+
+test('long control room and group words wrap onto two lines instead of shrinking small', () => {
+	const t = texts(toggle({ title: 'CONTROL ROOM', label: 'GLOBAL MUTE' }))
+	assert.deepEqual(t.map(([x]) => x), ['CONTROL', 'ROOM', 'GLOBAL', 'MUTE'])
+	for (const [x, size] of t) assert.ok(size >= 20, `${x} ${size}`)
+	const g = texts(toggle({ title: 'Group 1', label: 'FADER GROUP' }))
+	assert.deepEqual(g.map(([x]) => x), ['Group 1', 'FADER', 'GROUP'])
+})
+
+test('a short title and label keep the one-line layout', () => {
+	assert.deepEqual(texts(toggle({ title: 'GamePC', label: 'MUTE' })), [['GamePC', 26], ['MUTE', 26]])
+})
+
+test('a long FX title wraps; its value stays on one line', () => {
+	const t = texts(renderValueKey({ title: 'Reverb smoothness', value: 'Vintage Plate', overlay: 'none' }))
+	assert.deepEqual(t.map(([x]) => x), ['Reverb', 'smoothness', 'Vintage Plate'])
+	assert.ok(t[0][1] >= 20 && t[1][1] >= 20, JSON.stringify(t))
 })

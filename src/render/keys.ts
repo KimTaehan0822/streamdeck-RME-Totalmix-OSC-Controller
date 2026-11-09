@@ -1,5 +1,5 @@
 import { renderKeyMeter, type MeterBars } from './meter.js'
-import { KEY, NAME_WIDTH, fitSize, fitText, frame, plainText, type Overlay } from './svg.js'
+import { KEY, NAME_WIDTH, fitSize, fitText, frame, plainText, textBlock, wrapFit, type Overlay } from './svg.js'
 
 const WHITE = '#fff'
 
@@ -13,10 +13,14 @@ export interface ToggleKeyView {
 
 export function renderToggleKey(v: ToggleKeyView): string {
 	let body = `<rect width="${KEY}" height="${KEY}" fill="${v.on ? v.onColor : '#000'}"/>`
-	// Long channel names shrink to fit the key rather than being cut.
-	const size = fitSize(v.title, 26, NAME_WIDTH, 10)
-	body += plainText(72, v.label ? 62 : 82, fitText(v.title, size), { size, fill: WHITE })
-	if (v.label) body += plainText(72, 104, fitText(v.label, 26), { size: 26, fill: WHITE })
+	// Long text shrinks to fit the key, and splits onto two lines when one line would get too small.
+	const title = wrapFit(v.title, 26, NAME_WIDTH, 10)
+	const label = v.label ? wrapFit(v.label, 26, NAME_WIDTH, 10) : undefined
+	if (title.lines.length === 1 && (!label || label.lines.length === 1)) {
+		body += plainText(72, label ? 62 : 82, fitText(v.title, title.size), { size: title.size, fill: WHITE })
+		if (label && v.label) body += plainText(72, 104, fitText(v.label, label.size), { size: label.size, fill: WHITE })
+	} else if (!label) body += textBlock(title, 73, WHITE)
+	else body += textBlock(wrapFit(v.title, 22, NAME_WIDTH, 10), 30, WHITE) + textBlock(label, 99, WHITE)
 	return frame(KEY, KEY, body, v.overlay)
 }
 
@@ -30,10 +34,14 @@ export interface ValueKeyView {
 }
 
 export function renderValueKey(v: ValueKeyView): string {
-	let body = plainText(72, 40, fitText(v.title, 26), { size: 26, fill: WHITE })
-	// A value too wide at 34 px (e.g. "-12.5 dB") steps down to 26 px before it is cut.
+	const title = wrapFit(v.title, 26, NAME_WIDTH, 10)
+	let body =
+		title.lines.length === 1
+			? plainText(72, 40, fitText(v.title, title.size), { size: title.size, fill: WHITE })
+			: textBlock(wrapFit(v.title, 24, NAME_WIDTH, 10), 31, WHITE)
+	// A value too wide at 34 px (e.g. "-12.5 dB") steps down to 26 px, then shrinks further rather than being cut.
 	// A meter key keeps one size: its dB value changes length as the fader moves, and the size would jump with it.
-	const size = !v.meter && fitText(v.value, 34) === v.value ? 34 : 26
+	const size = v.meter ? 26 : fitText(v.value, 34, NAME_WIDTH) === v.value ? 34 : fitSize(v.value, 26, NAME_WIDTH, 10)
 	body += plainText(72, 90, fitText(v.value, size), { size, fill: WHITE })
 	if (v.meter) body += renderKeyMeter(v.meter)
 	else if (v.bar !== undefined) {

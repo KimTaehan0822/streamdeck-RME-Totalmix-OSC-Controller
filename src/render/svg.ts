@@ -41,9 +41,20 @@ export function plainText(
 
 // Hangul and other CJK and full-width characters are about 1 em wide (Hangul drawn at HANGUL_SCALE), the rest 0.6 em
 const WIDE = /[\u1100-\u11ff\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\uff00-\uffef]|[\u{20000}-\u{3ffff}]/u
-const charWidth = (c: string, size: number) => (HANGUL.test(c) ? HANGUL_SCALE : WIDE.test(c) ? 1 : 0.6) * size
+// Printable ASCII advance widths of Segoe UI Semibold in hundredths of an em, measured in a browser (Node has no font metrics).
+const SEGOE = [
+	27, 30, 44, 59, 56, 84, 72, 26, 33, 33, 43, 69, 24, 40, 24, 41, 56, 40, 56, 56, 58, 56, 56, 54, 56, 56, 24, 24, 69, 69, 69, 44,
+	95, 67, 60, 62, 72, 52, 50, 70, 74, 29, 40, 61, 49, 92, 77, 76, 58, 76, 62, 54, 55, 70, 64, 97, 62, 58, 59, 33, 40, 33, 69, 42,
+	29, 52, 60, 47, 60, 53, 34, 60, 58, 26, 26, 52, 26, 89, 58, 60, 60, 60, 37, 43, 36, 58, 51, 76, 50, 51, 46, 33, 28, 33, 69,
+]
+// 5% over the measured widths so rounding in the Stream Deck renderer never pushes text past the edge.
+const MARGIN = 1.05
+const charWidth = (c: string, size: number) => {
+	const code = c.codePointAt(0) ?? 0
+	if (code >= 32 && code < 127) return (SEGOE[code - 32] / 100) * MARGIN * size
+	return (HANGUL.test(c) ? HANGUL_SCALE : WIDE.test(c) ? 1 : 0.6) * size
+}
 
-// shortcut: per-class width estimate (no font metrics in Node); upgrade if cut-offs look wrong on a real key
 export function fitText(text: string, size: number, maxWidth = KEY - 8): string {
 	const chars = Array.from(text)
 	if (chars.reduce((w, c) => w + charWidth(c, size), 0) <= maxWidth) return text
@@ -59,10 +70,30 @@ export function fitText(text: string, size: number, maxWidth = KEY - 8): string 
 
 /** Font size at which text fits maxWidth, never above size nor below min (fitText still cuts what min cannot fit). */
 export function fitSize(text: string, size: number, maxWidth: number, min: number): number {
-	// Capitals measure about 0.72 em in Segoe UI Semibold; counting them at 0.6 left "DAW OUT" wider than planned.
-	const width = Array.from(text).reduce((w, c) => w + (/[A-Z]/.test(c) ? 0.72 * size : charWidth(c, size)), 0)
+	const width = Array.from(text).reduce((w, c) => w + charWidth(c, size), 0)
 	// The small margin keeps float rounding from pushing the result just past maxWidth, which fitText would cut.
 	return width <= maxWidth ? size : Math.max(min, Math.floor((size * maxWidth) / width - 1e-6))
+}
+
+/** Text that would shrink below 85% of size on one line splits at the space that lets both lines be largest. */
+export function wrapFit(text: string, size: number, maxWidth: number, min: number): { lines: string[]; size: number } {
+	let best = { lines: [text], size: fitSize(text, size, maxWidth, min) }
+	const words = text.split(' ')
+	if (best.size >= size * 0.85) return best
+	for (let i = 1; i < words.length; i++) {
+		const lines = [words.slice(0, i).join(' '), words.slice(i).join(' ')]
+		const s = Math.min(...lines.map((line) => fitSize(line, size, maxWidth, min)))
+		if (s > best.size) best = { lines, size: s }
+	}
+	return best
+}
+
+/** Lines centred as a block on cy. */
+export function textBlock(block: { lines: string[]; size: number }, cy: number, fill: string): string {
+	const { lines, size } = block
+	const step = size * 1.1
+	const first = cy - (step * (lines.length - 1)) / 2 + size * 0.35
+	return lines.map((line, i) => plainText(72, +(first + i * step).toFixed(1), fitText(line, size), { size, fill })).join('')
 }
 
 export function frame(width: number, height: number, body: string, overlay: Overlay): string {
