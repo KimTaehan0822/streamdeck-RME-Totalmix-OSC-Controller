@@ -4,7 +4,7 @@
 	"UUID": "com.haeunga0822.rme-totalmix",
 	"Name": "OSC Controller for RME TotalMix",
 	"Version": "1.0.1.0",
-	"Author": "haeunga0822",
+	"Author": "김탄2",
 	"Icon": "imgs/plugin",
 	"Category": "OSC Controller for RME TotalMix",
 	"Description": "Control RME TotalMix FX over Global OSC.",
