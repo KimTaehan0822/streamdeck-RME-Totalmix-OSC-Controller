@@ -143,6 +143,8 @@ const TEXT = {
 	'Recall volume': ['볼륨 복귀', '音量を呼び出し'],
 	'Recall volume (dB)': ['복귀 볼륨 (dB)', '呼び出す音量 (dB)'],
 	'e.g. -20 or 0': ['예: -20 또는 0', '例: -20 または 0'],
+	'New version available:': ['새 버전이 나왔어요:', '新しいバージョンがあります:'],
+	'Open release page': ['릴리즈 페이지 열기', 'リリースページを開く'],
 }
 let language = 'en'
 const tr = (en) => TEXT[en]?.[{ ko: 0, ja: 1 }[language]] ?? en
@@ -183,3 +185,6 @@ async function initFields(root) {
 	await Promise.all([...root.querySelectorAll('[setting]')].map((e) => e.updateComplete))
 	await SDPIComponents.streamDeckClient.getSettings()
 }
+
+// New-release notice at the bottom of every settings screen (ui/update-check.js).
+UpdateCheck.mountPluginNotice('streamdeck-RME-Totalmix-OSC-Controller', { available: 'New version available:', open: 'Open release page' })
