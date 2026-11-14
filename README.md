@@ -6,7 +6,7 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 ## 다운로드
 
-[최신 릴리즈](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) 페이지에서 `RME-TotalMix-StreamDeck-v<버전>.zip`을 받아 압축을 풉니다. 안에 들어 있는 파일은 아래와 같습니다.
+[최신 릴리즈](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) 페이지에서 `RME-TotalMix-StreamDeck-v<버전>.zip`을 받아 압축을 풉니다. 이 문서와 PDF 사용설명서는 **v1.2.0** 기준입니다. 안에 들어 있는 파일은 아래와 같습니다.
 
 - `RME-TotalMix.streamDeckPlugin`: 설치 파일
 - 사용설명서 PDF (언어별로 하나씩)
@@ -69,6 +69,10 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 설정 화면 맨 아래의 **▸ Language**를 펼쳐 **English / 한국어 / 日本語** 중에서 고릅니다. 고르는 즉시 설정 화면의 글자가 바뀌고, 모든 액션에 똑같이 적용됩니다. 처음 값은 English입니다. 키에 뜨는 글자(OFFLINE 등)와 액션 목록의 이름은 바뀌지 않습니다.
 
+## 레벨미터 디자인
+
+설정 화면의 **▸ Meter design**에서 레벨미터 모양을 고릅니다. **Plugin (default)**는 원래 모양이고, **TotalMix classic**과 **TotalMix new**는 TotalMix의 옛 디자인과 새 디자인처럼 색과 눈금(0·6·10·20·40·60)을 맞춘 모양입니다. 모든 미터(VU Dial, Gain Dial, Fader 키, Fader(2-Button))에 같이 적용됩니다.
+
 ## 액션 목록
 
 **채널 키**
@@ -85,11 +89,13 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 | 액션 | 하는 일 |
 | --- | --- |
 | Fader(2-Button) | 키 두 개로 페이더 올리기/내리기. 키에 레벨 미터 표시 |
-| Fader | 페이더를 정한 값으로 설정하거나 정한 만큼 올리기/내리기 |
-| Pan | 팬 설정 또는 조절 |
+| Fader | 페이더를 정한 값으로 설정, 정한 만큼 올리기/내리기, 또는 두 값 번갈아 |
+| Pan | 팬 설정, 조절, 또는 두 값 번갈아 |
 | Input gain | 입력 게인 올리기/내리기 |
 | Global FX (Reverb / Echo) | 글로벌 리버브, 에코 켜기/끄기 |
-| FX parameter | FX 파라미터 설정 또는 조절 |
+| FX parameter | FX 파라미터 설정, 조절, 또는 두 값 번갈아 |
+
+Fader, Pan, FX parameter 키의 **Alternate two values** 모드는 누를 때마다 Value 1과 Value 2 사이를 오갑니다(예: -10 dB ↔ -30 dB, Fader에서 -65 dB 이하는 음소거). 키 상태가 두 개라서 Stream Deck 앱에서 상태별 아이콘과 제목을 정할 수 있습니다. v1.2.0 이전에 놓은 키는 지우고 다시 놓아야 상태가 두 개가 됩니다.
 
 **다이얼 (Stream Deck +)**
 

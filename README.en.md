@@ -6,7 +6,7 @@ Control **RME TotalMix FX** with the keys and dials of an Elgato Stream Deck. Fa
 
 ## Download
 
-Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) page and unzip it. It contains:
+Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) page and unzip it. This README and the PDF manuals describe **v1.2.0**. It contains:
 
 - `RME-TotalMix.streamDeckPlugin`: the installer
 - The manual as PDF (one per language)
@@ -69,6 +69,10 @@ Select any action and open **▸ TotalMix connection (OSC)** at the very bottom 
 
 Open **▸ Language** at the very bottom of the settings screen and choose **English / 한국어 / 日本語**. The settings screen text changes immediately and applies to every action. The default is English. Text on the keys (OFFLINE etc.) and the names in the action list do not change.
 
+## Level meter design
+
+Pick the meter look under **▸ Meter design** in the settings screen. **Plugin (default)** is the original look; **TotalMix classic** and **TotalMix new** follow the colours and scale (0, 6, 10, 20, 40, 60) of TotalMix's old and new designs. It applies to every meter (VU Dial, Gain Dial, Fader key, Fader(2-Button)).
+
 ## Actions
 
 **Channel keys**
@@ -85,11 +89,13 @@ Open **▸ Language** at the very bottom of the settings screen and choose **Eng
 | Action | What it does |
 | --- | --- |
 | Fader(2-Button) | Raise/lower a fader with two keys, with a level meter on the keys |
-| Fader | Set a fader to a value or raise/lower it by a value |
-| Pan | Set or adjust pan |
+| Fader | Set a fader to a value, raise/lower it by a value, or alternate between two values |
+| Pan | Set, adjust or alternate pan between two values |
 | Input gain | Raise/lower input gain |
 | Global FX (Reverb / Echo) | Global reverb, echo on/off |
-| FX parameter | Set or adjust an FX parameter |
+| FX parameter | Set, adjust or alternate an FX parameter between two values |
+
+The **Alternate two values** mode of the Fader, Pan and FX parameter keys switches between Value 1 and Value 2 on each press (e.g. -10 dB ↔ -30 dB; on a Fader, -65 dB or lower is mute). The key has two states, so you can set an icon and title per state in the Stream Deck app. Keys placed before v1.2.0 need to be deleted and placed again to get the second state.
 
 **Dials (Stream Deck +)**
 
