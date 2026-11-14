@@ -16,5 +16,10 @@ export const channelOf = (s: JsonObject, rows: MixerBus[]): MixerChannelTarget |
 	const index = int(s.channel, 0)
 	return rows.includes(bus) && index !== undefined ? { bus, index } : undefined
 }
-export const pick = <T extends string>(v: unknown, labels: Record<T, unknown>): T | undefined =>
+/** Alternate mode: at value 2 (within tolerance) go to value 1, otherwise (unknown current included) to value 2. */
+export function alternateNext(current: number | undefined, value1: number, value2: number, tolerance: number): { target: number; atValue2: boolean } {
+	const atValue2 = current !== undefined && Math.abs(current - value2) <= tolerance
+	return { target: atValue2 ? value1 : value2, atValue2 }
+}
+export const pick =<T extends string>(v: unknown, labels: Record<T, unknown>): T | undefined =>
 	typeof v === 'string' && Object.hasOwn(labels, v) ? (v as T) : undefined

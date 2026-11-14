@@ -7,10 +7,10 @@ import { FADER_PEEK_MS, faderAdjustedRecently, markFaderAdjusted } from '../stat
 import { renderValueKey, renderValueStrip } from '../render/keys.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
 import { BLUE, ToggleAction, type Spec } from './channel-toggles.js'
-import { BUS_NAME, int, num, pick } from './common.js'
+import { BUS_NAME, alternateNext, int, num, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
-const MODES = { set: 1, step: 1 }
+const MODES = { set: 1, step: 1, alternate: 1 }
 const SETUP_KEY = renderValueKey({ title: '', value: '', overlay: 'setup' })
 const CONFIG_KEY = renderValueKey({ title: '', value: '', overlay: 'config' })
 const CONFIG_STRIP = renderValueStrip({ title: '', value: '', overlay: 'config' })
@@ -193,7 +193,21 @@ export class FxParamAction extends TotalMixAction<JsonObject> {
 		const parameter = pick(s.parameter, FX_PARAMS)
 		const mode = pick(s.mode, MODES)
 		const value = num(s.value)
-		return parameter && mode && Number.isFinite(value) ? { parameter, mode, value } : undefined
+		const value2 = num(s.value2)
+		if (mode === 'alternate' && !Number.isFinite(value2)) return undefined
+		return parameter && mode && Number.isFinite(value) ? { parameter, mode, value, value2 } : undefined
+	}
+
+	private alternate(v: { parameter: string; value: number; value2: number }) {
+		const current = globalParameter<number>(this.connection, v.parameter)
+		const tolerance = Math.max(Math.abs(v.value2) * 0.01, 0.01)
+		return alternateNext(typeof current === 'number' ? current : undefined, v.value, v.value2, tolerance)
+	}
+
+	/** Alternate keys show their second state while at value 2; other modes leave the state alone. */
+	protected override keyState(s: JsonObject): 0 | 1 | undefined {
+		const v = this.valid(s)
+		return v?.mode === 'alternate' ? (this.alternate(v).atValue2 ? 1 : 0) : undefined
 	}
 
 	protected render(s: JsonObject, ctx: RenderContext): string {
@@ -212,7 +226,7 @@ export class FxParamAction extends TotalMixAction<JsonObject> {
 		const v = this.valid(ev.payload.settings)
 		if (!v || !hasCapability(this.connection, 'globalFx')) return
 		const send = () => {
-			let target = v.value
+			let target = v.mode === 'alternate' ? this.alternate(v).target : v.value
 			if (v.mode === 'step') {
 				const current = globalParameter<number>(this.connection, v.parameter)
 				// Without a known current value there is nothing to add to.
@@ -221,7 +235,7 @@ export class FxParamAction extends TotalMixAction<JsonObject> {
 			}
 			void this.connection.run((c) => c.setGlobalFxParameter(v.parameter, clampFx(target)))
 		}
-		if (v.mode === 'set') send()
+		if (v.mode !== 'step') send()
 		else this.hold(ev.action, send)
 	}
 }

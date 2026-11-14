@@ -28,6 +28,7 @@ function fake(dial, s, multi = false) {
 		setImage: async (image) => void images.push(decodeURIComponent(image)),
 		setFeedback: async ({ canvas }) => void images.push(decodeURIComponent(canvas)),
 		setFeedbackLayout: async () => {},
+		setState: async () => {},
 	}
 	const ev = (payload = {}) => ({ action, payload: { settings: s, ...payload } })
 	return { images, appear: ev(), ev }
@@ -258,3 +259,22 @@ for (const [name, Action, s, hint] of [
 		conn.stop()
 	})
 }
+
+test('fx-param alternate switches between the two values', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/reverb/time', 1.5)
+	await pressKey(FxParamAction, conn, { parameter: 'reverbTime', mode: 'alternate', value: '1.5', value2: '3' })
+	assert.deepEqual(sent.at(-1), { address: '/reverb/time', args: [3] })
+	msg('/reverb/time', 3)
+	await pressKey(FxParamAction, conn, { parameter: 'reverbTime', mode: 'alternate', value: '1.5', value2: '3' })
+	assert.deepEqual(sent.at(-1), { address: '/reverb/time', args: [1.5] })
+	conn.stop()
+})
+
+test('alternate with equal values sends that value every time', async () => {
+	const { conn, sent, msg } = setup()
+	msg('/reverb/time', 2)
+	await pressKey(FxParamAction, conn, { parameter: 'reverbTime', mode: 'alternate', value: '2', value2: '2' })
+	assert.deepEqual(sent.at(-1), { address: '/reverb/time', args: [2] })
+	conn.stop()
+})

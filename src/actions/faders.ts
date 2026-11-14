@@ -3,17 +3,18 @@ import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import type { BinaryOperation, FaderUnit, TotalMixController } from '../protocol/controller.js'
 import { stringifyPresetTarget } from '../model/preset-target.js'
+import { normalizedToDb } from '../protocol/fader-curve.js'
 import { channelName, faderBar, faderDb, levelBar, levelDb, muted, panText, panValue, type MixTarget } from '../readers.js'
 import { renderValueKey, type ValueKeyView } from '../render/keys.js'
 import { renderButtonFader, renderVuStrip, type FaderRole, type MeterView } from '../render/meter.js'
 import { fitText, frame, plainText } from '../render/svg.js'
 import { TotalMixAction, type RenderContext } from '../runtime/base-action.js'
 import { FADER_PEEK_MS, faderAdjustedRecently, markFaderAdjusted } from '../state/fader-peek.js'
-import { ALL, BUS_NAME, channelOf as settingsChannel, num, pick } from './common.js'
+import { ALL, BUS_NAME, alternateNext, channelOf as settingsChannel, num, pick } from './common.js'
 
 const ID = 'com.haeunga0822.rme-totalmix.'
 const ROLES: Record<FaderRole, unknown> = { top: 1, bottom: 1, left: 1, right: 1 }
-const MODES = { set: 1, step: 1 }
+const MODES = { set: 1, step: 1, alternate: 1 }
 const PRESS_ACTIONS = { mute: 1, recall: 1 }
 const TURN_ACTIONS = { step: 1, muteToggle: 1, muteOn: 1, muteOff: 1, recall: 1 }
 const MUTE_OPS: Record<string, BinaryOperation> = { mute: 'toggle', muteToggle: 'toggle', muteOn: 'on', muteOff: 'off' }
@@ -201,8 +202,22 @@ const SETUP_KEY = renderValueKey({ title: '', value: '', overlay: 'setup' })
 abstract class ValueKeyAction extends FaderFamilyAction {
 	protected abstract show(t: MixTarget): Pick<ValueKeyView, 'value' | 'bar' | 'meter'>
 	protected abstract send(id: string, t: MixTarget, set: boolean, value: number, s: JsonObject): void
+	/** Current value on the same scale as the settings' values, for the alternate mode. */
+	protected abstract current(t: MixTarget, s: JsonObject): number | undefined
+	protected abstract tolerance(s: JsonObject): number
 	protected valid(s: JsonObject): boolean {
-		return !!pick(s.mode, MODES) && Number.isFinite(num(s.value))
+		return !!pick(s.mode, MODES) && Number.isFinite(num(s.value)) && (s.mode !== 'alternate' || Number.isFinite(num(s.value2)))
+	}
+
+	private alternate(t: MixTarget, s: JsonObject) {
+		return alternateNext(this.current(t, s), num(s.value), num(s.value2), this.tolerance(s))
+	}
+
+	/** Alternate keys show their second state while at value 2; other modes leave the state alone. */
+	protected override keyState(s: JsonObject): 0 | 1 | undefined {
+		const t = targetOf(s)
+		if (s.mode !== 'alternate' || !t || !this.valid(s)) return undefined
+		return this.alternate(t, s).atValue2 ? 1 : 0
 	}
 
 	protected render(s: JsonObject, ctx: RenderContext): string {
@@ -216,7 +231,8 @@ abstract class ValueKeyAction extends FaderFamilyAction {
 		const t = targetOf(s)
 		if (!t || !this.valid(s)) return
 		const value = num(s.value)
-		if (s.mode === 'set') this.send(ev.action.id, t, true, value, s)
+		if (s.mode === 'alternate') this.send(ev.action.id, t, true, this.alternate(t, s).target, s)
+		else if (s.mode === 'set') this.send(ev.action.id, t, true, value, s)
 		else this.hold(ev.action, () => this.send(ev.action.id, t, false, value, s))
 	}
 }
@@ -232,6 +248,16 @@ export class FaderAction extends ValueKeyAction {
 		return { value: faderDb(c, t), meter: { fader: faderBar(c, t), left: levelBar(c, t, 'left'), right: levelBar(c, t, 'right'), muted: muted(c, t) } }
 	}
 
+	protected current(t: MixTarget, s: JsonObject): number | undefined {
+		const c = this.connection.controller.state
+		const value = t.row === 'output' ? c.getOutput(t.output).value : c.getRoute(route(t)).value
+		return value === undefined ? undefined : UNITS[(s.unit as string) ?? 'db'] === 'db' ? normalizedToDb(value) : value
+	}
+
+	protected tolerance(s: JsonObject): number {
+		return UNITS[(s.unit as string) ?? 'db'] === 'db' ? 0.2 : 0.005
+	}
+
 	protected send(id: string, t: MixTarget, set: boolean, value: number, s: JsonObject): void {
 		const unit = UNITS[(s.unit as string) ?? 'db']
 		this.apply(id, t, true, (c) => (set ? setFader(c, t, value, unit) : adjustFader(c, t, value, unit)))
@@ -242,6 +268,15 @@ export class FaderAction extends ValueKeyAction {
 export class PanAction extends ValueKeyAction {
 	protected show(t: MixTarget) {
 		return { value: String(panText(this.connection, t)), bar: panValue(this.connection, t) }
+	}
+
+	protected current(t: MixTarget): number | undefined {
+		const v = panValue(this.connection, t)
+		return v === undefined ? undefined : v * 200 - 100
+	}
+
+	protected tolerance(): number {
+		return 1
 	}
 
 	protected send(id: string, t: MixTarget, set: boolean, value: number): void {

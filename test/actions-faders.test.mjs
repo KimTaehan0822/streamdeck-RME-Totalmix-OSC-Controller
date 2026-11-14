@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { TotalMixConnection } from '../dist/connection.js'
-import { ButtonFaderAction, FaderAction, PanDialAction, VuDialAction } from '../dist/actions/faders.js'
+import { ButtonFaderAction, FaderAction, PanAction, PanDialAction, VuDialAction } from '../dist/actions/faders.js'
 import { dbToNormalized, normalizedToDb } from '../dist/protocol/fader-curve.js'
 
 const settings = { host: '127.0.0.1', targetPort: 7001, feedbackPort: 9001, syncTimeoutMs: 50 }
@@ -29,6 +29,7 @@ function fake(id, dial, s, multi = false) {
 		setImage: async (image) => void images.push(decodeURIComponent(image)),
 		setFeedback: async ({ canvas }) => void images.push(decodeURIComponent(canvas)),
 		setFeedbackLayout: async () => {},
+		setState: async () => {},
 	}
 	const ev = (payload = {}) => ({ action, payload: { settings: s, ...payload } })
 	return { images, action, appear: ev(), ev }
@@ -370,5 +371,69 @@ test('two button faders with different channels and roles render independently',
 	assert.notEqual(a.images.at(-1), b.images.at(-1))
 	await key.onWillDisappear(a.appear)
 	await key.onWillDisappear(b.appear)
+	conn.stop()
+})
+
+test('fader alternate goes to value 2, then back to value 1 once TotalMix reports value 2', async () => {
+	const { conn, sent, msg } = setup()
+	const key = new FaderAction(conn)
+	const k = fake('k', false, { row: 'input', channel: 1, destination: 2, mode: 'alternate', unit: 'db', value: '-10', value2: '-30' })
+	await key.onWillAppear(k.appear)
+	key.onKeyDown(k.ev()) // current unknown -> value 2
+	await wait()
+	assert.deepEqual(sent.at(-1), { address: '/mix/in/1/2/faderlin', args: [dbToNormalized(-30)] })
+	msg('/mix/in/1/2/faderlin', dbToNormalized(-29.9)) // within 0.2 dB of value 2
+	key.onKeyDown(k.ev())
+	await wait()
+	assert.deepEqual(sent.at(-1), { address: '/mix/in/1/2/faderlin', args: [dbToNormalized(-10)] })
+	msg('/mix/in/1/2/faderlin', dbToNormalized(-10))
+	key.onKeyDown(k.ev())
+	await wait()
+	assert.deepEqual(sent.at(-1), { address: '/mix/in/1/2/faderlin', args: [dbToNormalized(-30)] })
+	await key.onWillDisappear(k.appear)
+	conn.stop()
+})
+
+test('fader alternate without value 2 is incomplete and sends nothing', async () => {
+	const { conn, sent } = setup()
+	const key = new FaderAction(conn)
+	const k = fake('k', false, { row: 'input', channel: 1, destination: 2, mode: 'alternate', unit: 'db', value: '-10' })
+	await key.onWillAppear(k.appear)
+	key.onKeyDown(k.ev())
+	await wait()
+	assert.equal(sent.filter((m) => m.address === '/mix/in/1/2/faderlin').length, 0)
+	assert.match(k.images.at(-1), /CHANNEL/) // incomplete value keys draw SET CHANNEL, like a bad value
+	await key.onWillDisappear(k.appear)
+	conn.stop()
+})
+
+test('pan alternate compares on the -100..100 scale and sets the key state at value 2', async () => {
+	const { conn, sent, msg } = setup()
+	const states = []
+	const key = new PanAction(conn)
+	const k = fake('k', false, { row: 'output', channel: 3, mode: 'alternate', value: '0', value2: '50' })
+	k.action.setState = async (s) => void states.push(s)
+	msg('/output/3/balpan', 0.5) // pan 50 = value 2
+	await key.onWillAppear(k.appear)
+	await wait()
+	assert.equal(states.at(-1), 1)
+	key.onKeyDown(k.ev())
+	await wait()
+	assert.deepEqual(sent.at(-1), { address: '/output/3/balpan', args: [0] })
+	await key.onWillDisappear(k.appear)
+	conn.stop()
+})
+
+test('set mode keys never switch to the second state', async () => {
+	const { conn, msg } = setup()
+	const states = []
+	const key = new FaderAction(conn)
+	const k = fake('k', false, { row: 'input', channel: 1, destination: 2, mode: 'set', unit: 'db', value: '-10' })
+	k.action.setState = async (s) => void states.push(s)
+	msg('/mix/in/1/2/faderlin', dbToNormalized(-10))
+	await key.onWillAppear(k.appear)
+	await wait()
+	assert.ok(!states.includes(1))
+	await key.onWillDisappear(k.appear)
 	conn.stop()
 })

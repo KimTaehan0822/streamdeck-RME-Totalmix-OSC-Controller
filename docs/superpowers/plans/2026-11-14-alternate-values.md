@@ -15,7 +15,7 @@
 ## Global Constraints
 
 - 모드 값 `alternate`. 기존 `set`, `step`은 동작과 기본값이 그대로다.
-- 값 1 = 설정 `value`(기존 칸), 값 2 = 새 설정 `value2`. `alternate`일 때 둘 중 하나라도 숫자가 아니면 설정 미완성(SETUP)으로 그리고 아무것도 보내지 않는다.
+- 값 1 = 설정 `value`(기존 칸), 값 2 = 새 설정 `value2`. `alternate`일 때 둘 중 하나라도 숫자가 아니면 설정 미완성(기존 값 키처럼 SET CHANNEL)으로 그리고 아무것도 보내지 않는다.
 - 다음 값: `current`가 값 2와 "같으면" 값 1, 아니면(모르는 값 포함) 값 2.
 - "같음" 기준(차이 ≤ 허용치): Fader dB 단위 0.2, Fader 선형 단위 0.005, Pan 1, FX `max(|값 2| × 0.01, 0.01)`.
 - 비교에 쓰는 지금 값: Fader dB = `normalizedToDb(상태 value)`, Fader 선형 = 상태 value, Pan = `상태 value × 200 − 100`, FX = `globalParameter<number>`.
