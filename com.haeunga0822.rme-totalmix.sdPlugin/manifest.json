@@ -140,7 +140,11 @@
 				"Keypad"
 			],
 			"PropertyInspectorPath": "ui/fader.html",
+			"DisableAutomaticStates": true,
 			"States": [
+				{
+					"Image": "imgs/fader"
+				},
 				{
 					"Image": "imgs/fader"
 				}
@@ -175,7 +179,11 @@
 				"Keypad"
 			],
 			"PropertyInspectorPath": "ui/fader.html",
+			"DisableAutomaticStates": true,
 			"States": [
+				{
+					"Image": "imgs/fader"
+				},
 				{
 					"Image": "imgs/fader"
 				}
@@ -238,7 +246,11 @@
 				"Keypad"
 			],
 			"PropertyInspectorPath": "ui/fx.html",
+			"DisableAutomaticStates": true,
 			"States": [
+				{
+					"Image": "imgs/fader"
+				},
 				{
 					"Image": "imgs/fader"
 				}

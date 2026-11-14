@@ -14,7 +14,7 @@
 		// Global FX: global-fx, fx-param, fx-param-dial. The action UUID picks the fields.
 		const EFFECTS = { reverbEnable: 'Reverb', echoEnable: 'Echo' }
 		const OPERATION = { toggle: 'Toggle', on: 'On', off: 'Off' }
-		const MODES = { set: 'Set to value', step: 'Step by value (hold repeats)' }
+		const MODES = { set: 'Set to value', step: 'Step by value (hold repeats)', alternate: 'Alternate two values' }
 		const FX_PARAMS = {
 			reverbType: 'Reverb type', reverbPredelay: 'Reverb pre-delay', reverbLowcut: 'Reverb low cut', reverbHighcut: 'Reverb high cut',
 			reverbRoomscale: 'Reverb room scale', reverbAttack: 'Reverb attack', reverbHold: 'Reverb hold', reverbRelease: 'Reverb release',
@@ -42,18 +42,29 @@
 			const kind = KINDS[actionInfo.action.split('.').pop()]
 			if (!kind) return
 			const fields = document.getElementById('fields')
+			let mode = ((await client.getSettings()).settings ?? {}).mode
 
 			const draw = () => {
 				let html = ''
 				if (kind.effect) html += select('effect', 'Effect', EFFECTS, 'placeholder="Select"')
 				if (kind.fxParam) html += select('parameter', 'Parameter', FX_PARAMS, 'placeholder="Select"')
 				if (kind.mode) html += select('mode', 'Mode', MODES, 'placeholder="Select"')
-				if (kind.value) html += field('value', ...kind.value)
+				// Alternate keeps the existing Value as value 1 and adds value 2.
+				if (kind.value) html += field('value', mode === 'alternate' ? 'Value 1' : kind.value[0], kind.value[1])
+				if (kind.value && mode === 'alternate') html += field('value2', 'Value 2', kind.value[1])
 				for (const [setting, label, placeholder] of kind.text ?? []) html += field(setting, label, placeholder)
 				if (kind.text) html += '<sdpi-item label=""><span>Press the dial to set the reset value; with no reset value nothing happens.</span></sdpi-item>'
 				if (kind.operation) html += select('operation', 'Operation', OPERATION, 'default="toggle"')
 				fields.innerHTML = html
 				initFields(fields)
+				// Saved before redrawing, like the row change, so the new fields load the chosen mode.
+				fields.querySelector('[setting="mode"]')?.addEventListener('valuechange', async (e) => {
+					if (e.target.value === mode) return
+					mode = e.target.value
+					const current = (await client.getSettings()).settings ?? {}
+					await client.setSettings({ ...current, mode })
+					draw()
+				})
 			}
 			draw()
 		}

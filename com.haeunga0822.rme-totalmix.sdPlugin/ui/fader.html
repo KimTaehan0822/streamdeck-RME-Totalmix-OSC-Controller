@@ -15,7 +15,7 @@
 		const ROWS = { input: 'Input', playback: 'Playback', output: 'Output' }
 		const ROLES = { top: 'Top key (up)', bottom: 'Bottom key (down)', left: 'Left key (down)', right: 'Right key (up)' }
 		const UNITS = { db: 'dB', linear: 'Linear (0-1)' }
-		const MODES = { set: 'Set to value', step: 'Step by value (hold repeats)' }
+		const MODES = { set: 'Set to value', step: 'Step by value (hold repeats)', alternate: 'Alternate two values' }
 		const KINDS = {
 			'button-fader': { role: true },
 			fader: { value: true, unit: true, hint: 'dB or 0-1 (a step may be negative)' },
@@ -37,6 +37,7 @@
 			const saved = (await client.getSettings()).settings ?? {}
 			const fields = document.getElementById('fields')
 			let row = saved.row ?? 'input'
+			let mode = saved.mode
 
 			const draw = () => {
 				let html = select('row', 'Row', ROWS, 'default="input"')
@@ -49,10 +50,20 @@
 				} else {
 					html += select('mode', 'Mode', MODES, 'placeholder="Select"')
 					if (kind.unit) html += select('unit', 'Unit', UNITS, 'default="db"')
-					html += `<sdpi-item label="Value"><sdpi-textfield setting="value" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`
+					// Alternate keeps the existing Value as value 1 and adds value 2.
+					html += `<sdpi-item label="${mode === 'alternate' ? 'Value 1' : 'Value'}"><sdpi-textfield setting="value" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`
+					if (mode === 'alternate') html += `<sdpi-item label="Value 2"><sdpi-textfield setting="value2" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`
 				}
 				fields.innerHTML = html
 				initFields(fields)
+				// Saved before redrawing, like the row change, so the new fields load the chosen mode.
+				fields.querySelector('[setting="mode"]')?.addEventListener('valuechange', async (e) => {
+					if (e.target.value === mode) return
+					mode = e.target.value
+					const current = (await client.getSettings()).settings ?? {}
+					await client.setSettings({ ...current, mode })
+					draw()
+				})
 				// A new row needs a new channel list; the saved channel belongs to the old row.
 				fields.querySelector('[setting="row"]').addEventListener('valuechange', async (e) => {
 					if (e.target.value === row) return
