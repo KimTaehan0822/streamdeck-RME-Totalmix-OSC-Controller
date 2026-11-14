@@ -437,3 +437,21 @@ test('set mode keys never switch to the second state', async () => {
 	await key.onWillDisappear(k.appear)
 	conn.stop()
 })
+
+test('a key switched from alternate to another mode goes back to the first state', async () => {
+	const { conn, msg } = setup()
+	const states = []
+	const key = new FaderAction(conn)
+	const base = { row: 'input', channel: 1, destination: 2, unit: 'db', value: '-10', value2: '-30' }
+	const k = fake('k', false, { ...base, mode: 'alternate' })
+	k.action.setState = async (s) => void states.push(s)
+	msg('/mix/in/1/2/faderlin', dbToNormalized(-30))
+	await key.onWillAppear(k.appear)
+	await wait()
+	assert.equal(states.at(-1), 1)
+	key.onDidReceiveSettings({ action: k.action, payload: { settings: { ...base, mode: 'set' } } })
+	await wait()
+	assert.equal(states.at(-1), 0)
+	await key.onWillDisappear(k.appear)
+	conn.stop()
+})

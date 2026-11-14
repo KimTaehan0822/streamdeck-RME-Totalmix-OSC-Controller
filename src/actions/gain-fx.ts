@@ -204,10 +204,10 @@ export class FxParamAction extends TotalMixAction<JsonObject> {
 		return alternateNext(typeof current === 'number' ? current : undefined, v.value, v.value2, tolerance)
 	}
 
-	/** Alternate keys show their second state while at value 2; other modes leave the state alone. */
+	/** Alternate keys show their second state while at value 2; every other case is the first state. */
 	protected override keyState(s: JsonObject): 0 | 1 | undefined {
 		const v = this.valid(s)
-		return v?.mode === 'alternate' ? (this.alternate(v).atValue2 ? 1 : 0) : undefined
+		return v?.mode === 'alternate' && this.alternate(v).atValue2 ? 1 : 0
 	}
 
 	protected render(s: JsonObject, ctx: RenderContext): string {

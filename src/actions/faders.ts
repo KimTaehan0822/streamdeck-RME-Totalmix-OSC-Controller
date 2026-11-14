@@ -213,10 +213,10 @@ abstract class ValueKeyAction extends FaderFamilyAction {
 		return alternateNext(this.current(t, s), num(s.value), num(s.value2), this.tolerance(s))
 	}
 
-	/** Alternate keys show their second state while at value 2; other modes leave the state alone. */
+	/** Alternate keys show their second state while at value 2; every other case is the first state. */
 	protected override keyState(s: JsonObject): 0 | 1 | undefined {
 		const t = targetOf(s)
-		if (s.mode !== 'alternate' || !t || !this.valid(s)) return undefined
+		if (s.mode !== 'alternate' || !t || !this.valid(s)) return 0
 		return this.alternate(t, s).atValue2 ? 1 : 0
 	}
 
