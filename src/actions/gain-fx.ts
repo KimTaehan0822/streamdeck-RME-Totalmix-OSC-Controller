@@ -214,7 +214,8 @@ export class FxParamAction extends TotalMixAction<JsonObject> {
 		const v = this.valid(s)
 		if (!v) return CONFIG_KEY
 		const overlay = hasCapability(this.connection, 'globalFx') ? ctx.overlay : 'unsupported'
-		return renderValueKey({ title: FX_PARAMS[v.parameter], value: globalParameterText(this.connection, v.parameter), overlay })
+		// A title set in the Stream Deck app (per state) is drawn by the app, so the parameter name steps aside.
+		return renderValueKey({ title: ctx.userTitle ? '' : FX_PARAMS[v.parameter], value: globalParameterText(this.connection, v.parameter), overlay })
 	}
 
 	protected register(s: JsonObject): void {

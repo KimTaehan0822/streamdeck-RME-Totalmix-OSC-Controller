@@ -455,3 +455,20 @@ test('a key switched from alternate to another mode goes back to the first state
 	await key.onWillDisappear(k.appear)
 	conn.stop()
 })
+
+test('a title set in the Stream Deck app replaces the drawn channel name on value keys', async () => {
+	const { conn, msg } = setup()
+	msg('/mix/in/1/2/faderlin', dbToNormalized(-10))
+	const key = new FaderAction(conn)
+	const settings = { row: 'input', channel: 1, destination: 2, mode: 'set', unit: 'db', value: '-10', displayName: 'Music' }
+	const k = fake('k', false, settings)
+	await key.onWillAppear(k.appear)
+	await wait()
+	assert.match(k.images.at(-1), />Music</)
+	key.onTitleParametersDidChange({ action: k.action, payload: { settings, state: 0, title: 'BGM', titleParameters: { showTitle: true } } })
+	await wait(60)
+	assert.doesNotMatch(k.images.at(-1), />Music</)
+	assert.match(k.images.at(-1), />-10\.0 dB</)
+	await key.onWillDisappear(k.appear)
+	conn.stop()
+})

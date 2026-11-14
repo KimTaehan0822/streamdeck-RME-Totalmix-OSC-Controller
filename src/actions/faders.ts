@@ -223,7 +223,8 @@ abstract class ValueKeyAction extends FaderFamilyAction {
 	protected render(s: JsonObject, ctx: RenderContext): string {
 		const t = targetOf(s)
 		if (!t || !this.valid(s)) return SETUP_KEY
-		return renderValueKey({ title: this.displayName(t, s), ...this.show(t), overlay: ctx.overlay })
+		// A title set in the Stream Deck app (per state) is drawn by the app, so the channel name steps aside.
+		return renderValueKey({ title: ctx.userTitle ? '' : this.displayName(t, s), ...this.show(t), overlay: ctx.overlay })
 	}
 
 	override onKeyDown(ev: KeyDownEvent<JsonObject>): void {
