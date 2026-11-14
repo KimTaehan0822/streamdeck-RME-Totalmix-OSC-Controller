@@ -53,6 +53,7 @@
 					// Alternate keeps the existing Value as value 1 and adds value 2.
 					html += `<sdpi-item label="${mode === 'alternate' ? 'Value 1' : 'Value'}"><sdpi-textfield setting="value" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`
 					if (mode === 'alternate') html += `<sdpi-item label="Value 2"><sdpi-textfield setting="value2" placeholder="${kind.hint}"></sdpi-textfield></sdpi-item>`
+					if (kind.unit) html += '<sdpi-item label=""><span>-65 dB or lower is mute (-∞).</span></sdpi-item>'
 				}
 				fields.innerHTML = html
 				initFields(fields)
