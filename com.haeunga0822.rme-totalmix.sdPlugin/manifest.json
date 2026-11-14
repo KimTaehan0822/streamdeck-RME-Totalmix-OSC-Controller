@@ -3,7 +3,7 @@
 	"SDKVersion": 2,
 	"UUID": "com.haeunga0822.rme-totalmix",
 	"Name": "OSC Controller for RME TotalMix",
-	"Version": "1.0.2.0",
+	"Version": "1.1.0.0",
 	"Author": "김탄2",
 	"Icon": "imgs/plugin",
 	"Category": "OSC Controller for RME TotalMix",
