@@ -5,6 +5,7 @@ import { faderActions } from './actions/faders.js'
 import { gainFxActions } from './actions/gain-fx.js'
 import { globalActions } from './actions/global.js'
 import { channelItems, normalizeSettings } from './runtime/settings.js'
+import { setMeterStyle } from './render/meter.js'
 
 // The Stream Deck app keeps no console output; send errors to the plugin's logs folder instead.
 console.error = (...args: unknown[]) => streamDeck.logger.error(args.map(String).join(' '))
@@ -16,7 +17,9 @@ export const connection = new TotalMixConnection()
 export const actions: SingletonAction[] = [...channelToggleActions(connection), ...faderActions(connection), ...gainFxActions(connection), ...globalActions(connection)]
 
 let current: ConnectionSettings | undefined
-function apply(raw: Parameters<typeof normalizeSettings>[0]): void {
+function apply(raw: Parameters<typeof normalizeSettings>[0] & { meterStyle?: unknown }): void {
+	// Keys pick the design up on their next redraw (at most 2 s); the connection does not restart for it.
+	setMeterStyle(raw.meterStyle)
 	const next = normalizeSettings(raw)
 	if (current && JSON.stringify(current) === JSON.stringify(next)) return
 	current = next

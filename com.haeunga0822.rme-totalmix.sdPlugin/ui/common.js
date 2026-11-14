@@ -16,6 +16,11 @@ const GLOBAL_BLOCK = `
 <sdpi-item label="Feedback port"><sdpi-textfield setting="feedbackPort" global default="9001" pattern="^[0-9]{1,5}$"></sdpi-textfield></sdpi-item>
 <sdpi-item label="Sync timeout (ms)"><sdpi-textfield setting="syncTimeoutMs" global default="500" pattern="^[0-9]{3,4}$"></sdpi-textfield></sdpi-item>
 </details>
+<details class="connection"><summary>Meter design</summary>
+<sdpi-item label="Meter design"><sdpi-select setting="meterStyle" global default="plugin">
+<option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
+</sdpi-select></sdpi-item>
+</details>
 <details class="connection"><summary>Language</summary>
 <sdpi-item label="Language"><sdpi-select setting="language" global default="en">
 <option value="en">English</option><option value="ko">한국어</option><option value="ja">日本語</option>
@@ -36,6 +41,10 @@ const TEXT = {
 	'Feedback port': ['피드백 포트', 'フィードバックポート'],
 	'Sync timeout (ms)': ['동기화 대기 시간 (ms)', '同期タイムアウト (ms)'],
 	Language: ['언어', '言語'],
+	'Meter design': ['미터 디자인', 'メーターデザイン'],
+	'Plugin (default)': ['플러그인 기본', 'プラグイン標準'],
+	'TotalMix classic': ['토탈믹스 옛 디자인', 'TotalMix 旧デザイン'],
+	'TotalMix new': ['토탈믹스 새 디자인', 'TotalMix 新デザイン'],
 	Select: ['선택', '選択'],
 	'Select channel': ['채널 선택', 'チャンネルを選択'],
 	Row: ['줄', '列'],
