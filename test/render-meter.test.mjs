@@ -177,3 +177,19 @@ test('key meter and horizontal fader show scale lines without numbers', () => {
 	assert.ok(bottom.includes('>60<') && !bottom.includes('>6<'))
 	setMeterStyle('plugin')
 })
+
+test('a gain dial line stays on its own linear position in TotalMix designs', () => {
+	setMeterStyle('classic')
+	// gain 0.5 is the middle of the gain range, not a dB value: centre of the 12..188 px bar
+	assert.ok(/<line x1="100"[^>]*rgb\(40,140,255\)/.test(renderVuStrip(view({ fader: 0.5, linearFader: true }))))
+	setMeterStyle('plugin')
+})
+
+test('a NaN level draws no bar in any design', () => {
+	for (const style of ['plugin', 'classic', 'modern']) {
+		setMeterStyle(style)
+		const svg = renderVuStrip(view({ left: NaN, right: NaN }))
+		assert.ok(!svg.includes('NaN'), style)
+	}
+	setMeterStyle('plugin')
+})

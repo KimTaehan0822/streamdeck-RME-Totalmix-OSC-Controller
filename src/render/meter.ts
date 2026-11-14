@@ -13,6 +13,8 @@ export interface MeterView {
 	muted: boolean
 	/** muted and the fader was adjusted within the last 700 ms */
 	peek: boolean
+	/** fader is a plain 0..1 position (the Gain Dial's gain), so TotalMix designs leave it off their dB scale. */
+	linearFader?: boolean
 	/** Small tag at the top right of the strip, e.g. 48V on a Gain Dial. */
 	badge?: { text: string; fill: string }
 	overlay: Overlay
@@ -41,7 +43,7 @@ const TM_SCALE: [number, number][] = (
 	[[-65, 0], [-30, 0.39], [-20, 0.51], [-15, 0.59], [-12, 0.65], [-9, 0.71], [-6, 0.79], [-3, 0.9], [0, 1], [6, 1 / 0.9]] as [number, number][]
 ).map(([db, f]) => [db, f * 0.9])
 const interpolate = (points: [number, number][], x: number): number => {
-	if (x <= points[0][0]) return points[0][1]
+	if (!(x > points[0][0])) return points[0][1] // NaN reads as the bottom
 	for (let i = 1; i < points.length; i++) {
 		const [x0, y0] = points[i - 1]
 		const [x1, y1] = points[i]
@@ -112,7 +114,7 @@ function bar(b: Box, s: Scale, level: number): string {
 	/** The bar between two scale values, clipped to this meter's range. */
 	const part = (from: number, to: number, fill: string) => {
 		const [a, z] = [clamp01((from - s.min) / span), clamp01((to - s.min) / span)]
-		if (z <= a) return ''
+		if (!(z > a)) return '' // also skips NaN levels
 		return rect(s.vertical ? { ...b, y: b.y + b.h * (1 - z), h: b.h * (z - a) } : { ...b, x: b.x + b.w * a, w: b.w * (z - a) }, s, fill)
 	}
 	if (style === 'plugin') return rect(b, s, 'url(#g)', 0.25) + part(s.min, level, 'url(#g)')
@@ -146,8 +148,8 @@ function scale(b: Box, s: Scale, px: number, labels?: { x?: number; y?: number; 
 }
 
 // Fader line (black outline under blue); hidden when the fader is outside this meter's range.
-function marker(b: Box, s: Scale, fader: number | undefined, px: number): string {
-	if (fader !== undefined) fader = toScale(fader)
+function marker(b: Box, s: Scale, fader: number | undefined, px: number, linear = false): string {
+	if (fader !== undefined && !linear) fader = toScale(fader)
 	if (fader === undefined || fader < s.min || fader > s.max) return ''
 	const f = (fader - s.min) / (s.max - s.min)
 	const [x1, y1, x2, y2] = s.vertical
@@ -178,7 +180,7 @@ export function renderVuStrip(v: MeterView): string {
 	body += `<g${v.muted ? ' opacity="0.4"' : ''}>${bar(l, s, v.left)}${bar(r, s, v.right)}</g>`
 	if (v.muted) body += hatch([6, 16, 26, 36, 46, 56, 66, 76].map((x) => [x, 60, x + 14, 31]), s, 1)
 	body += scale({ x: 6, y: 31, w: 88, h: 29 }, s, 1, { y: 71, size: 11 })
-	body += marker(markerBox, s, v.fader, 1)
+	body += marker(markerBox, s, v.fader, 1, v.linearFader)
 	// A badge takes the right end of the name row; the name centres in what is left.
 	const badge = v.badge && fitText(v.badge.text, 15, 96)
 	const nameRight = badge ? 196 - badge.length * 9 - 8 : 196

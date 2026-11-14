@@ -122,6 +122,7 @@ export class GainDialAction extends TotalMixAction<JsonObject> {
 		return renderVuStrip({
 			name: inputName(c, input),
 			fader: gainNormalized(c, input),
+			linearFader: true,
 			left: levelBar(c, t, 'left'),
 			right: levelBar(c, t, 'right'),
 			faderDb: text && `Gain ${text} dB`,
