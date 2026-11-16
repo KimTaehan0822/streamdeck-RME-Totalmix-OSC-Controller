@@ -58,17 +58,41 @@ function strip(v: MeterInput): string {
 	return frame(200, 100, b, v.overlay)
 }
 
-/** Vertical: top key name + big fader value, bottom key L/R bars + level. Horizontal: left key = top content, right key = bottom content. */
-function pair(v: MeterInput, role: FaderRole): string {
-	const first = role === 'top' || role === 'left'
-	let b: string
-	// Long names wrap onto two rows above the number instead of shrinking to a thin line.
-	if (first) b = nameBlock(v.name, { x: 72, top: 6, width: 128, height: 58, maxLines: 2, size: 24, minSize: 13 }) + (v.muted ? '' : bigNumber(72, 110, v.faderText, 40, 132))
-	else {
-		b = thinBars(12, 30, 120, 8, 6, v.leftDb, v.rightDb, v.muted, 'bp')
-		b += v.muted ? (v.peek ? name(v.faderText, 72, 96, 26, 128) : mutedText(72, 96, 26)) : name(v.levelText, 72, 96, 26, 128)
+/** dB marks beside slim bars (vertical: right of them; horizontal: under them), skipping a number that would sit on the key seam. */
+function marks(x: number, y: number, len: number, vertical: boolean, seam: number): string {
+	let out = ''
+	for (const db of [0, -20, -40, -60]) {
+		const p = vertical ? y + len * (1 - barFrac(db)) : x + len * barFrac(db)
+		if (Math.abs(p - seam) < 10) continue
+		out += vertical
+			? plainText(n(x), base(p, 11), String(db), { size: 11, fill: GREY, anchor: 'start' })
+			: plainText(n(p), base(y, 11), String(db), { size: 11, fill: GREY })
 	}
-	return frame(KEY, KEY, b, v.overlay)
+	return out
+}
+
+/**
+ * The two keys are one picture (144x288 or 288x144) and each key shows its half, so the bars run through the seam.
+ * Vertical: name and the big fader value on top, slim upright bars down through the seam, the level (or MUTED) at the bottom.
+ * Horizontal: name and level on the left, the big fader value on the right, the bars across both keys under them.
+ */
+function pair(v: MeterInput, role: FaderRole): string {
+	const vertical = role === 'top' || role === 'bottom'
+	const second = role === 'bottom' || role === 'right'
+	let b: string
+	if (vertical) {
+		b = nameBlock(v.name, { x: 72, top: 4, width: 128, height: 30, maxLines: 1, size: 24, minSize: 13 })
+		if (!v.muted) b += bigNumber(72, 86, v.faderText, 40, 132)
+		b += thinBars(52, 102, 12, 160, 10, v.leftDb, v.rightDb, v.muted, 'bp', true) + marks(92, 102, 160, true, KEY)
+		b += v.muted ? (v.peek ? name(v.faderText, 72, 276, 20, 128) : mutedText(72, 276, 20)) : name(v.levelText, 72, 276, 20, 128)
+	} else {
+		b = nameBlock(v.name, { x: 72, top: 4, width: 128, height: 28, maxLines: 1, size: 22, minSize: 12 })
+		if (!v.muted) b += name(v.levelText, 72, 52, 18, 128, 'middle', GREY)
+		b += v.muted && !v.peek ? mutedText(216, 40, 30) : bigNumber(216, 60, v.faderText, 40, 132)
+		b += thinBars(12, 80, 264, 9, 5, v.leftDb, v.rightDb, v.muted, 'bp') + marks(12, 114, 264, false, KEY)
+	}
+	const shift = second ? (vertical ? `translate(0 -${KEY})` : `translate(-${KEY} 0)`) : ''
+	return frame(KEY, KEY, shift ? `<g transform="${shift}">${b}</g>` : b, v.overlay)
 }
 
 function key(v: MeterKeyInput): string {
