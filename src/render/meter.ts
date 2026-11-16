@@ -1,5 +1,6 @@
 import { dbToBar } from '../protocol/fader-curve.js'
 import { KEY, NAME_WIDTH, fitSize, fitText, frame, plainText, type Overlay } from './svg.js'
+import { SHARED_DESIGNS, isSharedDesign, type MeterInput, type SharedDesign } from './meters/index.js'
 
 // Ported from the Companion module's "Fader + VU meter" dial and two-key button fader presets (src/presets.ts).
 // Companion lays elements out in 0–100 units of the canvas; Scale.sx/sy convert those units to SVG pixels.
@@ -34,9 +35,28 @@ const STOPS: [number, number[]][] = [
 /** plugin: the original look; classic and modern: TotalMix FX's old and new designs, measured from its screen. */
 export type MeterStyle = 'plugin' | 'classic' | 'modern'
 let style: MeterStyle = 'plugin'
+/** One of the designs in ./meters (drawn from the shared input); undefined = one of the three above. */
+let shared: SharedDesign | undefined
 export function setMeterStyle(value: unknown): void {
+	shared = isSharedDesign(value) ? value : undefined
 	style = value === 'classic' || value === 'modern' ? value : 'plugin'
 }
+export const sharedDesign = () => (shared ? SHARED_DESIGNS[shared] : undefined)
+
+/** Bar values (dbToBar: linear -65..+6 dB) back to dB; the bottom of the bar is silence. */
+export const barToDb = (v: number): number => (!(v > 0) ? -Infinity : v * 71 - 65)
+const toInput = (v: MeterView): MeterInput => ({
+	name: v.name,
+	leftDb: barToDb(v.left),
+	rightDb: barToDb(v.right),
+	fader: v.fader === undefined ? undefined : v.linearFader ? { linear: v.fader } : { db: barToDb(v.fader) },
+	faderText: v.faderDb,
+	levelText: v.levelDb,
+	muted: v.muted,
+	peek: v.peek,
+	badge: v.badge,
+	overlay: v.overlay,
+})
 
 // TotalMix bar height per dB (0 dB = 1), scaled so 0 dB sits at 90% and the fader line can still reach +6 dB.
 const TM_SCALE: [number, number][] = (
@@ -172,6 +192,8 @@ const hatch = (lines: [number, number, number, number][], s: Scale, px: number) 
 const base = (cy: number, size: number) => n(cy + size * 0.35)
 
 export function renderVuStrip(v: MeterView): string {
+	const design = sharedDesign()
+	if (design) return design.strip(toInput(v))
 	const s: Scale = { sx: 2, sy: 1, vertical: false, min: 0, max: 1 }
 	const l: Box = { x: 6, y: 31, w: 88, h: 13 }
 	const r: Box = { x: 6, y: 47, w: 88, h: 13 }
@@ -210,6 +232,8 @@ export function renderKeyMeter(v: MeterBars): string {
 }
 
 export function renderButtonFader(v: MeterView, role: FaderRole): string {
+	const design = sharedDesign()
+	if (design) return design.pair(toInput(v), role)
 	const vertical = role === 'top' || role === 'bottom'
 	const high = role === 'top' || role === 'right'
 	const u = KEY / 100

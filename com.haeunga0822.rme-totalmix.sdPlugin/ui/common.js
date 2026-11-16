@@ -19,6 +19,8 @@ const GLOBAL_BLOCK = `
 <details class="connection"><summary>Meter design</summary>
 <sdpi-item label="Meter design"><sdpi-select setting="meterStyle" global default="plugin">
 <option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
+<option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
+<option value="big">Big number</option><option value="vu">VU needle</option>
 </sdpi-select></sdpi-item>
 </details>
 <details class="connection"><summary>Language</summary>
@@ -45,6 +47,10 @@ const TEXT = {
 	'Plugin (default)': ['플러그인 기본', 'プラグイン標準'],
 	'TotalMix classic': ['토탈믹스 옛 디자인', 'TotalMix 旧デザイン'],
 	'TotalMix new': ['토탈믹스 새 디자인', 'TotalMix 新デザイン'],
+	'OBS standard': ['OBS 표준', 'OBS 標準'],
+	'OBS wide': ['OBS 와이드', 'OBS ワイド'],
+	'Big number': ['큰 dB 숫자', '大きな dB 表示'],
+	'VU needle': ['VU 바늘', 'VU 針'],
 	Select: ['선택', '選択'],
 	'Select channel': ['채널 선택', 'チャンネルを選択'],
 	Row: ['줄', '列'],

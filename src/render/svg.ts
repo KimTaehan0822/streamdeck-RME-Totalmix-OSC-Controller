@@ -55,6 +55,8 @@ const charWidth = (c: string, size: number) => {
 	return (HANGUL.test(c) ? HANGUL_SCALE : WIDE.test(c) ? 1 : 0.6) * size
 }
 
+export const textWidth = (text: string, size: number): number => Array.from(text).reduce((w, c) => w + charWidth(c, size), 0)
+
 export function fitText(text: string, size: number, maxWidth = KEY - 8): string {
 	const chars = Array.from(text)
 	if (chars.reduce((w, c) => w + charWidth(c, size), 0) <= maxWidth) return text
