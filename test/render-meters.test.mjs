@@ -143,11 +143,10 @@ test('the VU needle reads the peak minus the user offset against a 0 VU set in d
 	setVuCalibration(undefined, undefined)
 	const zeroVu = angle(at(-13)) // defaults: 5 dB offset, 0 VU = -18 dBFS
 	assert.ok(d.pair(input({ leftDb: -13, rightDb: -13 }), 'bottom').includes('-18.0 dBFS'), 'shown value is the corrected one')
-	assert.ok(at(-13).includes('0 VU = -18 dBFS'), 'the reference is written on the face')
+	assert.ok(!at(-13).includes('dBFS'), 'the face carries no calibration text')
 	assert.deepEqual([...at(-13).matchAll(/>(\d+)</g)].map((m) => m[1]), ['20', '10', '7', '5', '3', '0', '3'], 'classic VU numbers')
 	setVuCalibration(-20, 3)
 	assert.ok(Math.abs(angle(at(-17)) - zeroVu) < 1e-6, '-17 peak - 3 = -20 = 0 VU at -20 reference')
-	assert.ok(at(-17).includes('0 VU = -20 dBFS'))
 	setVuCalibration('abc', '')
 	assert.ok(Math.abs(angle(at(-13)) - zeroVu) < 1e-6, 'a bad reference falls back to -18 and an empty offset to 5')
 	setVuCalibration(-18, 99)

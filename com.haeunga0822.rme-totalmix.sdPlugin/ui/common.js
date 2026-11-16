@@ -28,11 +28,11 @@ const GLOBAL_BLOCK = `
 <option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
 <option value="big">Big number</option><option value="vu">VU needle</option>
 </sdpi-select></sdpi-item>
-<sdpi-item label="VU 0 VU reference"><sdpi-select setting="vuReference" global default="-18">
+<sdpi-item class="vu-only" style="display:none" label="VU 0 VU reference"><sdpi-select setting="vuReference" global default="-18">
 <option value="-14">-14 dBFS</option><option value="-18">-18 dBFS</option><option value="-20">-20 dBFS</option>
 </sdpi-select></sdpi-item>
-<sdpi-item label="VU peak offset (dB)"><sdpi-textfield setting="vuPeakOffset" global default="5" pattern="^[0-9]{1,2}([.][05])?$"></sdpi-textfield></sdpi-item>
-<sdpi-item label=""><span>VU needle only. TotalMix sends peaks, so this many dB is taken off. See the manual for values.</span></sdpi-item>
+<sdpi-item class="vu-only" style="display:none" label="VU peak offset (dB)"><sdpi-textfield setting="vuPeakOffset" global default="5" pattern="^[0-9]{1,2}([.][05])?$"></sdpi-textfield></sdpi-item>
+<sdpi-item class="vu-only" style="display:none" label=""><span>VU needle only. TotalMix sends peaks, so this many dB is taken off. See the manual for values.</span></sdpi-item>
 </details>
 <details class="connection"><summary>Language</summary>
 <sdpi-item label="Language"><sdpi-select setting="language" global default="en">
@@ -213,6 +213,23 @@ function setLanguage(value) {
 new MutationObserver((records) => records.forEach((r) => r.addedNodes.forEach(translate))).observe(document.body, { childList: true, subtree: true })
 document.querySelector('[setting="language"]')?.addEventListener('valuechange', (e) => setLanguage(e.target.value))
 SDPIComponents.streamDeckClient.getGlobalSettings().then((g) => setLanguage(g?.language))
+// The VU calibration fields show only while a VU needle is picked for the dials or the buttons ('same' follows the dials).
+const meterChoice = { dial: 'plugin', key: 'same' }
+function showVuFields() {
+	const isVu = (v) => typeof v === 'string' && v.startsWith('vu')
+	const on = isVu(meterChoice.dial) || isVu(meterChoice.key)
+	for (const el of document.querySelectorAll('.vu-only')) el.style.display = on ? '' : 'none'
+}
+for (const [setting, part] of [['meterStyle', 'dial'], ['meterStyleKey', 'key']])
+	document.querySelector(`[setting="${setting}"]`)?.addEventListener('valuechange', (e) => {
+		meterChoice[part] = e.target.value
+		showVuFields()
+	})
+SDPIComponents.streamDeckClient.getGlobalSettings().then((g) => {
+	meterChoice.dial = g?.meterStyle ?? 'plugin'
+	meterChoice.key = g?.meterStyleKey ?? 'same'
+	showVuFields()
+})
 
 // Fields a page adds from script miss what sdpi picks up while the page loads: sdpi-select only sees options
 // added after it is on the page, and saved settings only reach fields that existed at connect. Redo both.

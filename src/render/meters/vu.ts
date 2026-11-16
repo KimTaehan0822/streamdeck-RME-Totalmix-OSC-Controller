@@ -86,7 +86,7 @@ interface Gauge {
 /** The usual gauge for a face box: pivot just under the bottom, as on the Fader key. */
 const fitGauge = (x: number, y: number, w: number, h: number): Gauge => {
 	const r = Math.min(h * 0.72, w * 0.5)
-	return { cx: x + w / 2, pivot: y + h * 1.02, r, half: 48, vu: [x + w * 0.2, y + h * 0.78] }
+	return { cx: x + w / 2, pivot: y + h * 1.02, r, half: 48, vu: [x + w * 0.2, y + h * 0.88] }
 }
 
 /**
@@ -118,11 +118,7 @@ function face(x: number, y: number, w: number, h: number, peakDb: number, muted:
 		const [lx, ly] = pt(f, r + Math.min(r * 0.222, 18))
 		s += plainText(n(lx), n(ly + labelSize * 0.36), label, { size: labelSize, fill: red ? RED : INK })
 	}
-	// "VU" and, under it, the calibration the needle reads against (shortened on narrow faces).
-	const vuSize = n(Math.min(r * 0.22, 18))
-	s += plainText(n(g.vu[0]), n(g.vu[1]), 'VU', { size: vuSize, fill: INK })
-	const refSize = n(Math.max(8, vuSize * 0.55))
-	s += plainText(n(g.vu[0]), n(g.vu[1] + vuSize * 0.75), w < 130 ? `${reference} dBFS` : `0 VU = ${reference} dBFS`, { size: refSize, fill: INK })
+	s += plainText(n(g.vu[0]), n(g.vu[1]), 'VU', { size: n(Math.min(r * 0.22, 18)), fill: INK })
 	const frac = (d: number) => vuFrac(d - reference)
 	const shown = follow(id, muted ? -Infinity : safeDb(peakDb) - peakOffset, frac)
 	const [nx, ny] = pt(frac(shown), r + Math.min(r * 0.083, 7))
@@ -145,7 +141,7 @@ function strip(v: MeterInput): string {
 	const right = v.badge ? 196 - fitText(v.badge.text, 13, 50).length * 8 - 6 : 196
 	let b = text(v.name, (4 + right) / 2, 10, 16, right - 8)
 	if (v.badge) b += plainText(196, base(10, 13), fitText(v.badge.text, 13, 50), { size: 13, fill: v.badge.fill, anchor: 'end' })
-	b += face(6, 20, 188, 62, loud(v.leftDb, v.rightDb), v.muted, 'vs', { cx: 100, pivot: 130, r: 82, half: 48, vu: [100, 62] })[0]
+	b += face(6, 20, 188, 62, loud(v.leftDb, v.rightDb), v.muted, 'vs', { cx: 100, pivot: 130, r: 82, half: 48, vu: [100, 68] })[0]
 	b += v.muted && !v.peek ? text('MUTED', 100, 91, 16, 190, MUTED_RED) : text(v.faderText, 100, 91, 16, 190)
 	return frame(200, 100, b, v.overlay)
 }
@@ -169,7 +165,7 @@ function pair(v: MeterInput, role: FaderRole): string {
 	} else {
 		b = nameBlock(v.name, { x: 72, top: 2, width: 128, height: 26, maxLines: 1, size: 22, minSize: 12 })
 		b += v.muted && !v.peek ? text('MUTED', 216, 14, 22, 128, MUTED_RED) : text(v.faderText, 216, 14, 22, 128)
-		b += face(6, 32, 276, 106, db, v.muted, 'vp', { cx: 144, pivot: 168, r: 112, half: 48, vu: [70, 114] })[0]
+		b += face(6, 32, 276, 106, db, v.muted, 'vp', { cx: 144, pivot: 168, r: 112, half: 48, vu: [70, 126] })[0]
 	}
 	const shift = second ? (vertical ? `translate(0 -${KEY})` : `translate(-${KEY} 0)`) : ''
 	return frame(KEY, KEY, shift ? `<g transform="${shift}">${b}</g>` : b, v.overlay)
