@@ -6,7 +6,7 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 ## 다운로드
 
-[최신 릴리즈](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) 페이지에서 `RME-TotalMix-StreamDeck-v<버전>.zip`을 받아 압축을 풉니다. 이 문서와 PDF 사용설명서는 **v1.3.0** 기준입니다. 안에 들어 있는 파일은 아래와 같습니다.
+[최신 릴리즈](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) 페이지에서 `RME-TotalMix-StreamDeck-v<버전>.zip`을 받아 압축을 풉니다. 이 문서와 PDF 사용설명서는 **v1.3.1** 기준입니다. 안에 들어 있는 파일은 아래와 같습니다.
 
 - `RME-TotalMix.streamDeckPlugin`: 설치 파일
 - 사용설명서 PDF (언어별로 하나씩)
@@ -76,17 +76,17 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 | 디자인 | 모양 |
 |---|---|
 | Plugin (default) | 원래 모양 |
-| TotalMix classic / TotalMix new | TotalMix 옛 디자인·새 디자인의 색과 눈금(0·6·10·20·40·60) |
-| TOPPING | TOPPING E2x2 앱의 미터 모양(이름판, 페이더 손잡이) |
-| OBS standard / OBS wide | OBS 오디오 믹서 모양(-60~0 dB) |
+| Mix Studio Classic / Mix Studio Modern | TotalMix 옛 디자인·새 디자인의 색과 눈금(0·6·10·20·40·60) |
+| Topping on Plate | TOPPING E2x2 앱의 미터 모양(이름판, 페이더 손잡이) |
+| On Air / On Air Wide | OBS 오디오 믹서 모양(-60~0 dB) |
 | Big number | 큰 페이더 숫자와 가는 L/R 막대 |
-| VU needle | 아날로그 VU 바늘 |
+| VU Needle Drop | 아날로그 VU 바늘 |
 
 <a id="vu-peak-offset"></a>
 
 ### VU 바늘 설정
 
-다이얼이나 버튼에서 **VU needle**을 고르면 아래 두 칸이 나타납니다.
+다이얼이나 버튼에서 **VU Needle Drop**을 고르면 아래 두 칸이 나타납니다.
 
 - **VU 0 VU reference:** 0 VU가 되는 dBFS입니다(-14 / -18 / -20, 기본 -18). DAW의 VU 미터처럼 dBFS로 맞춥니다.
 - **VU peak offset (dB):** TotalMix OSC는 RMS 없이 **피크** 값만 보냅니다(OSC 설정에 RMS 옵션이 없음). 바늘은 받은 피크에서 이 값을 빼고 약 0.3초 평균으로 움직입니다(0~15 dB, 기본 5).

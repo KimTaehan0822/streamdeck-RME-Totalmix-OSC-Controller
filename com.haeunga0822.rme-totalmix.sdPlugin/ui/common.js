@@ -18,21 +18,21 @@ const GLOBAL_BLOCK = `
 </details>
 <details class="connection"><summary>Meter design</summary>
 <sdpi-item label="Dials"><sdpi-select setting="meterStyle" global default="plugin">
-<option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
-<option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
-<option value="big">Big number</option><option value="vu">VU needle</option>
+<option value="plugin">Plugin (default)</option><option value="classic">Mix Studio Classic</option><option value="modern">Mix Studio Modern</option>
+<option value="topping">Topping on Plate</option><option value="obs">On Air</option><option value="obs-wide">On Air Wide</option>
+<option value="big">Big number</option><option value="vu">VU Needle Drop</option>
 </sdpi-select></sdpi-item>
 <sdpi-item label="Buttons"><sdpi-select setting="meterStyleKey" global default="same">
 <option value="same">Same as dials</option>
-<option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
-<option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
-<option value="big">Big number</option><option value="vu">VU needle</option>
+<option value="plugin">Plugin (default)</option><option value="classic">Mix Studio Classic</option><option value="modern">Mix Studio Modern</option>
+<option value="topping">Topping on Plate</option><option value="obs">On Air</option><option value="obs-wide">On Air Wide</option>
+<option value="big">Big number</option><option value="vu">VU Needle Drop</option>
 </sdpi-select></sdpi-item>
 <sdpi-item class="vu-only" style="display:none" label="VU 0 VU reference"><sdpi-select setting="vuReference" global default="-18">
 <option value="-14">-14 dBFS</option><option value="-18">-18 dBFS</option><option value="-20">-20 dBFS</option>
 </sdpi-select></sdpi-item>
 <sdpi-item class="vu-only" style="display:none" label="VU peak offset (dB)"><sdpi-textfield setting="vuPeakOffset" global default="5" pattern="^[0-9]{1,2}([.][05])?$"></sdpi-textfield></sdpi-item>
-<sdpi-item class="vu-only" style="display:none" label=""><span>VU needle only. TotalMix sends peaks, so this many dB is taken off.</span> <a href="#" class="vu-help"><span>Suggested values (README)</span></a></sdpi-item>
+<sdpi-item class="vu-only" style="display:none" label=""><span>VU Needle Drop only. TotalMix sends peaks, so this many dB is taken off.</span> <a href="#" class="vu-help"><span>Suggested values (README)</span></a></sdpi-item>
 </details>
 <details class="connection"><summary>Language</summary>
 <sdpi-item label="Language"><sdpi-select setting="language" global default="en">
@@ -59,15 +59,16 @@ const TEXT = {
 	Buttons: ['버튼', 'ボタン'],
 	'Same as dials': ['다이얼과 같게', 'ダイヤルと同じ'],
 	'Plugin (default)': ['플러그인 기본', 'プラグイン標準'],
-	'TotalMix classic': ['토탈믹스 옛 디자인', 'TotalMix 旧デザイン'],
-	'TotalMix new': ['토탈믹스 새 디자인', 'TotalMix 新デザイン'],
-	'OBS standard': ['OBS 표준', 'OBS 標準'],
-	'OBS wide': ['OBS 와이드', 'OBS ワイド'],
+	'Mix Studio Classic': ['Mix Studio Classic (옛 스타일)', 'Mix Studio Classic (旧スタイル)'],
+	'Mix Studio Modern': ['Mix Studio Modern (새 스타일)', 'Mix Studio Modern (新スタイル)'],
+	'Topping on Plate': ['Topping on Plate (플레이트)', 'Topping on Plate (プレート)'],
+	'On Air': ['On Air (방송)', 'On Air (放送)'],
+	'On Air Wide': ['On Air Wide (방송 와이드)', 'On Air Wide (放送ワイド)'],
 	'Big number': ['큰 dB 숫자', '大きな dB 表示'],
-	'VU needle': ['VU 바늘', 'VU 針'],
+	'VU Needle Drop': ['VU Needle Drop (VU 바늘)', 'VU Needle Drop (VU 針)'],
 	'VU 0 VU reference': ['VU 0 VU 기준', 'VU 0 VU 基準'],
 	'VU peak offset (dB)': ['VU 피크 보정 (dB)', 'VU ピーク補正 (dB)'],
-	'VU needle only. TotalMix sends peaks, so this many dB is taken off.': ['VU 바늘에만 적용돼요. TotalMix는 피크 값을 보내서 이만큼 빼요.', 'VU 針にのみ適用されます。TotalMix はピーク値を送るため、この分を差し引きます。'],
+	'VU Needle Drop only. TotalMix sends peaks, so this many dB is taken off.': ['VU 바늘에만 적용돼요. TotalMix는 피크 값을 보내서 이만큼 빼요.', 'VU 針にのみ適用されます。TotalMix はピーク値を送るため、この分を差し引きます。'],
 	'Suggested values (README)': ['권장 값 보기 (README)', '推奨値を見る (README)'],
 	Select: ['선택', '選択'],
 	'Select channel': ['채널 선택', 'チャンネルを選択'],

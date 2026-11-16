@@ -6,7 +6,7 @@ Elgato Stream Deck のキーとダイヤルで **RME TotalMix FX** を操作す�
 
 ## ダウンロード
 
-[最新リリース](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest)ページから `RME-TotalMix-StreamDeck-v<バージョン>.zip` をダウンロードして展開します。この README と PDF 取扱説明書は **v1.3.0** に対応しています。中身は次のとおりです。
+[最新リリース](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest)ページから `RME-TotalMix-StreamDeck-v<バージョン>.zip` をダウンロードして展開します。この README と PDF 取扱説明書は **v1.3.1** に対応しています。中身は次のとおりです。
 
 - `RME-TotalMix.streamDeckPlugin`: インストールファイル
 - 取扱説明書 PDF(言語ごとに1つ)
@@ -76,17 +76,17 @@ Elgato Stream Deck のキーとダイヤルで **RME TotalMix FX** を操作す�
 | デザイン | 見た目 |
 |---|---|
 | Plugin (default) | 元の見た目 |
-| TotalMix classic / TotalMix new | TotalMix 旧デザイン・新デザインの色と目盛り(0・6・10・20・40・60) |
-| TOPPING | TOPPING E2x2 アプリのメーター(名前プレート、フェーダーつまみ) |
-| OBS standard / OBS wide | OBS オーディオミキサーの見た目(-60〜0 dB) |
+| Mix Studio Classic / Mix Studio Modern | TotalMix 旧デザイン・新デザインの色と目盛り(0・6・10・20・40・60) |
+| Topping on Plate | TOPPING E2x2 アプリのメーター(名前プレート、フェーダーつまみ) |
+| On Air / On Air Wide | OBS オーディオミキサーの見た目(-60〜0 dB) |
 | Big number | 大きなフェーダー値と細い L/R バー |
-| VU needle | アナログ VU 針 |
+| VU Needle Drop | アナログ VU 針 |
 
 <a id="vu-peak-offset"></a>
 
 ### VU 針の設定
 
-ダイヤルかボタンで **VU needle** を選ぶと、次の2つの欄が表示されます。
+ダイヤルかボタンで **VU Needle Drop** を選ぶと、次の2つの欄が表示されます。
 
 - **VU 0 VU reference:** 0 VU になる dBFS です(-14 / -18 / -20、初期値 -18)。DAW の VU メーターと同じく dBFS 基準です。
 - **VU peak offset (dB):** TotalMix OSC は RMS を送らず **ピーク** 値だけを送ります(OSC 設定に RMS の項目がありません)。針は受け取ったピークからこの値を引き、約 0.3 秒の平均で動きます(0〜15 dB、初期値 5)。

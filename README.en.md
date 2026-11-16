@@ -6,7 +6,7 @@ Control **RME TotalMix FX** with the keys and dials of an Elgato Stream Deck. Fa
 
 ## Download
 
-Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) page and unzip it. This README and the PDF manuals describe **v1.3.0**. It contains:
+Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) page and unzip it. This README and the PDF manuals describe **v1.3.1**. It contains:
 
 - `RME-TotalMix.streamDeckPlugin`: the installer
 - The manual as PDF (one per language)
@@ -76,17 +76,17 @@ Pick the meter look under **▸ Meter design** in the settings screen. **Dials**
 | Design | Look |
 |---|---|
 | Plugin (default) | The original look |
-| TotalMix classic / TotalMix new | Colours and scale (0, 6, 10, 20, 40, 60) of TotalMix's old and new designs |
-| TOPPING | The TOPPING E2x2 app's meters (name plate, fader cap) |
-| OBS standard / OBS wide | OBS audio mixer look (-60 to 0 dB) |
+| Mix Studio Classic / Mix Studio Modern | Colours and scale (0, 6, 10, 20, 40, 60) of TotalMix's old and new designs |
+| Topping on Plate | The TOPPING E2x2 app's meters (name plate, fader cap) |
+| On Air / On Air Wide | OBS audio mixer look (-60 to 0 dB) |
 | Big number | A large fader value with slim L/R bars |
-| VU needle | An analogue VU needle |
+| VU Needle Drop | An analogue VU needle |
 
 <a id="vu-peak-offset"></a>
 
-### VU needle settings
+### VU Needle Drop settings
 
-When **VU needle** is picked for the dials or the buttons, two more fields appear.
+When **VU Needle Drop** is picked for the dials or the buttons, two more fields appear.
 
 - **VU 0 VU reference:** the dBFS level that reads 0 VU (-14 / -18 / -20, default -18), as on DAW VU meters.
 - **VU peak offset (dB):** TotalMix OSC sends only **peak** levels, no RMS (the OSC settings have no RMS option). The needle takes this many dB off the peak and follows a 0.3 s average (0–15 dB, default 5).
