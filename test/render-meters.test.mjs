@@ -33,7 +33,8 @@ for (const [id, d] of Object.entries(SHARED_DESIGNS)) {
 		const pair = ROLES.map((r) => save(`${id}-${r}`, d.pair(input(), r)))
 		pair.forEach((svg, i) => clean(svg, ROLES[i]))
 		assert.ok(pair[0].includes('NoneLive') && pair[2].includes('NoneLive'), 'name on the first key of each pair')
-		assert.ok(pair.join('').includes('-12.0'), 'level text somewhere on the pair')
+		// VU designs show the level in VU for their reference instead of dBFS.
+		assert.ok(pair.join('').includes(id.startsWith('vu') ? ' VU<' : '-12.0'), 'level text somewhere on the pair')
 	})
 
 	test(`${id}: muted shows MUTED, a peek shows the fader value instead`, () => {
@@ -140,4 +141,15 @@ test('VU designs differ only by their 0 VU level: the same signal reads higher o
 	assert.ok(at('vu4', -15) > at('vu', -15) && at('vu', -15) > at('vu10', -15), '+4 dBu reads highest, +10 dBu lowest')
 	assert.ok(Math.abs(at('vu4', -15) - at('vu', -12)) < 1e-6, '0 VU is -15 dBFS on +4 dBu and -12 dBFS on +7 dBu')
 	assert.ok(Math.abs(at('vu10', -9) - at('vu', -12)) < 1e-6, '0 VU is -9 dBFS on +10 dBu')
+})
+
+test('VU designs show the level in VU and number the scale in dBu for their reference', () => {
+	const bottom = (id, db) => SHARED_DESIGNS[id].pair(input({ leftDb: db, rightDb: db }), 'bottom')
+	assert.ok(bottom('vu4', -12).includes('+3.0 VU'), '-12 dBFS is +3 VU at +4 dBu')
+	assert.ok(bottom('vu', -12).includes('0.0 VU'), '-12 dBFS is 0 VU at +7 dBu')
+	assert.ok(bottom('vu10', -12).includes('-3.0 VU'), '-12 dBFS is -3 VU at +10 dBu')
+	assert.ok(!bottom('vu4', -Infinity).includes(' VU<'), 'silence shows no level')
+	const labels = (id) => [...SHARED_DESIGNS[id].strip(input()).matchAll(/>([+-]?\d+)</g)].map((m) => m[1])
+	assert.deepEqual(labels('vu4'), ['-16', '-6', '-1', '+4', '+7'])
+	assert.deepEqual(labels('vu10'), ['-10', '0', '+5', '+10', '+13'])
 })

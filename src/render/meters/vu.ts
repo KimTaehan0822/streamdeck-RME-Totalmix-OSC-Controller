@@ -91,16 +91,19 @@ function face(ref: number, x: number, y: number, w: number, h: number, db: numbe
 	s += arc(0, vuFrac(0), INK, 1.5) + arc(vuFrac(0), 1, RED, 3)
 	// Ticks, numbers and the needle scale with the needle's reach, so every face size reads alike.
 	const labelSize = n(Math.min(r * 0.194, 16))
-	for (const [vu, label] of [[-20, '20'], [-10, '10'], [-7, '7'], [-5, '5'], [-3, '3'], [0, '0'], [3, '3']] as const) {
+	// The scale is numbered in dBu for this reference (0 VU reads the reference level). dBu numbers are wider than VU ones,
+	// so only some ticks get a number: five on wide faces, three on the narrow tall face.
+	const numbered = half < 30 ? [-10, -5, 0] : [-20, -10, -5, 0, 3]
+	for (const vu of [-20, -10, -7, -5, -3, 0, 3]) {
 		const f = vuFrac(vu)
 		const red = vu >= 0
 		const [a1, b1] = pt(f, r)
 		const [a2, b2] = pt(f, r + Math.min(r * 0.125, 10))
 		s += `<line x1="${n(a1)}" y1="${n(b1)}" x2="${n(a2)}" y2="${n(b2)}" stroke="${red ? RED : INK}" stroke-width="1.2"/>`
 		const [lx, ly] = pt(f, r + Math.min(r * 0.222, 18))
-		s += plainText(n(lx), n(ly + labelSize * 0.36), label, { size: labelSize, fill: red ? RED : INK })
+		if (numbered.includes(vu)) s += plainText(n(lx), n(ly + labelSize * 0.36), signed(vu + FULL_SCALE_DBU - ref, 0), { size: labelSize, fill: red ? RED : INK })
 	}
-	s += plainText(n(g.vu[0]), n(g.vu[1]), 'VU', { size: n(Math.min(r * 0.22, 18)), fill: INK })
+	s += plainText(n(g.vu[0]), n(g.vu[1]), 'dBu', { size: n(Math.min(r * 0.22, 18)), fill: INK })
 	const level = safeDb(db)
 	const [nx, ny] = pt(follow(id, muted ? 0 : vuFrac(level + ref)), r + Math.min(r * 0.083, 7))
 	s += `<line x1="${n(cx)}" y1="${n(pivot)}" x2="${n(nx)}" y2="${n(ny)}" stroke="#111" stroke-width="1.6"/>`
@@ -109,6 +112,9 @@ function face(ref: number, x: number, y: number, w: number, h: number, db: numbe
 }
 
 const loud = (l: number, r: number) => Math.max(safeDb(l), safeDb(r))
+const signed = (x: number, digits: number) => (x > 0 ? '+' : '') + x.toFixed(digits)
+/** The level in VU for this reference (0 VU = ref dB below full scale); nothing during silence. */
+const vuLevel = (ref: number, db: number) => (db === -Infinity ? '' : `${signed(db + ref, 1)} VU`)
 const text = (t: string, x: number, cy: number, size: number, maxWidth: number, fill = WHITE) => {
 	if (!t) return ''
 	const s = fitSize(t, size, maxWidth, 9)
@@ -139,7 +145,7 @@ function pair(ref: number, v: MeterInput, role: FaderRole): string {
 		b = nameBlock(v.name, { x: 72, top: 4, width: 128, height: 32, maxLines: 1, size: 24, minSize: 13 })
 		if (!v.muted) b += text(v.faderText, 72, 50, 24, 132)
 		b += face(ref, 6, 64, 132, 190, db, v.muted, 'vp', { cx: 72, pivot: 250, r: 150, half: 22, vu: [72, 214] })
-		b += v.muted ? (v.peek ? text(v.faderText, 72, 272, 20, 128) : text('MUTED', 72, 272, 20, 128, MUTED_RED)) : text(v.levelText, 72, 272, 20, 128)
+		b += v.muted ? (v.peek ? text(v.faderText, 72, 272, 20, 128) : text('MUTED', 72, 272, 20, 128, MUTED_RED)) : text(vuLevel(ref, db), 72, 272, 20, 128)
 	} else {
 		b = nameBlock(v.name, { x: 72, top: 2, width: 128, height: 26, maxLines: 1, size: 22, minSize: 12 })
 		b += v.muted && !v.peek ? text('MUTED', 216, 14, 22, 128, MUTED_RED) : text(v.faderText, 216, 14, 22, 128)
