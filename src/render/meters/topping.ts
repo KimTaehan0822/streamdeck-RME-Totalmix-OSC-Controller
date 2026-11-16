@@ -144,8 +144,8 @@ function pair(v: MeterInput, role: FaderRole): string {
 	if (role === 'top') b = (v.name ? plate(21, 34, plateName(v.name, 21, 24)) : '') + (v.muted ? '' : row(v.faderText, 58, 26, WHITE)) + b
 	else if (role === 'left') b = (v.name ? plate(21, 34, plateName(v.name, 21, 24)) : '') + level(84, 22, DIM) + b
 	else if (role === 'bottom') b += v.muted ? (v.peek ? row(v.faderText, 129, 22, WHITE) : muted(129, 22)) : level(129, 22, DIM)
-	// The fader value sits halfway between the name plate's bottom (38) and the bars' top (98).
-	else b += v.muted && !v.peek ? muted(68, 32) : row(v.faderText, 68, 32, WHITE)
+	// The fader value sits in the middle of the free space above the fader cap (key top 0 to cap top 96).
+	else b += v.muted && !v.peek ? muted(48, 32) : row(v.faderText, 48, 32, WHITE)
 	return frame(KEY, KEY, background(KEY, KEY) + b, v.overlay)
 }
 
