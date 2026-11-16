@@ -142,10 +142,10 @@ function pair(v: MeterInput, role: FaderRole): string {
 	const level = (cy: number, size: number, fill: string) => (v.muted || v.levelText === '' ? '' : row(v.levelText, cy, size, fill))
 	const muted = (cy: number, size: number) => plainText(72, base(cy, size), 'MUTED', { size, fill: RED })
 	if (role === 'top') b = (v.name ? plate(21, 34, plateName(v.name, 21, 24)) : '') + (v.muted ? '' : row(v.faderText, 58, 26, WHITE)) + b
-	else if (role === 'left') b = (v.name ? plate(21, 34, plateName(v.name, 21, 24)) : '') + level(84, 22, DIM) + b
+	// Left key: the level sits in the middle of the free space between the name plate (bottom 38) and the fader cap (top 96).
+	else if (role === 'left') b = (v.name ? plate(21, 34, plateName(v.name, 21, 24)) : '') + level(67, 22, DIM) + b
 	else if (role === 'bottom') b += v.muted ? (v.peek ? row(v.faderText, 129, 22, WHITE) : muted(129, 22)) : level(129, 22, DIM)
-	// The fader value sits in the middle of the free space above the fader cap (key top 0 to cap top 96).
-	else b += v.muted && !v.peek ? muted(48, 32) : row(v.faderText, 48, 32, WHITE)
+	else b += v.muted && !v.peek ? muted(50, 32) : row(v.faderText, 50, 32, WHITE)
 	return frame(KEY, KEY, background(KEY, KEY) + b, v.overlay)
 }
 
