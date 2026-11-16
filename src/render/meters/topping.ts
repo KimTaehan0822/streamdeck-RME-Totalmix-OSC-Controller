@@ -91,16 +91,20 @@ function strip(v: MeterInput): string {
 	return frame(200, 100, b, v.overlay)
 }
 
-const TEXT_END = 100
+// Vertical pair: the axis starts under the fader value in the top key and runs to just above the level text in the bottom key.
+const TEXT_END = 66
 const CAP = 14 * (KEY / 100)
 const AXIS_START = TEXT_END + CAP / 2
 const TOP_LEN = KEY - AXIS_START
-const BOTTOM_LEN = 108
+const BOTTOM_LEN = 110
 const AXIS_LEN = TOP_LEN + BOTTOM_LEN
 const SEAM = BOTTOM_LEN / AXIS_LEN
+const V_BARS = [30, 76] as const
+const V_BAR_W = 38
 const H_START = 10
 const H_LEN = KEY - H_START
-const H_BAR = [98, 112] as const
+const H_BAR = [90, 106] as const
+const H_BAR_H = 14
 
 function pair(v: MeterInput, role: FaderRole): string {
 	const [left, right, fader] = [dbToAxis(safeDb(v.leftDb)), dbToAxis(safeDb(v.rightDb)), faderAxis(v.fader)]
@@ -108,38 +112,40 @@ function pair(v: MeterInput, role: FaderRole): string {
 	const high = role === 'top' || role === 'right'
 	const split = vertical ? SEAM : 0.5
 	const part: [number, number] = high ? [split, 1] : [0, split]
-	const u = KEY / 100
 	let b = ''
 	if (vertical) {
 		const off = high ? 0 : KEY
 		const local = (f: number) => AXIS_START + AXIS_LEN * (1 - f) - off
 		const y = +(high ? AXIS_START : 0).toFixed(2)
 		const h = +(high ? TOP_LEN : BOTTOM_LEN).toFixed(2)
-		b += bar(28 * u, y, 18 * u, h, left, true, v.muted, part) + bar(54 * u, y, 18 * u, h, right, true, v.muted, part)
+		b += bar(V_BARS[0], y, V_BAR_W, h, left, true, v.muted, part) + bar(V_BARS[1], y, V_BAR_W, h, right, true, v.muted, part)
 		for (const db of TICKS) {
 			const f = dbToAxis(db)
-			if (f >= part[0] && f <= part[1]) b += `<line x1="${74 * u}" y1="${+local(f).toFixed(2)}" x2="${80 * u}" y2="${+local(f).toFixed(2)}" stroke="${TICK}" stroke-width="2"/>`
+			if (f >= part[0] && f <= part[1]) b += `<line x1="118" y1="${+local(f).toFixed(2)}" x2="126" y2="${+local(f).toFixed(2)}" stroke="${TICK}" stroke-width="2"/>`
 		}
-		if (fader !== undefined && Math.abs(local(fader) - KEY / 2) < KEY / 2 + CAP / 2) b += cap(72, local(fader), 60 * u, CAP, true)
+		if (fader !== undefined && Math.abs(local(fader) - KEY / 2) < KEY / 2 + CAP / 2) b += cap(72, local(fader), 96, CAP, true)
 	} else {
 		const off = high ? KEY : 0
 		const local = (f: number) => H_START + 2 * H_LEN * f - off
 		const x = high ? 0 : H_START
-		b += bar(x, H_BAR[0], H_LEN, 12, left, false, v.muted, part) + bar(x, H_BAR[1], H_LEN, 12, right, false, v.muted, part)
+		b += bar(x, H_BAR[0], H_LEN, H_BAR_H, left, false, v.muted, part) + bar(x, H_BAR[1], H_LEN, H_BAR_H, right, false, v.muted, part)
 		for (const db of TICKS) {
 			const f = dbToAxis(db)
-			if (f >= part[0] && f <= part[1]) b += `<line x1="${+local(f).toFixed(2)}" y1="126" x2="${+local(f).toFixed(2)}" y2="131" stroke="${TICK}" stroke-width="2"/>`
+			if (f >= part[0] && f <= part[1]) b += `<line x1="${+local(f).toFixed(2)}" y1="124" x2="${+local(f).toFixed(2)}" y2="131" stroke="${TICK}" stroke-width="2"/>`
 		}
-		if (fader !== undefined && Math.abs(local(fader) - KEY / 2) < KEY / 2 + CAP / 2) b += cap(local(fader), 111, CAP, 30, false)
+		if (fader !== undefined && Math.abs(local(fader) - KEY / 2) < KEY / 2 + CAP / 2) b += cap(local(fader), 105, CAP, 38, false)
 	}
-	const row = (t: string, cy: number, size: number, fill: string) => plainText(72, base(cy, size), fitText(t, size, 128), { size, fill })
-	const level = (cy: number) => (v.muted || v.levelText === '' ? '' : row(v.levelText, cy, 22, DIM))
+	const row = (t: string, cy: number, size: number, fill: string) => {
+		const s = fitSize(t, size, 132, 10)
+		return plainText(72, base(cy, s), fitText(t, s, 136), { size: s, fill })
+	}
+	const level = (cy: number, size: number, fill: string) => (v.muted || v.levelText === '' ? '' : row(v.levelText, cy, size, fill))
 	const muted = (cy: number, size: number) => plainText(72, base(cy, size), 'MUTED', { size, fill: RED })
-	const head = v.name ? plate(21, 34, plateName(v.name, 21, 24)) : ''
-	if (role === 'top') b = head + (v.muted ? '' : row(v.faderText, 87, 22, WHITE)) + b
-	else if (role === 'left') b = head + level(84) + b
-	else if (role === 'bottom') b += v.muted ? (v.peek ? row(v.faderText, 129, 22, WHITE) : muted(129, 22)) : level(129)
-	else b += v.muted && !v.peek ? muted(50, 32) : row(v.faderText, 50, fitSize(v.faderText, 32, 128, 10), WHITE)
+	if (role === 'top') b = (v.name ? plate(21, 34, plateName(v.name, 21, 24)) : '') + (v.muted ? '' : row(v.faderText, 52, 26, WHITE)) + b
+	// Horizontal: a taller name plate and a brighter level on the left, a big fader value on the right, thick bars under both.
+	else if (role === 'left') b = (v.name ? plate(26, 44, plateName(v.name, 26, 30)) : '') + level(68, 24, PLATE_TEXT) + b
+	else if (role === 'bottom') b += v.muted ? (v.peek ? row(v.faderText, 129, 22, WHITE) : muted(129, 22)) : level(129, 22, DIM)
+	else b += v.muted && !v.peek ? muted(44, 40) : row(v.faderText, 44, 44, WHITE)
 	return frame(KEY, KEY, background(KEY, KEY) + b, v.overlay)
 }
 
@@ -148,11 +154,15 @@ function key(v: MeterKeyInput): string {
 	const m = v.meter
 	let b = background(KEY, KEY) + (v.title ? plate(21, 34, plateName(v.title, 21, 24)) : '')
 	const [text, fill] = m.muted ? ['MUTED', RED] : [v.value, WHITE]
-	const size = fitSize(text, 34, 128, 12)
-	b += plainText(72, base(76, size), fitText(text, size, 132), { size, fill })
-	b += bar(10, 108, 124, 6, dbToAxis(safeDb(m.leftDb)), false, m.muted) + bar(10, 116, 124, 6, dbToAxis(safeDb(m.rightDb)), false, m.muted)
+	const size = fitSize(text, 40, 132, 12)
+	b += plainText(72, base(70, size), fitText(text, size, 136), { size, fill })
+	b += bar(10, 98, 124, 12, dbToAxis(safeDb(m.leftDb)), false, m.muted) + bar(10, 114, 124, 12, dbToAxis(safeDb(m.rightDb)), false, m.muted)
+	for (const db of TICKS) {
+		const x = +(10 + 124 * dbToAxis(db)).toFixed(2)
+		b += `<line x1="${x}" y1="128" x2="${x}" y2="133" stroke="${TICK}" stroke-width="1.5"/>`
+	}
 	const fader = faderAxis(m.fader)
-	if (fader !== undefined) b += cap(10 + 124 * fader, 115, 10, 22, false)
+	if (fader !== undefined) b += cap(10 + 124 * fader, 112, 12, 34, false)
 	return frame(KEY, KEY, b, v.overlay)
 }
 

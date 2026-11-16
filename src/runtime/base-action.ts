@@ -10,8 +10,9 @@ import {
 import type { JsonObject } from '@elgato/utils'
 import type { TotalMixConnection } from '../connection.js'
 import { svgDataUrl, type Overlay } from '../render/svg.js'
+import { forgetNeedle, needleMoving, smoothNeedle } from '../render/meters/vu.js'
 import { HoldRepeater } from './hold.js'
-import { Redrawer } from './redraw.js'
+import { REDRAW_MS, Redrawer } from './redraw.js'
 
 export interface RenderContext {
 	dial: boolean
@@ -89,6 +90,7 @@ export abstract class TotalMixAction<S extends JsonObject> extends SingletonActi
 
 	override onWillDisappear(ev: WillDisappearEvent<S>): void {
 		this.instances.get(ev.action.id)?.redrawer.dispose()
+		forgetNeedle(ev.action.id)
 		this.instances.delete(ev.action.id)
 		this.holds.get(ev.action.id)?.stop()
 		this.holds.delete(ev.action.id)
@@ -128,7 +130,19 @@ export abstract class TotalMixAction<S extends JsonObject> extends SingletonActi
 				overlay: this.connection.online ? 'none' : 'offline',
 				userTitle: !!instance.titles[instance.state ?? 0],
 			}
-			instance.redrawer.request(() => svgDataUrl(this.render(instance.settings, ctx)))
+			// A VU needle still easing toward its level asks for another frame, even when no new level arrives.
+			const draw = (): string => {
+				smoothNeedle(key)
+				needleMoving()
+				try {
+					const image = svgDataUrl(this.render(instance.settings, ctx))
+					if (needleMoving()) setTimeout(() => instance.redrawer.request(draw), REDRAW_MS)
+					return image
+				} finally {
+					smoothNeedle(undefined)
+				}
+			}
+			instance.redrawer.request(draw)
 		}
 	}
 

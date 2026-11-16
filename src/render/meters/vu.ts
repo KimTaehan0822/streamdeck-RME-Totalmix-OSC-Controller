@@ -20,6 +20,41 @@ export function vuFrac(vu: number): number {
 	return 1.04 // pinned just past +3
 }
 
+// Needle ballistics: each key's needle eases toward the level instead of jumping (rise 100 ms, fall 250 ms time constants).
+// Rendering is synchronous, so the caller names the key before drawing it (smoothNeedle) and clears it after.
+const RISE_MS = 100
+const FALL_MS = 250
+const needles = new Map<string, { pos: number; at: number }>()
+let current: string | undefined
+let moving = false
+let clock: () => number = Date.now
+export const setNeedleClock = (c: () => number) => void (clock = c)
+export const smoothNeedle = (key: string | undefined) => void (current = key)
+/** True when a needle drawn since the last call has not reached its level yet; reading clears it. */
+export function needleMoving(): boolean {
+	const m = moving
+	moving = false
+	return m
+}
+export function forgetNeedle(key: string): void {
+	for (const k of needles.keys()) if (k.startsWith(key + '/')) needles.delete(k)
+}
+function follow(id: string, target: number): number {
+	if (current === undefined) return target
+	const k = `${current}/${id}`
+	const now = clock()
+	const last = needles.get(k)
+	let pos = target
+	// A long gap (no frames for a second) means the needle would have settled anyway.
+	if (last && now - last.at < 1000) {
+		pos = target + (last.pos - target) * Math.exp(-Math.max(0, now - last.at) / (target > last.pos ? RISE_MS : FALL_MS))
+		if (Math.abs(pos - target) < 0.004) pos = target
+		else moving = true
+	}
+	needles.set(k, { pos, at: now })
+	return pos
+}
+
 interface Gauge {
 	/** Needle pivot (may sit below the face; the face clips it) and needle reach to the scale. */
 	cx: number
@@ -64,7 +99,7 @@ function face(x: number, y: number, w: number, h: number, db: number, muted: boo
 	}
 	s += plainText(n(g.vu[0]), n(g.vu[1]), 'VU', { size: n(Math.min(r * 0.22, 18)), fill: INK })
 	const level = safeDb(db)
-	const [nx, ny] = pt(muted ? 0 : vuFrac(level + REF), r + Math.min(r * 0.083, 7))
+	const [nx, ny] = pt(follow(id, muted ? 0 : vuFrac(level + REF)), r + Math.min(r * 0.083, 7))
 	s += `<line x1="${n(cx)}" y1="${n(pivot)}" x2="${n(nx)}" y2="${n(ny)}" stroke="#111" stroke-width="1.6"/>`
 	s += `</g><rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="6" fill="none" stroke="#3a2608" stroke-width="2"/></g>`
 	return s

@@ -104,3 +104,29 @@ test('dials and buttons can use different designs; buttons follow the dials when
 	setMeterStyle('plugin') // the one-value form sets both again
 	assert.ok(!renderButtonFader(v, 'top').includes('#f2b54a'))
 })
+
+test('the VU needle eases toward a new level per key and asks for more frames until it settles', async () => {
+	const { smoothNeedle, needleMoving, forgetNeedle, setNeedleClock } = await import('../dist/render/meters/vu.js')
+	const d = SHARED_DESIGNS.vu
+	let now = 0
+	setNeedleClock(() => now)
+	const loud = d.strip(input({ leftDb: -6, rightDb: -6 }))
+	const quiet = d.strip(input({ leftDb: -Infinity, rightDb: -Infinity }))
+	smoothNeedle('k1')
+	assert.equal(d.strip(input({ leftDb: -6, rightDb: -6 })), loud, 'first frame jumps straight to the level')
+	needleMoving()
+	now = 40
+	const falling = d.strip(input({ leftDb: -Infinity, rightDb: -Infinity }))
+	assert.ok(falling !== quiet && falling !== loud, 'needle is between the two levels after 40 ms')
+	assert.equal(needleMoving(), true, 'still moving, so another frame is wanted')
+	assert.equal(needleMoving(), false, 'the flag clears once read')
+	now = 3000
+	assert.equal(d.strip(input({ leftDb: -Infinity, rightDb: -Infinity })), quiet, 'settled after a long pause')
+	assert.equal(needleMoving(), false)
+	smoothNeedle('k2')
+	assert.equal(d.strip(input({ leftDb: -6, rightDb: -6 })), loud, 'another key keeps its own needle')
+	smoothNeedle(undefined)
+	forgetNeedle('k1')
+	forgetNeedle('k2')
+	setNeedleClock(Date.now)
+})

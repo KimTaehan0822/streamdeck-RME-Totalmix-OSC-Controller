@@ -59,14 +59,14 @@ function strip(v: MeterInput): string {
 }
 
 /** dB marks beside slim bars (vertical: right of them; horizontal: under them), skipping a number that would sit on the key seam. */
-function marks(x: number, y: number, len: number, vertical: boolean, seam: number): string {
+function marks(x: number, y: number, len: number, vertical: boolean, seam: number, size = 11): string {
 	let out = ''
 	for (const db of [0, -20, -40, -60]) {
 		const p = vertical ? y + len * (1 - barFrac(db)) : x + len * barFrac(db)
 		if (Math.abs(p - seam) < 10) continue
 		out += vertical
-			? plainText(n(x), base(p, 11), String(db), { size: 11, fill: GREY, anchor: 'start' })
-			: plainText(n(p), base(y, 11), String(db), { size: 11, fill: GREY })
+			? plainText(n(x), base(p, size), String(db), { size, fill: GREY, anchor: 'start' })
+			: plainText(n(p), base(y, size), String(db), { size, fill: GREY })
 	}
 	return out
 }
@@ -86,10 +86,10 @@ function pair(v: MeterInput, role: FaderRole): string {
 		b += thinBars(52, 102, 12, 160, 10, v.leftDb, v.rightDb, v.muted, 'bp', true) + marks(92, 102, 160, true, KEY)
 		b += v.muted ? (v.peek ? name(v.faderText, 72, 276, 20, 128) : mutedText(72, 276, 20)) : name(v.levelText, 72, 276, 20, 128)
 	} else {
-		b = nameBlock(v.name, { x: 72, top: 4, width: 128, height: 28, maxLines: 1, size: 22, minSize: 12 })
-		if (!v.muted) b += name(v.levelText, 72, 52, 18, 128, 'middle', GREY)
-		b += v.muted && !v.peek ? mutedText(216, 40, 30) : bigNumber(216, 60, v.faderText, 40, 132)
-		b += thinBars(12, 80, 264, 9, 5, v.leftDb, v.rightDb, v.muted, 'bp') + marks(12, 114, 264, false, KEY)
+		b = nameBlock(v.name, { x: 72, top: 4, width: 132, height: 38, maxLines: 1, size: 32, minSize: 14 })
+		if (!v.muted) b += name(v.levelText, 72, 60, 24, 132, 'middle', GREY)
+		b += v.muted && !v.peek ? mutedText(216, 46, 34) : bigNumber(216, 66, v.faderText, 58, 136)
+		b += thinBars(12, 84, 264, 11, 6, v.leftDb, v.rightDb, v.muted, 'bp') + marks(12, 126, 264, false, KEY, 13)
 	}
 	const shift = second ? (vertical ? `translate(0 -${KEY})` : `translate(-${KEY} 0)`) : ''
 	return frame(KEY, KEY, shift ? `<g transform="${shift}">${b}</g>` : b, v.overlay)
