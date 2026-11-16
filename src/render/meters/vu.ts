@@ -71,7 +71,9 @@ const split = (t: string): [string, string] => {
 function strip(v: MeterInput): string {
 	let b = face(58, 6, 136, 88, loud(v.leftDb, v.rightDb), v.muted, 'vs')
 	// Left column: name on up to two rows, then the fader value (MUTED while muted).
-	const rows = wrapName(v.name, 15, 50, 2, 9)
+	// One row while the name still fits at 11 px or more; only longer names wrap onto two rows.
+	const one = fitSize(v.name, 15, 50, 9)
+	const rows = one >= 11 ? { lines: v.name ? [v.name] : [], size: one } : wrapName(v.name, 15, 50, 2, 9)
 	rows.lines.forEach((row, i) => (b += plainText(29, base((rows.lines.length > 1 ? 16 : 24) + i * rows.size * 1.15, rows.size), row, { size: rows.size, fill: WHITE })))
 	if (v.badge) b += text(v.badge.text, 29, 92, 12, 50, v.badge.fill)
 	if (v.muted && !v.peek) b += text('MUTED', 29, 60, 13, 52, MUTED_RED)
