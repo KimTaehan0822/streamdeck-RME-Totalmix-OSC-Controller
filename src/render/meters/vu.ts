@@ -23,11 +23,12 @@ export function vuFrac(vu: number): number {
 	return 1.04 // pinned just past +3
 }
 
-// Needle ballistics: each key's needle eases toward the level instead of jumping (rise 100 ms, fall 250 ms time constants).
+// Needle ballistics like a real VU: the needle shows the signal's average over about 300 ms, not its peaks.
+// TotalMix's levels are close to peaks, so the level is averaged as an amplitude with a 300 ms time constant,
+// the same up and down; a short burst barely moves the needle and it sinks as slowly as it rises.
 // Rendering is synchronous, so the caller names the key before drawing it (smoothNeedle) and clears it after.
-const RISE_MS = 100
-const FALL_MS = 250
-const needles = new Map<string, { pos: number; at: number }>()
+const AVERAGE_MS = 300
+const needles = new Map<string, { amp: number; at: number }>()
 let current: string | undefined
 let moving = false
 let clock: () => number = Date.now
@@ -42,20 +43,24 @@ export function needleMoving(): boolean {
 export function forgetNeedle(key: string): void {
 	for (const k of needles.keys()) if (k.startsWith(key + '/')) needles.delete(k)
 }
-function follow(id: string, target: number): number {
-	if (current === undefined) return target
+const toAmp = (db: number) => (db === -Infinity ? 0 : 10 ** (db / 20))
+const toDb = (amp: number) => (amp > 0 ? 20 * Math.log10(amp) : -Infinity)
+/** The averaged level in dBFS for this needle (the level itself when no key is named, as in tests). */
+function follow(id: string, db: number, frac: (db: number) => number): number {
+	if (current === undefined) return db
 	const k = `${current}/${id}`
 	const now = clock()
 	const last = needles.get(k)
-	let pos = target
+	const target = toAmp(db)
+	let amp = target
 	// A long gap (no frames for a second) means the needle would have settled anyway.
 	if (last && now - last.at < 1000) {
-		pos = target + (last.pos - target) * Math.exp(-Math.max(0, now - last.at) / (target > last.pos ? RISE_MS : FALL_MS))
-		if (Math.abs(pos - target) < 0.004) pos = target
+		amp = target + (last.amp - target) * Math.exp(-Math.max(0, now - last.at) / AVERAGE_MS)
+		if (Math.abs(frac(toDb(amp)) - frac(db)) < 0.004) amp = target
 		else moving = true
 	}
-	needles.set(k, { pos, at: now })
-	return pos
+	needles.set(k, { amp, at: now })
+	return toDb(amp)
 }
 
 interface Gauge {
@@ -105,7 +110,8 @@ function face(ref: number, x: number, y: number, w: number, h: number, db: numbe
 	}
 	s += plainText(n(g.vu[0]), n(g.vu[1]), 'dBu', { size: n(Math.min(r * 0.22, 18)), fill: INK })
 	const level = safeDb(db)
-	const [nx, ny] = pt(follow(id, muted ? 0 : vuFrac(level + ref)), r + Math.min(r * 0.083, 7))
+	const shown = follow(id, muted ? -Infinity : level, (d) => vuFrac(d + ref))
+	const [nx, ny] = pt(vuFrac(shown + ref), r + Math.min(r * 0.083, 7))
 	s += `<line x1="${n(cx)}" y1="${n(pivot)}" x2="${n(nx)}" y2="${n(ny)}" stroke="#111" stroke-width="1.6"/>`
 	s += `</g><rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="6" fill="none" stroke="#3a2608" stroke-width="2"/></g>`
 	return s

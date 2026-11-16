@@ -111,10 +111,10 @@ test('the VU needle eases toward a new level per key and asks for more frames un
 	const d = SHARED_DESIGNS.vu
 	let now = 0
 	setNeedleClock(() => now)
-	const loud = d.strip(input({ leftDb: -6, rightDb: -6 }))
+	const loud = d.strip(input({ leftDb: -14, rightDb: -14 }))
 	const quiet = d.strip(input({ leftDb: -Infinity, rightDb: -Infinity }))
 	smoothNeedle('k1')
-	assert.equal(d.strip(input({ leftDb: -6, rightDb: -6 })), loud, 'first frame jumps straight to the level')
+	assert.equal(d.strip(input({ leftDb: -14, rightDb: -14 })), loud, 'first frame jumps straight to the level')
 	needleMoving()
 	now = 40
 	const falling = d.strip(input({ leftDb: -Infinity, rightDb: -Infinity }))
@@ -125,7 +125,7 @@ test('the VU needle eases toward a new level per key and asks for more frames un
 	assert.equal(d.strip(input({ leftDb: -Infinity, rightDb: -Infinity })), quiet, 'settled after a long pause')
 	assert.equal(needleMoving(), false)
 	smoothNeedle('k2')
-	assert.equal(d.strip(input({ leftDb: -6, rightDb: -6 })), loud, 'another key keeps its own needle')
+	assert.equal(d.strip(input({ leftDb: -14, rightDb: -14 })), loud, 'another key keeps its own needle')
 	smoothNeedle(undefined)
 	forgetNeedle('k1')
 	forgetNeedle('k2')
@@ -152,4 +152,28 @@ test('VU designs show the level in VU and number the scale in dBu for their refe
 	const labels = (id) => [...SHARED_DESIGNS[id].strip(input()).matchAll(/>([+-]?\d+)</g)].map((m) => m[1])
 	assert.deepEqual(labels('vu4'), ['-16', '-6', '-1', '+4', '+7'])
 	assert.deepEqual(labels('vu10'), ['-10', '0', '+5', '+10', '+13'])
+})
+
+test('the VU needle reads an average over about 300 ms, so a short burst stays low and it falls just as slowly', async () => {
+	const { smoothNeedle, forgetNeedle, setNeedleClock } = await import('../dist/render/meters/vu.js')
+	const d = SHARED_DESIGNS.vu
+	const angle = (svg) => {
+		const m = [...svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)" stroke="#111"/g)][0]
+		return Math.atan2(+m[3] - +m[1], +m[2] - +m[4])
+	}
+	const steady = (db) => angle(d.strip(input({ leftDb: db, rightDb: db })))
+	const [at20, at22] = [steady(-20), steady(-22)] // before naming a key, so these do not feed the average
+	let now = 0
+	setNeedleClock(() => now)
+	smoothNeedle('avg')
+	d.strip(input({ leftDb: -Infinity, rightDb: -Infinity }))
+	now = 40
+	assert.ok(angle(d.strip(input({ leftDb: -6, rightDb: -6 }))) < at20, '40 ms of -6 dBFS still reads below -20 dBFS')
+	now = 2000
+	d.strip(input({ leftDb: -20, rightDb: -20 }))
+	now = 2040
+	assert.ok(angle(d.strip(input({ leftDb: -Infinity, rightDb: -Infinity }))) > at22, '40 ms after the sound stops it is still near -20 dBFS')
+	smoothNeedle(undefined)
+	forgetNeedle('avg')
+	setNeedleClock(Date.now)
 })

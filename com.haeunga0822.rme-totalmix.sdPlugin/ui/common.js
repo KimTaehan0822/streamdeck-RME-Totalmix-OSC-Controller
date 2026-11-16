@@ -20,13 +20,13 @@ const GLOBAL_BLOCK = `
 <sdpi-item label="Dials"><sdpi-select setting="meterStyle" global default="plugin">
 <option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
 <option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
-<option value="big">Big number</option><option value="vu">VU needle (+7 dBu)</option><option value="vu4">VU needle (+4 dBu)</option><option value="vu10">VU needle (+10 dBu)</option>
+<option value="big">Big number</option><option value="vu4">VU needle (+4 dBu)</option><option value="vu">VU needle (+7 dBu)</option><option value="vu10">VU needle (+10 dBu)</option>
 </sdpi-select></sdpi-item>
 <sdpi-item label="Buttons"><sdpi-select setting="meterStyleKey" global default="same">
 <option value="same">Same as dials</option>
 <option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
 <option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
-<option value="big">Big number</option><option value="vu">VU needle (+7 dBu)</option><option value="vu4">VU needle (+4 dBu)</option><option value="vu10">VU needle (+10 dBu)</option>
+<option value="big">Big number</option><option value="vu4">VU needle (+4 dBu)</option><option value="vu">VU needle (+7 dBu)</option><option value="vu10">VU needle (+10 dBu)</option>
 </sdpi-select></sdpi-item>
 </details>
 <details class="connection"><summary>Language</summary>
