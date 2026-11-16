@@ -20,14 +20,19 @@ const GLOBAL_BLOCK = `
 <sdpi-item label="Dials"><sdpi-select setting="meterStyle" global default="plugin">
 <option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
 <option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
-<option value="big">Big number</option><option value="vu4">VU needle (+4 dBu)</option><option value="vu">VU needle (+7 dBu)</option><option value="vu10">VU needle (+10 dBu)</option>
+<option value="big">Big number</option><option value="vu">VU needle</option>
 </sdpi-select></sdpi-item>
 <sdpi-item label="Buttons"><sdpi-select setting="meterStyleKey" global default="same">
 <option value="same">Same as dials</option>
 <option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
 <option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
-<option value="big">Big number</option><option value="vu4">VU needle (+4 dBu)</option><option value="vu">VU needle (+7 dBu)</option><option value="vu10">VU needle (+10 dBu)</option>
+<option value="big">Big number</option><option value="vu">VU needle</option>
 </sdpi-select></sdpi-item>
+<sdpi-item label="VU 0 VU reference"><sdpi-select setting="vuReference" global default="-18">
+<option value="-14">-14 dBFS</option><option value="-18">-18 dBFS</option><option value="-20">-20 dBFS</option>
+</sdpi-select></sdpi-item>
+<sdpi-item label="VU peak offset (dB)"><sdpi-textfield setting="vuPeakOffset" global default="5" pattern="^[0-9]{1,2}([.][05])?$"></sdpi-textfield></sdpi-item>
+<sdpi-item label=""><span>VU needle only. TotalMix sends peaks, so this many dB is taken off. See the manual for values.</span></sdpi-item>
 </details>
 <details class="connection"><summary>Language</summary>
 <sdpi-item label="Language"><sdpi-select setting="language" global default="en">
@@ -59,9 +64,10 @@ const TEXT = {
 	'OBS standard': ['OBS 표준', 'OBS 標準'],
 	'OBS wide': ['OBS 와이드', 'OBS ワイド'],
 	'Big number': ['큰 dB 숫자', '大きな dB 表示'],
-	'VU needle (+7 dBu)': ['VU 바늘 (+7 dBu)', 'VU 針 (+7 dBu)'],
-	'VU needle (+4 dBu)': ['VU 바늘 (+4 dBu)', 'VU 針 (+4 dBu)'],
-	'VU needle (+10 dBu)': ['VU 바늘 (+10 dBu)', 'VU 針 (+10 dBu)'],
+	'VU needle': ['VU 바늘', 'VU 針'],
+	'VU 0 VU reference': ['VU 0 VU 기준', 'VU 0 VU 基準'],
+	'VU peak offset (dB)': ['VU 피크 보정 (dB)', 'VU ピーク補正 (dB)'],
+	'VU needle only. TotalMix sends peaks, so this many dB is taken off. See the manual for values.': ['VU 바늘에만 적용돼요. TotalMix는 피크 값을 보내서 이만큼 빼요. 값은 설명서를 참고하세요.', 'VU 針にのみ適用されます。TotalMix はピーク値を送るため、この分を差し引きます。値はマニュアルを参照してください。'],
 	Select: ['선택', '選択'],
 	'Select channel': ['채널 선택', 'チャンネルを選択'],
 	Row: ['줄', '列'],

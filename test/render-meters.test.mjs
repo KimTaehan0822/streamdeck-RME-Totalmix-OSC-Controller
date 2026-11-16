@@ -33,8 +33,8 @@ for (const [id, d] of Object.entries(SHARED_DESIGNS)) {
 		const pair = ROLES.map((r) => save(`${id}-${r}`, d.pair(input(), r)))
 		pair.forEach((svg, i) => clean(svg, ROLES[i]))
 		assert.ok(pair[0].includes('NoneLive') && pair[2].includes('NoneLive'), 'name on the first key of each pair')
-		// VU designs show the level in VU for their reference instead of dBFS.
-		assert.ok(pair.join('').includes(id.startsWith('vu') ? ' VU<' : '-12.0'), 'level text somewhere on the pair')
+		// The VU design shows its corrected needle value in dBFS.
+		assert.ok(pair.join('').includes(id === 'vu' ? ' dBFS<' : '-12.0'), 'level text somewhere on the pair')
 	})
 
 	test(`${id}: muted shows MUTED, a peek shows the fader value instead`, () => {
@@ -132,26 +132,41 @@ test('the VU needle eases toward a new level per key and asks for more frames un
 	setNeedleClock(Date.now)
 })
 
-test('VU designs differ only by their 0 VU level: the same signal reads higher on +4 dBu than on +10 dBu', () => {
-	const needle = (svg) => {
+test('the VU needle reads the peak minus the user offset against a 0 VU set in dBFS, and the key shows that value', async () => {
+	const { setVuCalibration } = await import('../dist/render/meters/vu.js')
+	const d = SHARED_DESIGNS.vu
+	const angle = (svg) => {
 		const m = [...svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)" stroke="#111"/g)][0]
-		return Math.atan2(+m[3] - +m[1], +m[2] - +m[4]) // angle from straight up, right is positive
+		return Math.atan2(+m[3] - +m[1], +m[2] - +m[4])
 	}
-	const at = (id, db) => needle(SHARED_DESIGNS[id].strip(input({ leftDb: db, rightDb: db })))
-	assert.ok(at('vu4', -15) > at('vu', -15) && at('vu', -15) > at('vu10', -15), '+4 dBu reads highest, +10 dBu lowest')
-	assert.ok(Math.abs(at('vu4', -15) - at('vu', -12)) < 1e-6, '0 VU is -15 dBFS on +4 dBu and -12 dBFS on +7 dBu')
-	assert.ok(Math.abs(at('vu10', -9) - at('vu', -12)) < 1e-6, '0 VU is -9 dBFS on +10 dBu')
+	const at = (db) => d.strip(input({ leftDb: db, rightDb: db }))
+	setVuCalibration(undefined, undefined)
+	const zeroVu = angle(at(-13)) // defaults: 5 dB offset, 0 VU = -18 dBFS
+	assert.ok(d.pair(input({ leftDb: -13, rightDb: -13 }), 'bottom').includes('-18.0 dBFS'), 'shown value is the corrected one')
+	assert.ok(at(-13).includes('0 VU = -18 dBFS'), 'the reference is written on the face')
+	assert.deepEqual([...at(-13).matchAll(/>(\d+)</g)].map((m) => m[1]), ['20', '10', '7', '5', '3', '0', '3'], 'classic VU numbers')
+	setVuCalibration(-20, 3)
+	assert.ok(Math.abs(angle(at(-17)) - zeroVu) < 1e-6, '-17 peak - 3 = -20 = 0 VU at -20 reference')
+	assert.ok(at(-17).includes('0 VU = -20 dBFS'))
+	setVuCalibration('abc', '')
+	assert.ok(Math.abs(angle(at(-13)) - zeroVu) < 1e-6, 'a bad reference falls back to -18 and an empty offset to 5')
+	setVuCalibration(-18, 99)
+	assert.ok(d.pair(input({ leftDb: -3, rightDb: -3 }), 'bottom').includes('-18.0 dBFS'), 'offset clamped to 15')
+	setVuCalibration(-18, -4)
+	assert.ok(d.pair(input({ leftDb: -18, rightDb: -18 }), 'bottom').includes('-18.0 dBFS'), 'a negative offset is held at 0')
+	assert.ok(!/\d\.\d dBFS</.test(d.pair(input({ leftDb: -Infinity, rightDb: -Infinity }), 'bottom')), 'silence shows no value')
+	setVuCalibration(undefined, undefined)
 })
 
-test('VU designs show the level in VU and number the scale in dBu for their reference', () => {
-	const bottom = (id, db) => SHARED_DESIGNS[id].pair(input({ leftDb: db, rightDb: db }), 'bottom')
-	assert.ok(bottom('vu4', -12).includes('+3.0 VU'), '-12 dBFS is +3 VU at +4 dBu')
-	assert.ok(bottom('vu', -12).includes('0.0 VU'), '-12 dBFS is 0 VU at +7 dBu')
-	assert.ok(bottom('vu10', -12).includes('-3.0 VU'), '-12 dBFS is -3 VU at +10 dBu')
-	assert.ok(!bottom('vu4', -Infinity).includes(' VU<'), 'silence shows no level')
-	const labels = (id) => [...SHARED_DESIGNS[id].strip(input()).matchAll(/>([+-]?\d+)</g)].map((m) => m[1])
-	assert.deepEqual(labels('vu4'), ['-16', '-6', '-1', '+4', '+7'])
-	assert.deepEqual(labels('vu10'), ['-10', '0', '+5', '+10', '+13'])
+test('the old +4 and +10 dBu VU choices draw the single VU design', () => {
+	const v = { name: 'Mic', fader: dbToBar(0), left: dbToBar(-12), right: dbToBar(-14), faderDb: '0.0 dB', levelDb: '-12.0 dB', muted: false, peek: false, overlay: 'none' }
+	setMeterStyle('vu')
+	const vu = renderVuStrip(v)
+	for (const old of ['vu4', 'vu10']) {
+		setMeterStyle(old)
+		assert.equal(renderVuStrip(v), vu, old)
+	}
+	setMeterStyle('plugin')
 })
 
 test('the VU needle reads an average over about 300 ms, so a short burst stays low and it falls just as slowly', async () => {

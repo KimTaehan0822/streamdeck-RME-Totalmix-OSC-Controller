@@ -38,6 +38,8 @@ let style: MeterStyle = 'plugin'
 /** One of the designs in ./meters (drawn from the shared input); undefined = one of the three above. */
 let shared: SharedDesign | undefined
 function select(value: unknown): void {
+	// The +4 and +10 dBu VU choices (before the dBFS calibration) are the one VU design now.
+	if (value === 'vu4' || value === 'vu10') value = 'vu'
 	shared = isSharedDesign(value) ? value : undefined
 	style = value === 'classic' || value === 'modern' ? value : 'plugin'
 }
