@@ -81,3 +81,16 @@
 - TOPPING 세로 2키 막대 폭은 처음 크기로 되돌리고 길이만 늘렸다. 가로 2키 글자는 처음 크기로 되돌리고, 왼쪽 키의 소리 크기 글자를 이름판 아래(38)와 손잡이 위(96) 사이 가운데(67)에 둔다. 오른쪽 키의 페이더 값·MUTED는 처음 자리(50) 그대로.
 - VU 디자인의 판 눈금 숫자는 그 기준의 dBu로 적고(0 VU = 기준 dBu, 판 글자 "dBu"), 소리 크기 글자는 그 기준의 VU 값(예: +3.0 VU)으로 보인다(2026-11-17 사용자 요청). dBu 숫자가 길어서 넓은 판은 -20·-10·-5·0·+3 VU 자리, 좁은 세로 2키 판은 -10·-5·0 VU 자리에만 숫자를 쓴다.
 - 설정 목록의 VU는 전압 순서(+4, +7, +10 dBu)로 놓는다.
+
+## 목록 이름 바꾸기 (2026-11-17 사용자 결정, 아직 적용 전)
+다른 회사·프로젝트 이름(상표)을 그대로 쓰지 않도록, 패러디 느낌의 이름으로 바꾼다. 설정에 저장되는 값은 그대로 둔다(기존 설정 유지).
+
+| 값 | 지금 이름 | 새 이름 |
+|---|---|---|
+| `topping` | TOPPING | Topping on Plate |
+| `obs` / `obs-wide` | OBS standard / OBS wide | On Air / On Air Wide |
+| `classic` / `modern` | TotalMix classic / TotalMix new | Mix Studio Classic / Mix Studio Modern |
+| `big` | Big number | Big number |
+| `vu` | VU needle | VU Needle Drop |
+
+`Open Broadcast`는 OBS 정식 이름(Open Broadcaster Software)과 거의 같아서 뺐다. 2단계(다른 플러그인 복사) 때 TotalMix 플러그인의 설정 화면·README·설명서도 같이 바꾼다.
