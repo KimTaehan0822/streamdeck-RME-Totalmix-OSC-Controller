@@ -33,8 +33,7 @@ for (const [id, d] of Object.entries(SHARED_DESIGNS)) {
 		const pair = ROLES.map((r) => save(`${id}-${r}`, d.pair(input(), r)))
 		pair.forEach((svg, i) => clean(svg, ROLES[i]))
 		assert.ok(pair[0].includes('NoneLive') && pair[2].includes('NoneLive'), 'name on the first key of each pair')
-		// The VU design shows its corrected needle value in dBFS.
-		assert.ok(pair.join('').includes(id === 'vu' ? ' dBFS<' : '-12.0'), 'level text somewhere on the pair')
+		assert.ok(pair.join('').includes('-12.0'), 'level text somewhere on the pair')
 	})
 
 	test(`${id}: muted shows MUTED, a peek shows the fader value instead`, () => {
@@ -132,7 +131,7 @@ test('the VU needle eases toward a new level per key and asks for more frames un
 	setNeedleClock(Date.now)
 })
 
-test('the VU needle reads the peak minus the user offset against a 0 VU set in dBFS, and the key shows that value', async () => {
+test('the VU needle reads the peak minus the user offset against a 0 VU set in dBFS; the key shows TotalMix peak level', async () => {
 	const { setVuCalibration } = await import('../dist/render/meters/vu.js')
 	const d = SHARED_DESIGNS.vu
 	const angle = (svg) => {
@@ -142,7 +141,7 @@ test('the VU needle reads the peak minus the user offset against a 0 VU set in d
 	const at = (db) => d.strip(input({ leftDb: db, rightDb: db }))
 	setVuCalibration(undefined, undefined)
 	const zeroVu = angle(at(-13)) // defaults: 5 dB offset, 0 VU = -18 dBFS
-	assert.ok(d.pair(input({ leftDb: -13, rightDb: -13 }), 'bottom').includes('-18.0 dBFS'), 'shown value is the corrected one')
+	assert.ok(d.pair(input({ leftDb: -13, rightDb: -13, levelText: '-13.0 dB' }), 'bottom').includes('-13.0 dB'), 'the text is TotalMix peak level, not the estimate')
 	assert.ok(!at(-13).includes('dBFS'), 'the face carries no calibration text')
 	assert.deepEqual([...at(-13).matchAll(/>(\d+)</g)].map((m) => m[1]), ['20', '10', '7', '5', '3', '0', '3'], 'classic VU numbers')
 	setVuCalibration(-20, 3)
@@ -150,10 +149,9 @@ test('the VU needle reads the peak minus the user offset against a 0 VU set in d
 	setVuCalibration('abc', '')
 	assert.ok(Math.abs(angle(at(-13)) - zeroVu) < 1e-6, 'a bad reference falls back to -18 and an empty offset to 5')
 	setVuCalibration(-18, 99)
-	assert.ok(d.pair(input({ leftDb: -3, rightDb: -3 }), 'bottom').includes('-18.0 dBFS'), 'offset clamped to 15')
+	assert.ok(Math.abs(angle(at(-3)) - zeroVu) < 1e-6, 'offset clamped to 15')
 	setVuCalibration(-18, -4)
-	assert.ok(d.pair(input({ leftDb: -18, rightDb: -18 }), 'bottom').includes('-18.0 dBFS'), 'a negative offset is held at 0')
-	assert.ok(!/\d\.\d dBFS</.test(d.pair(input({ leftDb: -Infinity, rightDb: -Infinity }), 'bottom')), 'silence shows no value')
+	assert.ok(Math.abs(angle(at(-18)) - zeroVu) < 1e-6, 'a negative offset is held at 0')
 	setVuCalibration(undefined, undefined)
 })
 

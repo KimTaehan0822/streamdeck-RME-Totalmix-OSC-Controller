@@ -90,7 +90,7 @@ const fitGauge = (x: number, y: number, w: number, h: number): Gauge => {
 }
 
 /**
- * The VU face in the box and the level its needle shows (dBFS after the peak offset and the average).
+ * The VU face in the box, and the level its needle shows (dBFS after the peak offset and the average).
  * `id` keeps the gradient and clip apart from other faces on the same image.
  */
 function face(x: number, y: number, w: number, h: number, peakDb: number, muted: boolean, id: string, g: Gauge = fitGauge(x, y, w, h)): [string, number] {
@@ -108,7 +108,8 @@ function face(x: number, y: number, w: number, h: number, peakDb: number, muted:
 	}
 	s += arc(0, vuFrac(0), INK, 1.5) + arc(vuFrac(0), 1, RED, 3)
 	// Ticks, numbers and the needle scale with the needle's reach, so every face size reads alike.
-	const labelSize = n(Math.min(r * 0.194, 16))
+	// The tall narrow face packs the numbers closer, so they are smaller there.
+	const labelSize = n(half < 30 ? 12 : Math.min(r * 0.194, 16))
 	for (const [vu, label] of [[-20, '20'], [-10, '10'], [-7, '7'], [-5, '5'], [-3, '3'], [0, '0'], [3, '3']] as const) {
 		const f = vuFrac(vu)
 		const red = vu >= 0
@@ -128,8 +129,6 @@ function face(x: number, y: number, w: number, h: number, peakDb: number, muted:
 }
 
 const loud = (l: number, r: number) => Math.max(safeDb(l), safeDb(r))
-/** The needle's level in dBFS; nothing during silence. */
-const dbfs = (db: number) => (db === -Infinity ? '' : `${db.toFixed(1)} dBFS`)
 const text = (t: string, x: number, cy: number, size: number, maxWidth: number, fill = WHITE) => {
 	if (!t) return ''
 	const s = fitSize(t, size, maxWidth, 9)
@@ -159,13 +158,13 @@ function pair(v: MeterInput, role: FaderRole): string {
 	if (vertical) {
 		b = nameBlock(v.name, { x: 72, top: 4, width: 128, height: 32, maxLines: 1, size: 24, minSize: 13 })
 		if (!v.muted) b += text(v.faderText, 72, 50, 24, 132)
-		const [svg, shown] = face(6, 64, 132, 190, db, v.muted, 'vp', { cx: 72, pivot: 250, r: 150, half: 22, vu: [72, 214] })
-		b += svg
-		b += v.muted ? (v.peek ? text(v.faderText, 72, 272, 20, 128) : text('MUTED', 72, 272, 20, 128, MUTED_RED)) : text(dbfs(shown), 72, 272, 20, 128)
+		b += face(6, 64, 132, 190, db, v.muted, 'vp', { cx: 72, pivot: 250, r: 150, half: 18, vu: [72, 214] })[0]
+		// TotalMix's own peak level: the needle is an estimate, the number stays the real measured value.
+		b += v.muted ? (v.peek ? text(v.faderText, 72, 272, 20, 128) : text('MUTED', 72, 272, 20, 128, MUTED_RED)) : text(v.levelText, 72, 272, 20, 128)
 	} else {
-		b = nameBlock(v.name, { x: 72, top: 2, width: 128, height: 26, maxLines: 1, size: 22, minSize: 12 })
-		b += v.muted && !v.peek ? text('MUTED', 216, 14, 22, 128, MUTED_RED) : text(v.faderText, 216, 14, 22, 128)
-		b += face(6, 32, 276, 106, db, v.muted, 'vp', { cx: 144, pivot: 168, r: 112, half: 48, vu: [70, 126] })[0]
+		b = nameBlock(v.name, { x: 72, top: 7, width: 124, height: 24, maxLines: 1, size: 20, minSize: 12 })
+		b += v.muted && !v.peek ? text('MUTED', 216, 19, 20, 124, MUTED_RED) : text(v.faderText, 216, 19, 20, 124)
+		b += face(6, 34, 276, 104, db, v.muted, 'vp', { cx: 144, pivot: 170, r: 110, half: 48, vu: [70, 126] })[0]
 	}
 	const shift = second ? (vertical ? `translate(0 -${KEY})` : `translate(-${KEY} 0)`) : ''
 	return frame(KEY, KEY, shift ? `<g transform="${shift}">${b}</g>` : b, v.overlay)
