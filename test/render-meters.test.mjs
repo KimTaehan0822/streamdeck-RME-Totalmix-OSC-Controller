@@ -130,3 +130,14 @@ test('the VU needle eases toward a new level per key and asks for more frames un
 	forgetNeedle('k2')
 	setNeedleClock(Date.now)
 })
+
+test('VU designs differ only by their 0 VU level: the same signal reads higher on +4 dBu than on +10 dBu', () => {
+	const needle = (svg) => {
+		const m = [...svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)" stroke="#111"/g)][0]
+		return Math.atan2(+m[3] - +m[1], +m[2] - +m[4]) // angle from straight up, right is positive
+	}
+	const at = (id, db) => needle(SHARED_DESIGNS[id].strip(input({ leftDb: db, rightDb: db })))
+	assert.ok(at('vu4', -15) > at('vu', -15) && at('vu', -15) > at('vu10', -15), '+4 dBu reads highest, +10 dBu lowest')
+	assert.ok(Math.abs(at('vu4', -15) - at('vu', -12)) < 1e-6, '0 VU is -15 dBFS on +4 dBu and -12 dBFS on +7 dBu')
+	assert.ok(Math.abs(at('vu10', -9) - at('vu', -12)) < 1e-6, '0 VU is -9 dBFS on +10 dBu')
+})
