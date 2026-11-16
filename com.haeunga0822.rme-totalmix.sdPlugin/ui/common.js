@@ -32,7 +32,7 @@ const GLOBAL_BLOCK = `
 <option value="-14">-14 dBFS</option><option value="-18">-18 dBFS</option><option value="-20">-20 dBFS</option>
 </sdpi-select></sdpi-item>
 <sdpi-item class="vu-only" style="display:none" label="VU peak offset (dB)"><sdpi-textfield setting="vuPeakOffset" global default="5" pattern="^[0-9]{1,2}([.][05])?$"></sdpi-textfield></sdpi-item>
-<sdpi-item class="vu-only" style="display:none" label=""><span>VU needle only. TotalMix sends peaks, so this many dB is taken off. See the manual for values.</span></sdpi-item>
+<sdpi-item class="vu-only" style="display:none" label=""><span>VU needle only. TotalMix sends peaks, so this many dB is taken off.</span> <a href="#" class="vu-help"><span>Suggested values (README)</span></a></sdpi-item>
 </details>
 <details class="connection"><summary>Language</summary>
 <sdpi-item label="Language"><sdpi-select setting="language" global default="en">
@@ -67,7 +67,8 @@ const TEXT = {
 	'VU needle': ['VU 바늘', 'VU 針'],
 	'VU 0 VU reference': ['VU 0 VU 기준', 'VU 0 VU 基準'],
 	'VU peak offset (dB)': ['VU 피크 보정 (dB)', 'VU ピーク補正 (dB)'],
-	'VU needle only. TotalMix sends peaks, so this many dB is taken off. See the manual for values.': ['VU 바늘에만 적용돼요. TotalMix는 피크 값을 보내서 이만큼 빼요. 값은 설명서를 참고하세요.', 'VU 針にのみ適用されます。TotalMix はピーク値を送るため、この分を差し引きます。値はマニュアルを参照してください。'],
+	'VU needle only. TotalMix sends peaks, so this many dB is taken off.': ['VU 바늘에만 적용돼요. TotalMix는 피크 값을 보내서 이만큼 빼요.', 'VU 針にのみ適用されます。TotalMix はピーク値を送るため、この分を差し引きます。'],
+	'Suggested values (README)': ['권장 값 보기 (README)', '推奨値を見る (README)'],
 	Select: ['선택', '選択'],
 	'Select channel': ['채널 선택', 'チャンネルを選択'],
 	Row: ['줄', '列'],
@@ -225,6 +226,14 @@ for (const [setting, part] of [['meterStyle', 'dial'], ['meterStyleKey', 'key']]
 		meterChoice[part] = e.target.value
 		showVuFields()
 	})
+// The peak offset hint opens the README section with the measured values, in the settings language.
+const README = 'https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/blob/main/'
+document.querySelector('.vu-help')?.addEventListener('click', (e) => {
+	e.preventDefault()
+	const file = { ko: 'README.md', ja: 'README.ja.md' }[language] ?? 'README.en.md'
+	SDPIComponents.streamDeckClient.send('openUrl', { url: `${README}${file}#vu-peak-offset` })
+})
+
 SDPIComponents.streamDeckClient.getGlobalSettings().then((g) => {
 	meterChoice.dial = g?.meterStyle ?? 'plugin'
 	meterChoice.key = g?.meterStyleKey ?? 'same'

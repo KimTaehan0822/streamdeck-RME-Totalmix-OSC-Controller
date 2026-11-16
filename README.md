@@ -6,7 +6,7 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 ## 다운로드
 
-[최신 릴리즈](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) 페이지에서 `RME-TotalMix-StreamDeck-v<버전>.zip`을 받아 압축을 풉니다. 이 문서와 PDF 사용설명서는 **v1.2.0** 기준입니다. 안에 들어 있는 파일은 아래와 같습니다.
+[최신 릴리즈](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) 페이지에서 `RME-TotalMix-StreamDeck-v<버전>.zip`을 받아 압축을 풉니다. 이 문서와 PDF 사용설명서는 **v1.3.0** 기준입니다. 안에 들어 있는 파일은 아래와 같습니다.
 
 - `RME-TotalMix.streamDeckPlugin`: 설치 파일
 - 사용설명서 PDF (언어별로 하나씩)
@@ -71,7 +71,41 @@ Elgato Stream Deck의 키와 다이얼로 **RME TotalMix FX**를 조작하는 �
 
 ## 레벨미터 디자인
 
-설정 화면의 **▸ Meter design**에서 레벨미터 모양을 고릅니다. **Plugin (default)**는 원래 모양이고, **TotalMix classic**과 **TotalMix new**는 TotalMix의 옛 디자인과 새 디자인처럼 색과 눈금(0·6·10·20·40·60)을 맞춘 모양입니다. 모든 미터(VU Dial, Gain Dial, Fader 키, Fader(2-Button))에 같이 적용됩니다.
+설정 화면의 **▸ Meter design**에서 레벨미터 모양을 고릅니다. **Dials**(VU Dial·Gain Dial)와 **Buttons**(Fader 키·Fader(2-Button))를 따로 고를 수 있고, Buttons를 **Same as dials**로 두면 다이얼과 같은 디자인을 씁니다. 고르면 2초 안에 바뀝니다.
+
+| 디자인 | 모양 |
+|---|---|
+| Plugin (default) | 원래 모양 |
+| TotalMix classic / TotalMix new | TotalMix 옛 디자인·새 디자인의 색과 눈금(0·6·10·20·40·60) |
+| TOPPING | TOPPING E2x2 앱의 미터 모양(이름판, 페이더 손잡이) |
+| OBS standard / OBS wide | OBS 오디오 믹서 모양(-60~0 dB) |
+| Big number | 큰 페이더 숫자와 가는 L/R 막대 |
+| VU needle | 아날로그 VU 바늘 |
+
+<a id="vu-peak-offset"></a>
+
+### VU 바늘 설정
+
+다이얼이나 버튼에서 **VU needle**을 고르면 아래 두 칸이 나타납니다.
+
+- **VU 0 VU reference:** 0 VU가 되는 dBFS입니다(-14 / -18 / -20, 기본 -18). DAW의 VU 미터처럼 dBFS로 맞춥니다.
+- **VU peak offset (dB):** TotalMix OSC는 RMS 없이 **피크** 값만 보냅니다(OSC 설정에 RMS 옵션이 없음). 바늘은 받은 피크에서 이 값을 빼고 약 0.3초 평균으로 움직입니다(0~15 dB, 기본 5).
+
+피크와 실제 RMS의 차이는 소리마다 달라서, 값 하나로 모든 소리를 맞출 수는 없습니다. 주로 다루는 소리에 맞춰 고르세요. 아래는 2026-11-17에 Babyface Pro FS(TotalMix 기본 설정)에서 잰 값입니다.
+
+| 소리 | 받은 피크 − 실제 RMS (dB) |
+|---|---|
+| 사각파 | 0 |
+| 클리핑된 노이즈 | 1.9 |
+| 사인파 (1 kHz·100 Hz) | 3.0 |
+| 화이트 노이즈 | 4.8 |
+| 실제 음악 (강하게 압축된 곡 두 곡) | 4.5~7 |
+| 킥 드럼 같은 소리 | 8.3 |
+| 핑크 노이즈 | 10.2 |
+| 다이내믹이 큰 음악 같은 소리 | 11.4 |
+| 말소리 같은 소리 | 14.5 |
+
+권장 값: 음악 방송은 **5**, 테스트 사인파로 맞출 때는 **3**, 말소리 위주는 **10** 안팎. 세로 Fader(2-Button) 아래 숫자는 TotalMix가 보낸 피크 값 그대로입니다.
 
 ## 액션 목록
 

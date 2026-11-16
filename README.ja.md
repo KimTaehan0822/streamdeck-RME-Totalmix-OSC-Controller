@@ -6,7 +6,7 @@ Elgato Stream Deck のキーとダイヤルで **RME TotalMix FX** を操作す�
 
 ## ダウンロード
 
-[最新リリース](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest)ページから `RME-TotalMix-StreamDeck-v<バージョン>.zip` をダウンロードして展開します。この README と PDF 取扱説明書は **v1.2.0** に対応しています。中身は次のとおりです。
+[最新リリース](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest)ページから `RME-TotalMix-StreamDeck-v<バージョン>.zip` をダウンロードして展開します。この README と PDF 取扱説明書は **v1.3.0** に対応しています。中身は次のとおりです。
 
 - `RME-TotalMix.streamDeckPlugin`: インストールファイル
 - 取扱説明書 PDF(言語ごとに1つ)
@@ -71,7 +71,41 @@ Elgato Stream Deck のキーとダイヤルで **RME TotalMix FX** を操作す�
 
 ## レベルメーターのデザイン
 
-設定画面の **▸ Meter design** でメーターの見た目を選びます。**Plugin (default)** は元の見た目、**TotalMix classic** と **TotalMix new** は TotalMix の旧デザインと新デザインの色と目盛り(0・6・10・20・40・60)に合わせた見た目です。すべてのメーター(VU Dial、Gain Dial、Fader キー、Fader(2-Button))に適用されます。
+設定画面の **▸ Meter design** でレベルメーターの見た目を選びます。**Dials**(VU Dial・Gain Dial)と **Buttons**(Fader キー・Fader(2-Button))は別々に選べ、Buttons を **Same as dials** にするとダイヤルと同じデザインになります。選ぶと2秒以内に切り替わります。
+
+| デザイン | 見た目 |
+|---|---|
+| Plugin (default) | 元の見た目 |
+| TotalMix classic / TotalMix new | TotalMix 旧デザイン・新デザインの色と目盛り(0・6・10・20・40・60) |
+| TOPPING | TOPPING E2x2 アプリのメーター(名前プレート、フェーダーつまみ) |
+| OBS standard / OBS wide | OBS オーディオミキサーの見た目(-60〜0 dB) |
+| Big number | 大きなフェーダー値と細い L/R バー |
+| VU needle | アナログ VU 針 |
+
+<a id="vu-peak-offset"></a>
+
+### VU 針の設定
+
+ダイヤルかボタンで **VU needle** を選ぶと、次の2つの欄が表示されます。
+
+- **VU 0 VU reference:** 0 VU になる dBFS です(-14 / -18 / -20、初期値 -18)。DAW の VU メーターと同じく dBFS 基準です。
+- **VU peak offset (dB):** TotalMix OSC は RMS を送らず **ピーク** 値だけを送ります(OSC 設定に RMS の項目がありません)。針は受け取ったピークからこの値を引き、約 0.3 秒の平均で動きます(0〜15 dB、初期値 5)。
+
+ピークと実際の RMS の差は音によって違うため、1つの値ですべての音に合わせることはできません。主に扱う音に合わせて選んでください。以下は 2026-11-17 に Babyface Pro FS(TotalMix 初期設定)で測った値です。
+
+| 音 | 受け取ったピーク − 実際の RMS (dB) |
+|---|---|
+| 矩形波 | 0 |
+| クリップしたノイズ | 1.9 |
+| サイン波 (1 kHz・100 Hz) | 3.0 |
+| ホワイトノイズ | 4.8 |
+| 実際の音楽 (強くコンプレッションされた2曲) | 4.5〜7 |
+| キックドラムのような音 | 8.3 |
+| ピンクノイズ | 10.2 |
+| ダイナミクスの大きい音楽のような音 | 11.4 |
+| 話し声のような音 | 14.5 |
+
+目安: 音楽配信は **5**、テスト用サイン波で合わせるときは **3**、話し声中心は **10** 前後。縦の Fader(2-Button) の下の数字は TotalMix が送ったピーク値そのままです。
 
 ## アクション一覧
 

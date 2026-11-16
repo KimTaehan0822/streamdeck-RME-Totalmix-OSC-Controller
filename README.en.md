@@ -6,7 +6,7 @@ Control **RME TotalMix FX** with the keys and dials of an Elgato Stream Deck. Fa
 
 ## Download
 
-Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) page and unzip it. This README and the PDF manuals describe **v1.2.0**. It contains:
+Get `RME-TotalMix-StreamDeck-v<version>.zip` from the [latest release](https://github.com/KimTaehan0822/streamdeck-RME-Totalmix-OSC-Controller/releases/latest) page and unzip it. This README and the PDF manuals describe **v1.3.0**. It contains:
 
 - `RME-TotalMix.streamDeckPlugin`: the installer
 - The manual as PDF (one per language)
@@ -71,7 +71,41 @@ Open **▸ Language** at the very bottom of the settings screen and choose **Eng
 
 ## Level meter design
 
-Pick the meter look under **▸ Meter design** in the settings screen. **Plugin (default)** is the original look; **TotalMix classic** and **TotalMix new** follow the colours and scale (0, 6, 10, 20, 40, 60) of TotalMix's old and new designs. It applies to every meter (VU Dial, Gain Dial, Fader key, Fader(2-Button)).
+Pick the meter look under **▸ Meter design** in the settings screen. **Dials** (VU Dial, Gain Dial) and **Buttons** (Fader key, Fader(2-Button)) are chosen separately; leave Buttons on **Same as dials** to use the dial design. The change shows within 2 seconds.
+
+| Design | Look |
+|---|---|
+| Plugin (default) | The original look |
+| TotalMix classic / TotalMix new | Colours and scale (0, 6, 10, 20, 40, 60) of TotalMix's old and new designs |
+| TOPPING | The TOPPING E2x2 app's meters (name plate, fader cap) |
+| OBS standard / OBS wide | OBS audio mixer look (-60 to 0 dB) |
+| Big number | A large fader value with slim L/R bars |
+| VU needle | An analogue VU needle |
+
+<a id="vu-peak-offset"></a>
+
+### VU needle settings
+
+When **VU needle** is picked for the dials or the buttons, two more fields appear.
+
+- **VU 0 VU reference:** the dBFS level that reads 0 VU (-14 / -18 / -20, default -18), as on DAW VU meters.
+- **VU peak offset (dB):** TotalMix OSC sends only **peak** levels, no RMS (the OSC settings have no RMS option). The needle takes this many dB off the peak and follows a 0.3 s average (0–15 dB, default 5).
+
+The gap between peak and real RMS depends on the sound, so no single value fits everything. Pick it for the sound you mostly meter. Measured on 2026-11-17 with a Babyface Pro FS (TotalMix defaults):
+
+| Sound | Peak received − real RMS (dB) |
+|---|---|
+| Square wave | 0 |
+| Clipped noise | 1.9 |
+| Sine (1 kHz, 100 Hz) | 3.0 |
+| White noise | 4.8 |
+| Real music (two heavily compressed songs) | 4.5–7 |
+| Kick-drum-like sound | 8.3 |
+| Pink noise | 10.2 |
+| Music-like sound with wide dynamics | 11.4 |
+| Speech-like sound | 14.5 |
+
+Suggested: **5** for music streams, **3** to calibrate with a test sine, around **10** for mostly speech. The number under a vertical Fader(2-Button) is TotalMix's peak level as sent.
 
 ## Actions
 
