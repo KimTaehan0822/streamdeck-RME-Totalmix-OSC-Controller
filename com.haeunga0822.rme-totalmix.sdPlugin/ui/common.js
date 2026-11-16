@@ -17,7 +17,13 @@ const GLOBAL_BLOCK = `
 <sdpi-item label="Sync timeout (ms)"><sdpi-textfield setting="syncTimeoutMs" global default="500" pattern="^[0-9]{3,4}$"></sdpi-textfield></sdpi-item>
 </details>
 <details class="connection"><summary>Meter design</summary>
-<sdpi-item label="Meter design"><sdpi-select setting="meterStyle" global default="plugin">
+<sdpi-item label="Dials"><sdpi-select setting="meterStyle" global default="plugin">
+<option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
+<option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
+<option value="big">Big number</option><option value="vu">VU needle</option>
+</sdpi-select></sdpi-item>
+<sdpi-item label="Buttons"><sdpi-select setting="meterStyleKey" global default="same">
+<option value="same">Same as dials</option>
 <option value="plugin">Plugin (default)</option><option value="classic">TotalMix classic</option><option value="modern">TotalMix new</option>
 <option value="topping">TOPPING</option><option value="obs">OBS standard</option><option value="obs-wide">OBS wide</option>
 <option value="big">Big number</option><option value="vu">VU needle</option>
@@ -44,6 +50,9 @@ const TEXT = {
 	'Sync timeout (ms)': ['동기화 대기 시간 (ms)', '同期タイムアウト (ms)'],
 	Language: ['언어', '言語'],
 	'Meter design': ['미터 디자인', 'メーターデザイン'],
+	Dials: ['다이얼', 'ダイヤル'],
+	Buttons: ['버튼', 'ボタン'],
+	'Same as dials': ['다이얼과 같게', 'ダイヤルと同じ'],
 	'Plugin (default)': ['플러그인 기본', 'プラグイン標準'],
 	'TotalMix classic': ['토탈믹스 옛 디자인', 'TotalMix 旧デザイン'],
 	'TotalMix new': ['토탈믹스 새 디자인', 'TotalMix 新デザイン'],

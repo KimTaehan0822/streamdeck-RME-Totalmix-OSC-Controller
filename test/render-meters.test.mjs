@@ -87,3 +87,20 @@ test('a value key without a meter keeps its own look under a shared design', () 
 	assert.equal(renderValueKey(k), plain)
 	setMeterStyle('plugin')
 })
+
+test('dials and buttons can use different designs; buttons follow the dials when set to same', async () => {
+	const { setMeterStyles } = await import('../dist/render/meter.js')
+	const v = { name: 'Mic', fader: dbToBar(0), left: dbToBar(-12), right: dbToBar(-14), faderDb: '0.0 dB', levelDb: '-12.0 dB', muted: false, peek: false, overlay: 'none' }
+	const keyView = { title: 'Mic', value: '0.0 dB', meter: { fader: dbToBar(0), left: dbToBar(-12), right: dbToBar(-14), muted: false }, overlay: 'none' }
+	setMeterStyles('vu', 'topping')
+	assert.ok(renderVuStrip(v).includes('#f2b54a') && !renderVuStrip(v).includes('#1F1F1F'))
+	assert.ok(renderButtonFader(v, 'top').includes('#1F1F1F') && !renderButtonFader(v, 'top').includes('#f2b54a'))
+	assert.ok(renderValueKey(keyView).includes('#1F1F1F'))
+	setMeterStyles('classic', 'same')
+	assert.ok(renderButtonFader(v, 'top').includes('rgb(31,41,48)'))
+	setMeterStyles('big', undefined)
+	assert.ok(renderValueKey(keyView).includes('font-weight="300"'))
+	setMeterStyles('plugin', 'vu')
+	setMeterStyle('plugin') // the one-value form sets both again
+	assert.ok(!renderButtonFader(v, 'top').includes('#f2b54a'))
+})

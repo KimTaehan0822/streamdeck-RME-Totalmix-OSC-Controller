@@ -37,9 +37,30 @@ export type MeterStyle = 'plugin' | 'classic' | 'modern'
 let style: MeterStyle = 'plugin'
 /** One of the designs in ./meters (drawn from the shared input); undefined = one of the three above. */
 let shared: SharedDesign | undefined
-export function setMeterStyle(value: unknown): void {
+function select(value: unknown): void {
 	shared = isSharedDesign(value) ? value : undefined
 	style = value === 'classic' || value === 'modern' ? value : 'plugin'
+}
+// Dials and buttons (Fader key, two-key fader) each keep their own choice; the drawing reads the module state, so each
+// render switches to its surface's choice first (rendering is synchronous, nothing runs in between).
+let dialChoice: unknown = 'plugin'
+let keyChoice: unknown = 'plugin'
+/** Dials use `dial`; buttons use `key`, or the dial design when `key` is 'same' or missing. */
+export function setMeterStyles(dial: unknown, key: unknown): void {
+	dialChoice = dial
+	keyChoice = key === undefined || key === null || key === '' || key === 'same' ? dial : key
+}
+/** One design for dials and buttons alike. */
+export function setMeterStyle(value: unknown): void {
+	setMeterStyles(value, value)
+}
+export function forKeys<T>(draw: () => T): T {
+	select(keyChoice)
+	return draw()
+}
+const forDials = <T>(draw: () => T): T => {
+	select(dialChoice)
+	return draw()
 }
 export const sharedDesign = () => (shared ? SHARED_DESIGNS[shared] : undefined)
 
@@ -192,6 +213,9 @@ const hatch = (lines: [number, number, number, number][], s: Scale, px: number) 
 const base = (cy: number, size: number) => n(cy + size * 0.35)
 
 export function renderVuStrip(v: MeterView): string {
+	return forDials(() => drawVuStrip(v))
+}
+function drawVuStrip(v: MeterView): string {
 	const design = sharedDesign()
 	if (design) return design.strip(toInput(v))
 	const s: Scale = { sx: 2, sy: 1, vertical: false, min: 0, max: 1 }
@@ -232,6 +256,9 @@ export function renderKeyMeter(v: MeterBars): string {
 }
 
 export function renderButtonFader(v: MeterView, role: FaderRole): string {
+	return forKeys(() => drawButtonFader(v, role))
+}
+function drawButtonFader(v: MeterView, role: FaderRole): string {
 	const design = sharedDesign()
 	if (design) return design.pair(toInput(v), role)
 	const vertical = role === 'top' || role === 'bottom'

@@ -1,4 +1,4 @@
-import { barToDb, renderKeyMeter, sharedDesign, type MeterBars } from './meter.js'
+import { barToDb, forKeys, renderKeyMeter, sharedDesign, type MeterBars } from './meter.js'
 import { KEY, NAME_WIDTH, fitSize, fitText, frame, plainText, textBlock, wrapFit, type Overlay } from './svg.js'
 
 const WHITE = '#fff'
@@ -34,6 +34,9 @@ export interface ValueKeyView {
 }
 
 export function renderValueKey(v: ValueKeyView): string {
+	return v.meter ? forKeys(() => drawValueKey(v)) : drawValueKey(v)
+}
+function drawValueKey(v: ValueKeyView): string {
 	// A shared meter design draws the whole key, not only the meter strip.
 	const design = v.meter && sharedDesign()
 	if (design && v.meter) {
